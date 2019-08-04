@@ -45,6 +45,9 @@ def pkn_to_facts(pkn, maxclause=None, allow_skipping_nodes=False):
             asp.Number(bounded_nb_clauses(i))]))
     return facts
 
+def obs_to_facts(pstate, obsid):
+    return [asp.Function("obs", [obsid, n, 2*v-1]) for (n,v) in pstate.items()]
+
 def dnfs_of_facts(fs):
     bn = {}
     for d in fs:
