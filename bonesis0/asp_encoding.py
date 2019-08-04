@@ -85,7 +85,7 @@ def minibn_of_facts(fs):
         if isinstance(cs, bool):
             return cs
         cs = filter(len, cs)
-        return reduce(lambda c1, c2: c1|c2, map(make_clause, cs))
+        return reduce(lambda c1, c2: c1|c2, map(make_clause, cs)).simplify()
     for (node, cs) in sorted(dnfs.items()):
         bn[node] = make_dnf(cs)
     return bn
