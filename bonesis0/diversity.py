@@ -22,31 +22,30 @@ class diversity_driver:
             self.control.assign_external(a, True)
         self.avoided.extend(clues)
 
-class diversity_driver_opposite(diversity_driver):
+class diversity_driver_fraction(diversity_driver):
+    def __init__(self, pc_drive=100, pc_forget=100):
+        super().__init__()
+        self.pc_drive = pc_drive
+        self.pc_forget = pc_forget
     def on_model(self, model):
         self.atoms = [a for a in model.symbols(atoms=True) \
                 if self.match_pred(a)]
     def push(self):
         self.forget()
-        clues = [clingo.Function("avoid{}".format(a.name), a.arguments) for a in self.atoms]
-        self.avoid(clues)
-    def forget(self):
-        for a in self.avoided:
-            self.control.assign_external(a, False)
-        self.avoided.clear()
-
-class diversity_driver_fraction(diversity_driver_opposite):
-    def __init__(self, pc=50):
-        super().__init__()
-        self.pc = pc
-    def push(self):
-        self.forget()
-        drive = random.sample(self.atoms, (len(self.atoms)*self.pc)//100)
+        if self.pc_drive == 100:
+            drive = self.atoms
+        else:
+            drive = random.sample(self.atoms, (len(self.atoms)*self.pc_drive)//100)
         clues = [clingo.Function("avoid{}".format(a.name), a.arguments) for a in drive]
         self.avoid(clues)
     def forget(self):
+        if self.pc_forget == 100:
+            for a in self.avoided:
+                self.control.assign_external(a, False)
+            self.avoided.clear()
+            return
         random.shuffle(self.avoided)
-        nb = (len(self.avoided)*(100-self.pc))//100
+        nb = (len(self.avoided)*self.pc_forget)//100
         for a in self.avoided[:nb]:
             self.control.assign_external(a, False)
         self.avoided = self.avoided[nb:]
