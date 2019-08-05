@@ -80,12 +80,18 @@ def minibn_of_facts(fs):
             v = ~v
         return v
     def make_clause(ls):
-        return reduce(lambda l1,l2: l1&l2, map(make_lit, ls))
+        ls = list(map(make_lit, ls))
+        if len(ls) == 1:
+            return ls[0]
+        return bn.ba.AND(*ls)
     def make_dnf(cs):
         if isinstance(cs, bool):
             return cs
         cs = filter(len, cs)
-        return reduce(lambda c1, c2: c1|c2, map(make_clause, cs)).simplify()
+        cs = list(map(make_clause, cs))
+        if len(cs) == 1:
+            return cs[0]
+        return bn.ba.OR(*cs)
     for (node, cs) in sorted(dnfs.items()):
         bn[node] = make_dnf(cs)
     return bn
