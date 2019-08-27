@@ -1,9 +1,10 @@
 %% maxreach iterations to check the neg reach
-#const maxreach=3.
-iter(1..maxreach).
-:- locked(X,Y,maxreach,N); not locked(X,Y,maxreach-1,N); maxreach<M; nbnode(M).
+#const bounded_nonreach=-1.
+iter(1..bounded_nonreach) :- bounded_nonreach >= 0.
+iter(1..M) :- bounded_nonreach < 0, nbnode(M).
+:- locked(X,Y,bounded_nonreach,N); not locked(X,Y,bounded_nonreach-1,N);
+    bounded_nonreach < M; nbnode(M); bounded_nonreach >= 0.
 
-%iter(1..K) :- nbnode(K).
 locked(X,Y,I+1,N) :- cfg(X,N,V); cfg(Y,N,V); iter(I+1);
                         ext((nr,X,Y,I),N,-V); not ext((nr,X,Y,I),N,V).
 locked(X,Y,I+1,N) :- locked(X,Y,I,N), iter(I+1).
