@@ -8,7 +8,7 @@ from functools import reduce
 def string_of_facts(facts):
     if not facts:
         return ""
-    return "{}.".format(".\n".join(map(str,facts)))
+    return "{}.\n".format(".\n".join(map(str,facts)))
 
 def print_facts(facts):
     if facts:
