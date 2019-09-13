@@ -51,13 +51,18 @@ class diversity_driver_fraction(diversity_driver):
         self.avoided = self.avoided[nb:]
 
 
+def on_model_make_minibn(model):
+    return minibn_of_facts(model.symbols(True))
+
 class solve_diverse:
-    def __init__(self, control, driver, skip_supersets=False, limit=0):
+    def __init__(self, control, driver, skip_supersets=False, limit=0,
+                    on_model=on_model_make_minibn):
         self.control = control
         self.skip_supersets = skip_supersets
         self.driver = driver
         self.driver.initialize(self.control)
         self.limit = limit
+        self.on_model = on_model
 
     def __iter__(self):
         self.__counter = 0
@@ -73,7 +78,7 @@ class solve_diverse:
                 found = True
                 self.__counter += 1
                 atoms = model.symbols(atoms=True)
-                bn = minibn_of_facts(model.symbols(True))
+                obj = self.on_model(model)
                 self.driver.on_model(model)
                 break
         if not found:
@@ -97,5 +102,5 @@ class solve_diverse:
         self.control.add("skip", [], ":- {}.".format(",".join(exclude_cst)))
         self.control.ground([("skip", [])])
 
-        return bn
+        return obj
 
