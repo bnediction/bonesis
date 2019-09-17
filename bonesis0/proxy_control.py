@@ -24,6 +24,10 @@ class ProxyControl(object):
             with open(output_filename, "w") as fp:
                 fp.write(content)
 
+    def export_rules(self, output_filename):
+        with open(output_filename, "w") as fp:
+            fp.write(self.input)
+
     ###
 
     def add(self, name, params, program):
