@@ -5,6 +5,16 @@ from scipy.special import binom
 
 from functools import reduce
 
+
+def py_of_symbol(symb):
+    if symb.type is asp.SymbolType.String:
+        return symb.string
+    if symb.type is asp.SymbolType.Number:
+        return symb.number
+    if symb.type is asp.SymbolType.Function:
+        return tuple(map(py_of_symbol, symb.arguments))
+    raise ValueError
+
 def string_of_facts(facts):
     if not facts:
         return ""
@@ -95,4 +105,18 @@ def minibn_of_facts(fs):
     for (node, cs) in sorted(dnfs.items()):
         bn[node] = make_dnf(cs)
     return bn
+
+def configurations_of_facts(fs):
+    cfgs = {}
+    for a in fs:
+        if a.name != "cfg":
+            continue
+        cid, n, v = a.arguments
+        n = n.string
+        v = v.number
+        cid = py_of_symbol(cid)
+        if cid not in cfgs:
+            cfgs[cid] = {}
+        cfgs[cid][n] = max(v, 0)
+    return cfgs
 
