@@ -27,9 +27,8 @@ class diversity_driver_fraction(diversity_driver):
         super().__init__()
         self.pc_drive = pc_drive
         self.pc_forget = pc_forget
-    def on_model(self, model):
-        self.atoms = [a for a in model.symbols(atoms=True) \
-                if self.match_pred(a)]
+    def on_solution(self, atoms):
+        self.atoms = [a for a in atoms if self.match_pred(a)]
     def push(self):
         self.forget()
         if self.pc_drive == 100:
@@ -63,29 +62,17 @@ class solve_diverse:
         self.driver.initialize(self.control)
         self.limit = limit
         self.on_model = on_model
-
-    def __iter__(self):
         self.__counter = 0
-        return self
 
-    def __next__(self):
-        if self.limit and self.__counter == self.limit:
-            raise StopIteration
+    def inject_solution(self, atoms):
+        self.driver.on_solution(atoms)
+        self.prepare_next(atoms)
 
-        found = False
-        with self.control.solve(yield_=True) as solutions:
-            for model in solutions:
-                found = True
-                self.__counter += 1
-                atoms = model.symbols(atoms=True)
-                obj = self.on_model(model)
-                self.driver.on_model(model)
-                break
-        if not found:
-            raise StopIteration
+    def count(self):
+        return self.__counter
 
+    def prepare_next(self, atoms):
         self.driver.push()
-
         preds = {
             ("clause", 4): "in(A2,A0,A3), maxC(A0,C), A1=1..C",
             ("constant", 2): "node(A0), A1=(-1;1)"
@@ -102,5 +89,23 @@ class solve_diverse:
         self.control.add("skip", [], ":- {}.".format(",".join(exclude_cst)))
         self.control.ground([("skip", [])])
 
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.limit and self.__counter == self.limit:
+            raise StopIteration
+        found = False
+        with self.control.solve(yield_=True) as solutions:
+            for model in solutions:
+                found = True
+                self.__counter += 1
+                atoms = model.symbols(atoms=True)
+                obj = self.on_model(model)
+                self.driver.on_solution(atoms)
+                break
+        if not found:
+            raise StopIteration
+        self.prepare_next(atoms)
         return obj
 
