@@ -67,6 +67,7 @@ class solve_diverse:
     def inject_solution(self, atoms):
         self.driver.on_solution(atoms)
         self.prepare_next(atoms)
+        self.__counter += 1
 
     def count(self):
         return self.__counter
@@ -93,7 +94,7 @@ class solve_diverse:
         return self
 
     def __next__(self):
-        if self.limit and self.__counter == self.limit:
+        if self.limit and self.__counter >= self.limit:
             raise StopIteration
         found = False
         with self.control.solve(yield_=True) as solutions:
