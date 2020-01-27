@@ -6,8 +6,6 @@ from setuptools import setup, find_packages
 NAME = 'bonesis'
 
 META = {}
-META["version"] = "0.0a0"
-"""
 META_FILE = os.path.join(NAME, "__init__.py")
 with open(META_FILE) as f:
     __data = f.read()
@@ -16,11 +14,11 @@ for key in ["version"]:
     if not match:
         raise RuntimeError("Unable to find __{meta}__ string.".format(meta=key))
     META[key] = match.group(1)
-"""
 
 setup(name=NAME,
     description = "Synthesis of Most Permissive Boolean Networks",
     install_requires = [
+        "boolean.py",
         "colomoto_jupyter",
     ],
     classifiers=[
