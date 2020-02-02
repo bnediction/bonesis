@@ -1,4 +1,10 @@
 
+__language_api__ = {}
+
+def language_api(cls):
+    __language_api__[cls.__name__] = cls
+    return cls
+
 def operator_type_error(name, *args):
     raise TypeError(f"Invalid types for {name} operator {tuple(map(type,args))}")
 
@@ -32,17 +38,17 @@ class ObservationVar(BonesisVar):
     def __init__(self, name):
         super().__init__(name)
     def __invert__(self):
-        return self.make_cfg(self)
+        return self.make_cfg(self.name, obs=self)
+    def __pos__(self):
+        return self.make_cfg(None, obs=self)
     def __str__(self):
         return f"Observation({repr(self.name)})"
+__language_api__["obs"] = ObservationVar
 
 @supports_reach
 class ConfigurationVar(BonesisVar):
-    def __init__(self, name=None):
-        self.obs = None
-        if isinstance(name, ObservationVar):
-            self.obs = name
-            name = None
+    def __init__(self, name=None, obs=None):
+        self.obs = obs
         super().__init__(name)
     def publish(self):
         self.mgr.register_configuration(self)
@@ -50,20 +56,40 @@ class ConfigurationVar(BonesisVar):
             self.mgr.bind_configuration(self, self.obs)
     def __str__(self):
         return f"Configuration({repr(self.name or id(self))})"
+__language_api__["cfg"] = ConfigurationVar
 
 class BonesisPredicate(BonesisTerm):
-    pass
+    def __init__(self, *args):
+        self.args = args
+        super().__init__()
+    def publish(self):
+        self.mgr.register_prediate(self.__class__.__name__, self.args)
+    def right(self):
+        r = self.args[-1]
+        if isinstance(r, BonesisPredicate):
+            r = r.right()
+        return r
+    def __repr__(self):
+        return f"{self.__class__.__name__}{tuple(map(repr,self.args))}"
+
+class UnaryPrediate(BonesisPrediacte):
+    def __init__(self, a):
+        super().__init__(a)
 
 class BinaryPredicate(BonesisPredicate):
-    def __init__(self, l, r):
-        self.left = l
-        self.right = r
-        super().__init__()
-    def __repr__(self):
-        return f"{self.__class__.__name__}({self.left},{self.right})"
+    def __init__(self, a, b):
+        super().__init_(a, b)
 
-@supports_reach
-class reach(BinaryPredicate):
+@language_api
+class fixpoint(UnaryPredicate):
     pass
 
+@language_api
+class stable(UnaryPredicate):
+    pass
+
+@supports_reach
+@language_api
+class reach(BonesisPredicate):
+    pass
 

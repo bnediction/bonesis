@@ -11,9 +11,11 @@ obs1 = bo.obs(1)
 print(obs1)
 
 cfg1 = ~bo.obs(1)
-print(cfg1)
+assert cfg1.name == 1
 cfg2 = ~bo.obs(1)
-print(cfg2)
+assert cfg2.name == 1
+cfg3 = +bo.obs(1)
+assert cfg3.name != 1
 
 defs = bo.load_code("""
 print(globals().keys())
@@ -29,5 +31,4 @@ cfg1 = cfg0
 """, defs, dest_scope=globals())
 print(defs.keys())
 print(f"cfg1={cfg1}")
-
 
