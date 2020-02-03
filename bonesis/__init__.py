@@ -36,6 +36,12 @@ class BoNesis(object):
         self.obs = managed(ObservationVar)
         self.obs.make_cfg = self.cfg
 
+    def solver(self, *args, **kwargs):
+        return self.aspmodel.solver(*args, **kwargs)
+
+    def is_satisfiable(self):
+        control = self.solver(1)
+        return control.solve().satisfiable
 
     def install_language(self, scope):
         for k in __language_api__:

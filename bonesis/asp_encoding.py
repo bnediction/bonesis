@@ -1,8 +1,11 @@
 
 import clingo
+import os
+import tempfile
 
 from bonesis0.asp_encoding import *
 from bonesis0.utils import aspf
+from bonesis0.proxy_control import ProxyControl
 from .domains import BooleanNetwork, InfluenceGraph
 
 def s2v(s):
@@ -28,6 +31,21 @@ class ASPModel_DNF(object):
         self.properties = properties
         self.constants = self.__class__.default_constants.copy()
         self.constants.update(constants)
+
+    def solver(self, *args, **kwargs):
+        self.make()
+        arguments = list(map(str,args)) + \
+            [f"-c {const}={repr(value)}" for (const, value) in self.constants.items()]
+        control = ProxyControl(arguments, **kwargs)
+        fd, progfile = tempfile.mkstemp(".lp", prefix="bonesis", text=True)
+        try:
+            with os.fdopen(fd, "w") as fp:
+                fp.write(str(self))
+            control.load(progfile)
+        finally:
+            os.unlink(progfile)
+        control.ground([("base",())])
+        return control
 
     def make(self):
         self.prefix = ""

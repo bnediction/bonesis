@@ -45,3 +45,5 @@ print()
 print(bo.aspmodel.constants)
 print(bo.aspmodel)
 
+print(bo.is_satisfiable())
+
