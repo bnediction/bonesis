@@ -1,16 +1,32 @@
 
 __version__ = "0.0a0"
 
-from .manager import BonesisManager
+from colomoto import minibn
+import networkx as nx
+
+from .asp_encoding import ASPModel_DNF
+from .domains import *
 from .language import ObservationVar, ConfigurationVar
+from .manager import BonesisManager
 
 __language_api__ = ["obs", "cfg"]
 
 class BoNesis(object):
-    def __init__(self, domain, data=None):
+    def __init__(self, domain, data=None,
+            **opts):
+        if not isinstance(domain, BonesisDomain):
+            if isinstance(domain, minibn.BooleanNetwork):
+                domain = BooleanNetwork(domain)
+            elif isinstance(domain, (nx.DiGraph, nx.MultiDiGraph)):
+                domain = InfluenceGraph(domain)
+            else:
+                raise TypeError(f"Cannot handle domain with type '{type(domain)}'")
         self.domain = domain
         self.data = data or {}
         self.manager = BonesisManager(self)
+
+        self.aspmodel = ASPModel_DNF(self.domain, self.data, self.manager,
+                **opts)
 
         def managed(cls):
             class Managed(cls):
@@ -19,6 +35,7 @@ class BoNesis(object):
         self.cfg = managed(ConfigurationVar)
         self.obs = managed(ObservationVar)
         self.obs.make_cfg = self.cfg
+
 
     def install_language(self, scope):
         for k in __language_api__:

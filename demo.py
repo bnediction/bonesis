@@ -5,7 +5,15 @@ data = {
     1: {"a": 0},
     "D0": {"b": 0},
 }
-bo = bonesis.BoNesis(None, data)
+
+dom = bonesis.InfluenceGraph([
+    ("a", "b", {"sign": "-"}),
+    ("b", "a", {"sign": "-"}),
+    ("a", "c", {"sign": "-"}),
+    ("b", "c", {"sign": "+"}),
+])
+
+bo = bonesis.BoNesis(dom, data)
 
 obs1 = bo.obs(1)
 print(obs1)
@@ -31,4 +39,9 @@ cfg1 = cfg0
 """, defs, dest_scope=globals())
 print(defs.keys())
 print(f"cfg1={cfg1}")
+
+bo.aspmodel.make()
+print()
+print(bo.aspmodel.constants)
+print(bo.aspmodel)
 

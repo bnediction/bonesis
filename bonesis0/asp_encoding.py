@@ -38,11 +38,14 @@ def pkn_to_facts(pkn, maxclause=None, allow_skipping_nodes=False):
         for n in pkn.nodes():
             facts.append("{{{}}}".format(asp.Function("node", [asp.String(n)])))
     for (orig, dest, data) in pkn.edges(data=True):
-        if data["sign"] in ["ukn","?"]:
+        if data["sign"] in ["ukn","?","0",0]:
             f = "in({},{},(-1;1))".format(asp.String(orig), asp.String(dest))
             facts.append(f)
         else:
-            s = asp.Number(int(data["sign"]))
+            ds = data["sign"]
+            if ds in ["-","+"]:
+                ds += "1"
+            s = asp.Number(int(ds))
             facts.append(asp.Function("in",
                 [asp.String(orig), asp.String(dest), s]))
     def bounded_nb_clauses(d):

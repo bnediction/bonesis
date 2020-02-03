@@ -4,13 +4,13 @@ import clingo
 class BonesisManager(object):
     def __init__(self, bo):
         self.bo = bo
-        self.register = []
+        self.properties = []
         self.observations = set()
         self.configurations = set()
 
     def push(self, rule):
         print(f"{self.__class__.__name__}.push({rule})")
-        self.register.append(rule)
+        self.properties.append(rule)
 
     def push_term(self, name, *args):
         self.push((name, args))
@@ -35,8 +35,6 @@ class BonesisManager(object):
         if cfg.name not in self.configurations:
             self.configurations.add(cfg.name)
             self.push_term("cfg", cfg.name)
-
-    def bind_configuration(self, cfg, obs):
-        self.push_term("bind_cfg", cfg.name, obs.name)
-
+            if cfg.obs:
+                self.push_term("bind_cfg", cfg.name, cfg.obs.name)
 

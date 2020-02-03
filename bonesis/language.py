@@ -52,8 +52,6 @@ class ConfigurationVar(BonesisVar):
         super().__init__(name)
     def publish(self):
         self.mgr.register_configuration(self)
-        if self.obs is not None:
-            self.mgr.bind_configuration(self, self.obs)
     def __str__(self):
         return f"Configuration({repr(self.name or id(self))})"
 __language_api__["cfg"] = ConfigurationVar
@@ -71,25 +69,4 @@ class BonesisPredicate(BonesisTerm):
         return r
     def __repr__(self):
         return f"{self.__class__.__name__}{tuple(map(repr,self.args))}"
-
-class UnaryPrediate(BonesisPrediacte):
-    def __init__(self, a):
-        super().__init__(a)
-
-class BinaryPredicate(BonesisPredicate):
-    def __init__(self, a, b):
-        super().__init_(a, b)
-
-@language_api
-class fixpoint(UnaryPredicate):
-    pass
-
-@language_api
-class stable(UnaryPredicate):
-    pass
-
-@supports_reach
-@language_api
-class reach(BonesisPredicate):
-    pass
 
