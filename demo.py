@@ -53,7 +53,6 @@ e = bo.fixed(bo.obs(1))
 cfg0 >= e
 
 cfg2 // cfg0
-cfg0 // cfg2
 
 bo.aspmodel.make()
 print()

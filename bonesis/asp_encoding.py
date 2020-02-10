@@ -15,11 +15,10 @@ def s2v(s):
 
 def unique_usage(method):
     name = method.__name__
-    def nothing(*args, **kwargs):
-        pass
     def wrapper(self, *args, **kwargs):
-        setattr(self, f"__save_{name}", method)
-        setattr(self, name, nothing)
+        if name in self._silenced:
+            return
+        self._silenced.append(name)
         return method(self, *args, **kwargs)
     return wrapper
 
@@ -33,6 +32,7 @@ class ASPModel_DNF(object):
         self.properties = properties
         self.constants = self.__class__.default_constants.copy()
         self.constants.update(constants)
+        self._silenced = set()
 
     def solver(self, *args, **kwargs):
         self.make()
@@ -49,11 +49,15 @@ class ASPModel_DNF(object):
         control.ground([("base",())])
         return control
 
-    def make(self):
+    def reset(self):
+        self._silenced.clear()
         self.prefix = ""
         self.programs = {
             ("base", ()): "",
         }
+
+    def make(self):
+        self.reset()
         self.push(self.encode_domain(self.domain))
         self.push(self.encode_data(self.data))
         self.push(self.encode_properties(self.properties))
