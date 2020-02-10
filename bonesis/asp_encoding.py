@@ -180,6 +180,10 @@ class ASPModel_DNF(object):
         self.load_template_reach()
         return [clingo.Function("reach", (cfg1.name, cfg2.name))]
 
+    def encode_nonreach(self, cfg1, cfg2):
+        self.load_template_nonreach()
+        return [clingo.Function("nonreach", (cfg1.name, cfg2.name))]
+
     def encode_fixpoint(self, arg):
         self.load_template_fixpoint()
         return [clingo.Function("is_fp", (arg.name,))]

@@ -45,15 +45,21 @@ class ManagedIface(object):
         del self.recovery[sid]
 
 
+def declare_operator(operator):
+    def decorator(func):
+        def wrapper(K):
+            setattr(K, operator, func)
+            return K
+        return wrapper
+    return decorator
+
+@declare_operator("__ge__") # >=
 def reach_operator(left, right):
     return left.iface.reach(left, right)
 
-def supports_operator(operator, func):
-    def wrapper(K):
-        setattr(K, operator, func)
-        return K
-    return wrapper
-supports_reach = supports_operator("__ge__", reach_operator)
+@declare_operator("__floordiv__") # //
+def nonreach_operator(left, right):
+    return left.iface.nonreach(left, right)
 
 
 class BonesisTerm(object):
@@ -80,7 +86,8 @@ class ObservationVar(BonesisVar):
         return f"Observation({repr(self.name)})"
 __language_api__["obs"] = ObservationVar
 
-@supports_reach
+@reach_operator
+@nonreach_operator
 class ConfigurationVar(BonesisVar):
     def __init__(self, name=None, obs=None):
         self.obs = obs
@@ -101,7 +108,7 @@ class BonesisPredicate(BonesisTerm):
         self.publish()
     @classmethod
     def type_error(celf):
-        raise TypeError(f"Invalid arguments for {self.__class__.__name__}")
+        raise TypeError(f"Invalid arguments for {celf.__name__}")
     def publish(self):
         self.mgr.register_predicate(self.predicate_name, *self.args)
     def left(self):
@@ -123,7 +130,8 @@ class fixed(BonesisPredicate):
             self.type_error()
         super().__init__(arg)
 
-@supports_reach
+@reach_operator
+@nonreach_operator
 @language_api
 class reach(BonesisPredicate):
     """
@@ -137,7 +145,7 @@ class reach(BonesisPredicate):
             return arg
         if isinstance(arg, reach):
             return celf.left_arg(arg.right())
-        self.type_error()
+        celf.type_error()
 
     @classmethod
     def right_arg(celf, arg):
@@ -147,9 +155,17 @@ class reach(BonesisPredicate):
             return celf.right_arg(+arg)
         if isinstance(arg, (fixed, reach)):
             return celf.right_arg(arg.left())
-        self.type_error()
+        celf.type_error()
 
     def __init__(self, left, right):
         left = self.left_arg(left)
         right = self.right_arg(right)
         super().__init__(left, right)
+
+@language_api
+class nonreach(reach):
+    @classmethod
+    def right_arg(celf, arg):
+        if isinstance(arg, ObservationVar):
+            celf.type_error() # universal constraint
+        return super().right_arg(arg)
