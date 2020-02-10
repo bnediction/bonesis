@@ -6,7 +6,7 @@ import networkx as nx
 
 from .asp_encoding import ASPModel_DNF
 from .domains import *
-from .language import ObservationVar, ConfigurationVar
+from .language import ManagedIface
 from .manager import BonesisManager
 
 __language_api__ = ["obs", "cfg"]
@@ -28,27 +28,13 @@ class BoNesis(object):
         self.aspmodel = ASPModel_DNF(self.domain, self.data, self.manager,
                 **opts)
 
-        def managed(cls):
-            class Managed(cls):
-                mgr = self.manager
-            return Managed
-        self.cfg = managed(ConfigurationVar)
-        self.obs = managed(ObservationVar)
-        self.obs.make_cfg = self.cfg
-
-    def solver(self, *args, **kwargs):
-        return self.aspmodel.solver(*args, **kwargs)
-
-    def is_satisfiable(self):
-        control = self.solver(1)
-        return control.solve().satisfiable
+        self.iface = ManagedIface(self.manager)
+        self.iface.install(self)
 
     def install_language(self, scope):
-        for k in __language_api__:
-            scope[k] = getattr(self, k)
+        self.iface.install(scope)
     def uninstall_language(self, scope):
-        for k in __language_api__:
-            del scope[k]
+        self.iface.uninstall(scope)
 
     def load_code(self, prog, defs=None, dest_scope=None):
         scope = {}
@@ -56,13 +42,18 @@ class BoNesis(object):
         exec(prog, scope, defs)
         self.uninstall_language(scope)
         del scope["__builtins__"]
-        print(f"/scope={scope.keys()}")
-        if defs:
-            print(f"/defs={defs.keys()}")
         ret = defs if defs else scope
         if dest_scope is not None:
             dest_scope.update(ret)
         return ret
     def load(self, script, defs=None, dest_scope=None):
         with open(script) as fp:
-            return self._load_code(fp.read(), defs=defs)
+            return self._load_code(fp.read(), defs=defs, dest_scope=None)
+
+
+    def solver(self, *args, **kwargs):
+        return self.aspmodel.solver(*args, **kwargs)
+
+    def is_satisfiable(self):
+        control = self.solver(1)
+        return control.solve().satisfiable

@@ -1,6 +1,8 @@
 
 import clingo
 
+from .language import BonesisTerm
+
 class BonesisManager(object):
     def __init__(self, bo):
         self.bo = bo
@@ -38,3 +40,8 @@ class BonesisManager(object):
             if cfg.obs:
                 self.push_term("bind_cfg", cfg.name, cfg.obs.name)
 
+    def register_predicate(self, name, *args):
+        for obj in args:
+            if isinstance(obj, BonesisTerm):
+                assert obj.mgr is self, "mixed managers"
+        self.push_term(name, *args)

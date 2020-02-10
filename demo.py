@@ -40,6 +40,18 @@ cfg1 = cfg0
 print(defs.keys())
 print(f"cfg1={cfg1}")
 
+# equivalent calls
+cfg0 >= cfg2
+bo.reach(cfg0, cfg2)
+cfg0 >= bo.obs(1) # creates an anonymous configuration linked to obs(1)
+~bo.obs("D0") >= bo.obs(1) # same
+
+bo.fixed(cfg2)
+cfg0 >= bo.fixed(cfg2)
+
+e = bo.fixed(bo.obs(1))
+cfg0 >= e
+
 bo.aspmodel.make()
 print()
 print(bo.aspmodel.constants)

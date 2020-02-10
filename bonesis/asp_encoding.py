@@ -8,6 +8,8 @@ from bonesis0.utils import aspf
 from bonesis0.proxy_control import ProxyControl
 from .domains import BooleanNetwork, InfluenceGraph
 
+from .language import ConfigurationVar
+
 def s2v(s):
     return 1 if s > 0 else -1
 
@@ -140,6 +142,16 @@ class ASPModel_DNF(object):
         self.push_file(aspf("nonreach.asp"))
 
     @unique_usage
+    def load_template_fixpoint(self):
+        self.load_template_eval()
+        self.push_file(aspf("fixpoint.asp"))
+
+    @unique_usage
+    def load_template_trapspace(self):
+        self.load_template_eval()
+        self.push_file(aspf("trapspace.asp"))
+
+    @unique_usage
     def load_template_cfg(self):
         rules = [
             "1 {cfg(X,N,(-1;1))} 1 :- cfg(X), node(N)"
@@ -156,6 +168,23 @@ class ASPModel_DNF(object):
     def encode_properties(self, manager):
         facts = []
         for (name, args) in manager.properties:
-            self.load_template(name)
-            facts.append(clingo.Function(name, args))
+            encoder = f"encode_{name}"
+            if hasattr(self, encoder):
+                facts.extend(getattr(self, encoder)(*args))
+            else:
+                self.load_template(name)
+                facts.append(clingo.Function(name, args))
         return facts
+
+    def encode_reach(self, cfg1, cfg2):
+        self.load_template_reach()
+        return [clingo.Function("reach", (cfg1.name, cfg2.name))]
+
+    def encode_fixpoint(self, arg):
+        self.load_template_fixpoint()
+        return [clingo.Function("is_fp", (arg.name,))]
+
+    def encode_trapspace(self, arg):
+        self.load_template_trapspace()
+        return [clingo.Function("is_tp", (arg.name,n)) \
+                    for n in self.data[arg.obs.name]]
