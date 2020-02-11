@@ -11,7 +11,6 @@ class BonesisManager(object):
         self.configurations = set()
 
     def push(self, rule):
-        print(f"{self.__class__.__name__}.push({rule})")
         self.properties.append(rule)
 
     def push_term(self, name, *args):

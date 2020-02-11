@@ -1,4 +1,47 @@
+# TODO: timeouts
 
-class _BonesisView(object):
-    pass
+from bonesis0.asp_encoding import minibn_of_facts
 
+class BonesisView(object):
+    def __init__(self, aspmodel):
+        self.aspmodel = aspmodel
+        self.limit = 0
+
+    def configure(self, **opts):
+        self.aspmodel.make()
+        args = [self.limit]
+        if self.project:
+            args.append("--project")
+        self.control = self.aspmodel.solver(*args, **opts)
+        self.configure_show()
+
+    def configure_show(self):
+        for tpl in self.show_templates:
+            for x in self.aspmodel.show[tpl]:
+                self.control.add("base", [], f"#show {x}.")
+
+    def __iter__(self):
+        self.configure()
+        self._iterator = self.control.solve(yield_=True)
+        return self
+    def __next__(self):
+        self.cur_model = next(self._iterator)
+        yield self.format_model(self.cur_model)
+
+    def count(self):
+        c = 0
+        self.configure()
+        for _ in self.control.solve(yield_=True):
+            c += 1
+        return c
+
+    def standalone(self, *args, **kwargs):
+        self.configure(ground=False)
+        return self.control.standalone(*args, **kwargs)
+
+class BooleanNetworksView(BonesisView):
+    project = True
+    show_templates = ["boolean_network"]
+    def format_model(self, model):
+        atoms = model.symbols(shown=True)
+        return minibn_of_facts(atoms)

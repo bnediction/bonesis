@@ -23,7 +23,6 @@ class ManagedIface(object):
         is_dict = isinstance(scope, dict)
         rec = self.recovery[sid] = {}
         for k in __language_api__:
-            print(f"##### {k} #####")
             hasv = (k in scope) if is_dict else hasattr(scope, k)
             if hasv:
                 rec[k] = scope[k] if is_dict else getattr(scope, k)
@@ -117,6 +116,12 @@ class BonesisPredicate(BonesisTerm):
         return self.args[-1]
     def __repr__(self):
         return f"{self.__class__.__name__}{tuple(map(repr,self.args))}"
+
+@language_api
+class constant(BonesisPredicate):
+    def __init__(self, node, value):
+        assert node in self.mgr.bo.domain
+        super().__init__(node, value)
 
 @language_api
 class fixed(BonesisPredicate):

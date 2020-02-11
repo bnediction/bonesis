@@ -32,30 +32,29 @@ def pkn_to_facts(pkn, maxclause=None, allow_skipping_nodes=False):
     if not allow_skipping_nodes:
         facts.append(asp.Function("nbnode", [asp.Number(len(pkn.nodes()))]))
         for n in pkn.nodes():
-            facts.append(asp.Function("node", [asp.String(n)]))
+            facts.append(asp.Function("node", (n,)))
     else:
         facts.append("nbnode(NB) :- NB = #count{N: node(N)}")
         for n in pkn.nodes():
-            facts.append("{{{}}}".format(asp.Function("node", [asp.String(n)])))
+            facts.append("{{{}}}".format(asp.Function("node", (n,))))
     for (orig, dest, data) in pkn.edges(data=True):
         if data["sign"] in ["ukn","?","0",0]:
-            f = "in({},{},(-1;1))".format(asp.String(orig), asp.String(dest))
+            args = asp.Tuple((orig, dest)).arguments
+            f = "in({},{},(-1;1))".format(*args)
             facts.append(f)
         else:
             ds = data["sign"]
             if ds in ["-","+"]:
                 ds += "1"
-            s = asp.Number(int(ds))
-            facts.append(asp.Function("in",
-                [asp.String(orig), asp.String(dest), s]))
+            s = int(ds)
+            facts.append(asp.Function("in", (orig, dest, s)))
     def bounded_nb_clauses(d):
         nbc = nb_clauses(d)
         if maxclause:
             nbc = min(maxclause, nbc)
         return nbc
     for n, i in pkn.in_degree(pkn.nodes()):
-        facts.append(asp.Function("maxC", [asp.String(n),
-            asp.Number(bounded_nb_clauses(i))]))
+        facts.append(asp.Function("maxC", (n, bounded_nb_clauses(i))))
     return facts
 
 def obs_to_facts(pstate, obsid):

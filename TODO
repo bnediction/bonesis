@@ -1,0 +1,27 @@
+## Milestone 1
+
+Solving:
+- timeouts
+- configuration for parallelization
+- custom configurations
+
+Views:
+- bn with projections on nodes
+- diversity
+- nodes
+- bns + configurations
+
+General:
+- optimization statements
+
+Language:
+- in_attractor
+- shortcut for timeseries
+- shortcut for differentation trees
+
+
+## Milestone 2
+
+- properties under mutations
+- infer mutations
+

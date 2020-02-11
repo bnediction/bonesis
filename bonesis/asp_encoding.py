@@ -34,8 +34,7 @@ class ASPModel_DNF(object):
         self.constants.update(constants)
         self._silenced = set()
 
-    def solver(self, *args, **kwargs):
-        self.make()
+    def solver(self, *args, ground=True, **kwargs):
         arguments = list(map(str,args)) + \
             [f"-c {const}={repr(value)}" for (const, value) in self.constants.items()]
         control = ProxyControl(arguments, **kwargs)
@@ -46,7 +45,8 @@ class ASPModel_DNF(object):
             control.load(progfile)
         finally:
             os.unlink(progfile)
-        control.ground([("base",())])
+        if ground:
+            control.ground([("base",())])
         return control
 
     def reset(self):
@@ -76,9 +76,6 @@ class ASPModel_DNF(object):
     def push_file(self, filename):
         with open(filename) as fp:
             self.prefix += fp.read()
-
-    def load_template(self, name):
-        getattr(self, f"load_template_{name}")()
 
     def encode_domain(self, domain):
         if isinstance(domain, BooleanNetwork):
@@ -119,7 +116,7 @@ class ASPModel_DNF(object):
     def encode_domain_InfluenceGraph(self, pkn):
         self.push_file(aspf("bn-domain.asp"))
         if pkn.canonic:
-            self.push_file(asp("canonical-bn.asp"))
+            self.push_file(aspf("canonical-bn.asp"))
         return pkn_to_facts(pkn, pkn.maxclause, pkn.allow_skipping_nodes)
 
     def encode_data(self, data):
@@ -169,6 +166,11 @@ class ASPModel_DNF(object):
         ]
         self.push(rules)
 
+    def encode_argument(self, arg):
+        if isinstance(arg, ConfigurationVar):
+            return arg.name
+        return arg
+
     def encode_properties(self, manager):
         facts = []
         for (name, args) in manager.properties:
@@ -176,23 +178,32 @@ class ASPModel_DNF(object):
             if hasattr(self, encoder):
                 facts.extend(getattr(self, encoder)(*args))
             else:
-                self.load_template(name)
+                tpl = f"load_template_{name}"
+                if hasattr(self, tpl):
+                    getattr(self, tpl)()
+                args = tuple(map(self.encode_argument, args))
                 facts.append(clingo.Function(name, args))
         return facts
 
-    def encode_reach(self, cfg1, cfg2):
-        self.load_template_reach()
-        return [clingo.Function("reach", (cfg1.name, cfg2.name))]
-
-    def encode_nonreach(self, cfg1, cfg2):
-        self.load_template_nonreach()
-        return [clingo.Function("nonreach", (cfg1.name, cfg2.name))]
-
-    def encode_fixpoint(self, arg):
+    def encode_fixpoint(self, cfg):
         self.load_template_fixpoint()
-        return [clingo.Function("is_fp", (arg.name,))]
+        return [clingo.Function("is_fp", (cfg.name,))]
 
-    def encode_trapspace(self, arg):
+    def encode_trapspace(self, cfg):
         self.load_template_trapspace()
-        return [clingo.Function("is_tp", (arg.name,n)) \
-                    for n in self.data[arg.obs.name]]
+        return [clingo.Function("is_tp", (cfg.name,n)) \
+                    for n in self.data[cfg.obs.name]]
+
+    def encode_constant(self, node, b):
+        return [clingo.Function("constant", (node, s2v(b)))]
+
+    show = {
+        "boolean_network":
+            ["clause/4", "constant/2"],
+        "configuration":
+            ["cfg/3"],
+        "node":
+            ["node/1"],
+        "constant":
+            ["constant/1"],
+    }
