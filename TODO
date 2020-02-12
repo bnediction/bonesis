@@ -2,8 +2,6 @@
 
 Solving:
 - timeouts
-- configuration for parallelization
-- custom configurations
 
 Views:
 - bn with projections on nodes
@@ -16,9 +14,11 @@ General:
 
 Language:
 - in_attractor
-- shortcut for timeseries
 - shortcut for differentation trees
+- equalities
+- inequalities
 
+Tests
 
 ## Milestone 2
 

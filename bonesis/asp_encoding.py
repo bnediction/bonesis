@@ -9,6 +9,7 @@ from bonesis0.proxy_control import ProxyControl
 from .domains import BooleanNetwork, InfluenceGraph
 
 from .language import ConfigurationVar
+from .debug import dbg
 
 def s2v(s):
     return 1 if s > 0 else -1
@@ -34,9 +35,16 @@ class ASPModel_DNF(object):
         self.constants.update(constants)
         self._silenced = set()
 
-    def solver(self, *args, ground=True, **kwargs):
-        arguments = list(map(str,args)) + \
-            [f"-c {const}={repr(value)}" for (const, value) in self.constants.items()]
+    def solver(self, *args, ground=True, settings={}, **kwargs):
+        arguments = []
+        arguments.extend(settings.get("clingo_options", ()))
+        if "parallel" in settings:
+            arguments += ["-t", settings["parallel"]]
+        arguments.extend(args)
+        arguments += [f"-c {const}={repr(value)}" for (const, value) \
+                        in self.constants.items()]
+        arguments = list(map(str,arguments))
+        dbg(f"ProxyControl({arguments}, {kwargs})")
         control = ProxyControl(arguments, **kwargs)
         fd, progfile = tempfile.mkstemp(".lp", prefix="bonesis", text=True)
         try:

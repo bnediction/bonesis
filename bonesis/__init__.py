@@ -1,16 +1,25 @@
 
 __version__ = "0.0a0"
 
+import multiprocessing
+
 from colomoto import minibn
 import networkx as nx
 
 from .asp_encoding import ASPModel_DNF
+from .debug import *
 from .domains import *
 from .language import ManagedIface
 from .manager import BonesisManager
+from .utils import OverlayedDict
 from .views import *
 
 __language_api__ = ["obs", "cfg"]
+
+settings = {
+    "parallel": multiprocessing.cpu_count(),
+    "clingo_options": (),
+}
 
 class BoNesis(object):
     def __init__(self, domain, data=None):
@@ -25,6 +34,7 @@ class BoNesis(object):
         self.data = data or {}
         self.manager = BonesisManager(self)
 
+        self.settings = OverlayedDict(settings)
         self.aspmodel = ASPModel_DNF(self.domain, self.data, self.manager)
 
         self.iface = ManagedIface(self.manager)
@@ -54,6 +64,8 @@ class BoNesis(object):
 
     def solver(self, *args, **kwargs):
         self.aspmodel.make()
+        if "settings" not in kwargs:
+            kwargs["settings"] = self.settings
         return self.aspmodel.solver(*args, **kwargs)
 
     def is_satisfiable(self):
@@ -61,4 +73,4 @@ class BoNesis(object):
         return control.solve().satisfiable
 
     def boolean_networks(self):
-        return BooleanNetworksView(self.aspmodel)
+        return BooleanNetworksView(self)

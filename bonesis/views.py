@@ -1,18 +1,20 @@
 # TODO: timeouts
 
+from .utils import OverlayedDict
 from bonesis0.asp_encoding import minibn_of_facts
 
 class BonesisView(object):
-    def __init__(self, aspmodel):
-        self.aspmodel = aspmodel
+    def __init__(self, bo):
+        self.bo = bo
+        self.aspmodel = bo.aspmodel
         self.limit = 0
+        self.settings = OverlayedDict(bo.settings)
 
     def configure(self, **opts):
-        self.aspmodel.make()
         args = [self.limit]
         if self.project:
             args.append("--project")
-        self.control = self.aspmodel.solver(*args, **opts)
+        self.control = self.bo.solver(*args, settings=self.settings, **opts)
         self.configure_show()
 
     def configure_show(self):
