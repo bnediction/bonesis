@@ -72,5 +72,7 @@ class BoNesis(object):
         control = self.solver(1)
         return control.solve().satisfiable
 
-    def boolean_networks(self):
-        return BooleanNetworksView(self)
+    def boolean_networks(self, *args, **kwargs):
+        return BooleanNetworksView(self, *args, **kwargs)
+    def diverse_boolean_networks(self, *args, **kwargs):
+        return DiverseBooleanNetworksView(self, *args, **kwargs)

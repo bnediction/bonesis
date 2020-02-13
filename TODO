@@ -2,9 +2,9 @@
 
 Views:
 - bn with projections on nodes
-- diversity
 - nodes
 - bns + configurations
+- raw in files (with resume)
 
 General:
 - optimization statements
@@ -21,4 +21,7 @@ Tests
 
 - properties under mutations
 - infer mutations
+
+Views:
+- diversity with project
 
