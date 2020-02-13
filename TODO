@@ -6,6 +6,10 @@ Views:
 - bns + configurations
 - raw in files (with resume)
 
+Domain:
+- exact influence graph
+- no constants
+
 General:
 - optimization statements
 
