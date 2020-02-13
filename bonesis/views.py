@@ -1,5 +1,7 @@
-# TODO: timeouts
 
+from threading import Timer
+
+from .debug import dbg
 from .utils import OverlayedDict
 from bonesis0.asp_encoding import minibn_of_facts
 
@@ -15,6 +17,7 @@ class BonesisView(object):
         if self.project:
             args.append("--project")
         self.control = self.bo.solver(*args, settings=self.settings, **opts)
+        self.interrupted = False
         self.configure_show()
 
     def configure_show(self):
@@ -22,12 +25,21 @@ class BonesisView(object):
             for x in self.aspmodel.show[tpl]:
                 self.control.add("base", [], f"#show {x}.")
 
+    def interrupt(self):
+        dbg(f"{self} interrupted")
+        self.interrupted = True
+        self.control.interrupt()
+
     def __iter__(self):
         self.configure()
         self._iterator = self.control.solve(yield_=True)
         return self
     def __next__(self):
+        t = Timer(self.settings["timeout"], self.interrupt) \
+                if "timeout" in self.settings else None
         self.cur_model = next(self._iterator)
+        if t is not None:
+            t.cancel()
         yield self.format_model(self.cur_model)
 
     def count(self):
