@@ -64,20 +64,14 @@ def dnfs_of_facts(fs):
     bn = {}
     for d in fs:
         if d.name == "clause":
-            (i,cid,lit,sign) = d.arguments
-            i = i.string
-            cid = cid.number
-            sign = sign.number
-            lit = lit.string
+            (i,cid,lit,sign) = list(map(py_of_symbol, d.arguments))
             if i not in bn:
                 bn[i] = []
             if cid > len(bn[i]):
                 bn[i] += [set() for j in range(cid-len(bn[i]))]
             bn[i][cid-1].add((sign,lit))
         elif d.name == "constant" and len(d.arguments) == 2:
-            (i,v) = d.arguments
-            i = i.string
-            v = v.number
+            (i,v) = list(map(py_of_symbol, d.arguments))
             bn[i] = v == 1
     return bn
 

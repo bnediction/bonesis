@@ -16,5 +16,7 @@ for i in range(1,n):
 bns = bo.boolean_networks()
 print(bns.standalone())
 print(bns.count())
+for bn in bns:
+    print(bn[0])
 
 

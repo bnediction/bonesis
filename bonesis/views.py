@@ -24,6 +24,7 @@ class BonesisView(object):
         for tpl in self.show_templates:
             for x in self.aspmodel.show[tpl]:
                 self.control.add("base", [], f"#show {x}.")
+        self.control.ground([("base",[])])
 
     def interrupt(self):
         dbg(f"{self} interrupted")
@@ -34,13 +35,15 @@ class BonesisView(object):
         self.configure()
         self._iterator = self.control.solve(yield_=True)
         return self
+
     def __next__(self):
         t = Timer(self.settings["timeout"], self.interrupt) \
                 if "timeout" in self.settings else None
-        self.cur_model = next(self._iterator)
-        if t is not None:
-            t.cancel()
-        yield self.format_model(self.cur_model)
+        try:
+            self.cur_model = next(self._iterator)
+        finally:
+            t.cancel() if t is not None else None
+        return self.format_model(self.cur_model)
 
     def count(self):
         c = 0
