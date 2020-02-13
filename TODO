@@ -7,6 +7,7 @@ Views:
 - raw in files (with resume)
 
 Domain:
+- import from sifs / pandas / csv
 - exact influence graph
 - no constants
 
@@ -15,9 +16,9 @@ General:
 
 Language:
 - in_attractor
-- shortcut for differentation trees
 - equalities
 - inequalities
+- shortcut for differentation trees
 
 Tests
 

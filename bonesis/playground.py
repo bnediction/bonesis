@@ -1,46 +1,3 @@
-class reach(object):
-    def __init__(self, a, b):
-        self.a = a
-        self.b = b
-    def __ge__(self, right):
-        print(f"reach({self},{right})")
-        return reach(self, right)
-    def __str__(self):
-        return "{} -> {}".format(self.a, self.b)
-
-class universal_reach(reach):
-    def __str__(self):
-        return "{} => {}".format(self.a, self.b)
-
-class cfg(object):
-    def __init__(self, i):
-        self.i = i
-    def __ge__(self, right):
-        print(f"reach({self},{right})")
-        return reach(self, right)
-    def __rshift__(self, right):
-        print(f"universal_reach({self},{right})")
-        return universal_reach(self, right)
-    def __str__(self):
-        return f"cfg({self.i})"
-
-cfg1 = cfg(1)
-cfg2 = cfg(2)
-cfg3 = cfg(3)
-
-cfg(1) >= cfg(2) >= cfg(3) >= cfg(4)
-
-cfg1 >> 3
-cfg(1) >> 3
-print(cfg1)
-
-"""
-data = {
-    1: obs1...
-    2: obs2..
-}
-bo = bonesis.BoNesis(bn, data)
-bo.__enter__() # with bo:
 
 cfg1 = ~obs(1)
 cfg2 = ~obs(2)
@@ -94,14 +51,4 @@ with mutation(v("N"),v("S")):
     # there exists a mutation s.t.
     cfg1 = ~ obs(1)
     cfg1 // in_attractor(obs(2))
-
-
-
-bo.__exit__()
-
-bo.is_satisfiable()
-
-TODO: views
-
-"""
 
