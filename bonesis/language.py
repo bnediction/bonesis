@@ -65,6 +65,9 @@ class BonesisTerm(object):
     def __init__(self):
         assert hasattr(self, "mgr"), \
                 "do not instantiate non-managed class!"
+    def _set_iface(self, iface):
+        self.iface = iface
+        self.mgr = self.iface.manager
 
 class BonesisVar(BonesisTerm):
     def __init__(self, name):
@@ -103,6 +106,12 @@ class BonesisPredicate(BonesisTerm):
         self.args = args
         if not hasattr(self, "predicate_name"):
             self.predicate_name = self.__class__.__name__
+        for obj in self.args:
+            if isinstance(obj, BonesisTerm):
+                if not hasattr(self, "iface"):
+                    self._set_iface(obj.iface)
+                else:
+                    assert obj.iface is self.iface, "mixed managers"
         super().__init__()
         self.publish()
     @classmethod
@@ -120,8 +129,8 @@ class BonesisPredicate(BonesisTerm):
 @language_api
 class constant(BonesisPredicate):
     def __init__(self, node, value):
-        assert node in self.mgr.bo.domain
         super().__init__(node, value)
+        assert node in self.mgr.bo.domain
 
 @language_api
 class fixed(BonesisPredicate):
@@ -132,6 +141,13 @@ class fixed(BonesisPredicate):
             self.predicate_name = "trapspace"
             arg = +arg
         else:
+            self.type_error()
+        super().__init__(arg)
+
+@language_api
+class in_attractor(BonesisPredicate):
+    def __init__(self, arg):
+        if not isinstance(arg, ConfigurationVar):
             self.type_error()
         super().__init__(arg)
 

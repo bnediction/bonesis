@@ -1,5 +1,6 @@
 
 import bonesis
+from bonesis.language import *
 
 data = {
     1: {"a": 0},
@@ -46,10 +47,11 @@ bo.reach(cfg0, cfg2)
 cfg0 >= bo.obs(1) # creates an anonymous configuration linked to obs(1)
 ~bo.obs("D0") >= bo.obs(1) # same
 
-bo.fixed(cfg2)
-cfg0 >= bo.fixed(cfg2)
+fixed(cfg2)
+cfg0 >= fixed(cfg2)
+in_attractor(cfg2)
 
-e = bo.fixed(bo.obs(1))
+e = fixed(bo.obs(1))
 cfg0 >= e
 
 cfg2 // cfg0

@@ -8,6 +8,7 @@ Views:
 
 Domain:
 - import from sifs / pandas / csv
+- import from biolqm
 - exact influence graph
 - no constants
 
@@ -15,7 +16,6 @@ General:
 - optimization statements
 
 Language:
-- in_attractor
 - equalities
 - inequalities
 - shortcut for differentation trees

@@ -19,7 +19,7 @@ def unique_usage(method):
     def wrapper(self, *args, **kwargs):
         if name in self._silenced:
             return
-        self._silenced.append(name)
+        self._silenced.add(name)
         return method(self, *args, **kwargs)
     return wrapper
 
@@ -161,6 +161,11 @@ class ASPModel_DNF(object):
         self.push_file(aspf("trapspace.asp"))
 
     @unique_usage
+    def load_template_attractor(self):
+        self.load_template_eval()
+        self.push_file(aspf("attractor.asp"))
+
+    @unique_usage
     def load_template_cfg(self):
         rules = [
             "1 {cfg(X,N,(-1;1))} 1 :- cfg(X), node(N)"
@@ -204,6 +209,10 @@ class ASPModel_DNF(object):
 
     def encode_constant(self, node, b):
         return [clingo.Function("constant", (node, s2v(b)))]
+
+    def encode_in_attractor(self, cfg):
+        self.load_template_attractor()
+        return [clingo.Function("is_at", (cfg.name,))]
 
     show = {
         "boolean_network":
