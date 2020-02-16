@@ -26,7 +26,7 @@ class BonesisManager(object):
     def register_configuration(self, cfg):
         if cfg.name is None:
             if cfg.obs:
-                i = 1
+                i = 0
                 cfg.name = (cfg.obs.name, i)
                 while cfg.name in self.configurations:
                     i += 1

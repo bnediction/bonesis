@@ -125,7 +125,12 @@ class ASPModel_DNF(object):
         self.push_file(aspf("bn-domain.asp"))
         if pkn.canonic:
             self.push_file(aspf("canonical-bn.asp"))
-        return pkn_to_facts(pkn, pkn.maxclause, pkn.allow_skipping_nodes)
+        facts = pkn_to_facts(pkn, pkn.maxclause, pkn.allow_skipping_nodes)
+        if pkn.exact:
+            self.load_template_edge()
+            facts.append(":- X = #count { L,N,S: edge(L,N,S)}, \
+                            Y = #count { L,N,S: in(L,N,S)}, X != Y")
+        return facts
 
     def encode_data(self, data):
         facts = []
@@ -135,6 +140,13 @@ class ASPModel_DNF(object):
                     continue
                 facts.append(clingo.Function("obs", [k, n, s2v(b)]))
         return facts
+
+    @unique_usage
+    def load_template_edge(self):
+        rules = [
+            "edge(L,N,S) :- clause(N,_,L,S)"
+        ]
+        self.push(rules)
 
     @unique_usage
     def load_template_eval(self):

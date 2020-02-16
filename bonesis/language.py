@@ -80,6 +80,8 @@ class BonesisVar(BonesisTerm):
 class ObservationVar(BonesisVar):
     def __init__(self, name):
         super().__init__(name)
+    def publish(self):
+        self.mgr.register_observation(self)
     def __invert__(self):
         return self.iface.cfg(self.name, obs=self)
     def __pos__(self):
