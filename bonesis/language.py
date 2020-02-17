@@ -60,6 +60,10 @@ def reach_operator(left, right):
 def nonreach_operator(left, right):
     return left.iface.nonreach(left, right)
 
+@declare_operator("__ne__")
+def different_operator(left, right):
+    return left.iface.different(left, right)
+
 
 class BonesisTerm(object):
     def __init__(self):
@@ -90,6 +94,7 @@ class ObservationVar(BonesisVar):
         return f"Observation({repr(self.name)})"
 __language_api__["obs"] = ObservationVar
 
+@different_operator
 @reach_operator
 @nonreach_operator
 class ConfigurationVar(BonesisVar):
@@ -192,3 +197,11 @@ class nonreach(reach):
         if isinstance(arg, ObservationVar):
             celf.type_error() # universal constraint
         return super().right_arg(arg)
+
+@language_api
+class different(BonesisPredicate):
+    def __init__(self, left, right):
+        if not isinstance(left, ConfigurationVar) or \
+                not isinstance(right, ConfigurationVar):
+            self.type_error()
+        super().__init__(left, right)

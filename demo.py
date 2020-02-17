@@ -25,6 +25,7 @@ cfg2 = ~bo.obs(1)
 assert cfg2.name == 1
 cfg3 = +bo.obs(1)
 assert cfg3.name != 1
+cfg3 != cfg2
 
 defs = bo.load_code("""
 print(globals().keys())

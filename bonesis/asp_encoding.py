@@ -14,6 +14,9 @@ from .debug import dbg
 def s2v(s):
     return 1 if s > 0 else -1
 
+def clingo_encode(val):
+    return clingo.Function("", (val,)).arguments[0]
+
 def unique_usage(method):
     name = method.__name__
     def wrapper(self, *args, **kwargs):
@@ -225,6 +228,15 @@ class ASPModel_DNF(object):
     def encode_in_attractor(self, cfg):
         self.load_template_attractor()
         return [clingo.Function("is_at", (cfg.name,))]
+
+    def encode_different(self, cfg1, cfg2):
+        diff = clingo.Function("diff", (cfg1.name, cfg2.name))
+        c1 = clingo_encode(cfg1.name)
+        c2 = clingo_encode(cfg2.name)
+        return [
+            f"{diff} :- node(N), cfg({c1},N,V), cfg({c2},N,-V)",
+            f":- not {diff}"
+        ]
 
     show = {
         "boolean_network":
