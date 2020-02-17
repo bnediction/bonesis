@@ -20,6 +20,9 @@ setup(name=NAME,
     install_requires = [
         "boolean.py",
         "colomoto_jupyter",
+        "networkx",
+        "numpy",
+        "pandas",
     ],
     classifiers=[
         "Intended Audience :: Science/Research",

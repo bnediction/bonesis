@@ -5,6 +5,7 @@ import tempfile
 from boolean import boolean
 from colomoto import minibn
 from colomoto_jupyter import import_colomoto_tool
+from numpy.random import choice
 import networkx as nx
 import pandas as pd
 
@@ -48,6 +49,12 @@ def sign_of_label(label):
     raise ValueError(label)
 
 class InfluenceGraph(BonesisDomain, nx.MultiDiGraph):
+    _options = (
+        "allow_skipping_nodes",
+        "canonic",
+        "exact",
+        "maxclause",
+    )
     def __init__(self, graph,
             maxclause=None,
             allow_skipping_nodes=False,
@@ -64,6 +71,9 @@ class InfluenceGraph(BonesisDomain, nx.MultiDiGraph):
         return set([n for n,i in self.in_degree(self.nodes()) if i == 0])
     def unsource(self):
         self.add_edges_from([(n, n, {"sign": 1}) for n in self.sources()])
+
+    def max_indegree(self):
+        return max(dict(self.in_degree()).values())
 
     @classmethod
     def from_sif(celf, filename, sep="\\s+", unsource=True, **kwargs):
@@ -104,3 +114,18 @@ class InfluenceGraph(BonesisDomain, nx.MultiDiGraph):
         for i in range(n):
             g.add_edge(i, 0, sign=sign)
         return celf(g, **kwargs)
+
+    @classmethod
+    def scale_free(celf, n, p_pos=0.6, unsource=True, **kwargs):
+        scale_free_kwargs = dict([(k,v) for (k,v) in kwargs.items() \
+                if k not in celf._options])
+        celf_kwargs = dict([(k,v) for (k,v) in kwargs.items() \
+                if k in celf._options])
+        g = nx.DiGraph(nx.scale_free_graph(n, **scale_free_kwargs))
+        signs = choice([-1,1], size=len(g.edges()), p=[1-p_pos,p_pos])
+        for j, e in enumerate(g.edges(data=True)):
+            e[2]["sign"] = signs[j]
+        pkn = celf(g, **celf_kwargs)
+        if unsource:
+            pkn.unsource()
+        return pkn
