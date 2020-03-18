@@ -3,6 +3,8 @@ import clingo
 import os
 import tempfile
 
+import boolean
+
 from bonesis0.asp_encoding import *
 from bonesis0.utils import aspf
 from bonesis0.proxy_control import ProxyControl
@@ -114,6 +116,7 @@ class ASPModel_DNF(object):
             lits = c.args if isinstance(c, boolean.AND) else [c]
             return map(make_literal, lits)
         facts = []
+        facts.append(asp.Function("nbnode", [asp.Number(len(bn))]))
         for n, f in bn.items():
             facts.append(clingo.Function("node", [n]))
             for cid, c in enumerate(clauses_of_dnf(f)):
