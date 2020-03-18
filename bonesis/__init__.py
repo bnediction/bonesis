@@ -1,6 +1,4 @@
 
-__version__ = "0.0a0"
-
 import multiprocessing
 
 from colomoto import minibn
