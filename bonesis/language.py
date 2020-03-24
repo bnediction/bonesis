@@ -151,13 +151,6 @@ class fixed(BonesisPredicate):
             self.type_error()
         super().__init__(arg)
 
-@language_api
-class in_attractor(BonesisPredicate):
-    def __init__(self, arg):
-        if not isinstance(arg, ConfigurationVar):
-            self.type_error()
-        super().__init__(arg)
-
 @reach_operator
 @nonreach_operator
 @language_api

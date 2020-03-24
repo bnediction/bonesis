@@ -1,1 +1,1 @@
-recursive-include bonesis-asp *.asp
+recursive-include bonesis0/bonesis-asp *.asp

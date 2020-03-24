@@ -50,7 +50,6 @@ cfg0 >= bo.obs(1) # creates an anonymous configuration linked to obs(1)
 
 fixed(cfg2)
 cfg0 >= fixed(cfg2)
-in_attractor(cfg2)
 
 e = fixed(bo.obs(1))
 cfg0 >= e

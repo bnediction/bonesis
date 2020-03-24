@@ -21,6 +21,7 @@ setup(name=NAME,
     keywords="computational systems biology",
 
     include_package_data = True,
-    packages = find_packages()
+    packages = find_packages(),
+    package_data = {"bonesis0": ["bonesis-asp/*.asp"]}
 )
 
