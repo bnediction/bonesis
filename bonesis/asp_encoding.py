@@ -134,8 +134,7 @@ class ASPModel_DNF(object):
         facts = pkn_to_facts(pkn, pkn.maxclause, pkn.allow_skipping_nodes)
         if pkn.exact:
             self.load_template_edge()
-            facts.append(":- X = #count { L,N,S: edge(L,N,S)}, \
-                            Y = #count { L,N,S: in(L,N,S)}, X != Y")
+            facts.append(":- in(L,N,S), not edge(L,N,S)")
         return facts
 
     def encode_data(self, data):

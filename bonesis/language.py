@@ -56,7 +56,7 @@ def declare_operator(operator):
 def reach_operator(left, right):
     return left.iface.reach(left, right)
 
-@declare_operator("__floordiv__") # //
+@declare_operator("__truediv__") # /
 def nonreach_operator(left, right):
     return left.iface.nonreach(left, right)
 

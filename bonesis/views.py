@@ -65,6 +65,7 @@ class BooleanNetworksView(BonesisView):
         return minibn_of_facts(atoms)
 
 class DiverseBooleanNetworksView(BooleanNetworksView):
+    project = False
     def __init__(self, bo, driver="fraction",
             driver_kwargs=dict(pc_drive=50, pc_forget=50),
             skip_supersets=False,
