@@ -1,5 +1,6 @@
 
 from threading import Timer
+import time
 
 from .debug import dbg
 from .utils import OverlayedDict
@@ -7,11 +8,12 @@ from bonesis0.asp_encoding import minibn_of_facts
 from bonesis0 import diversity
 
 class BonesisView(object):
-    def __init__(self, bo, limit=0):
+    def __init__(self, bo, limit=0, quiet=False):
         self.bo = bo
         self.aspmodel = bo.aspmodel
         self.limit = limit
         self.settings = OverlayedDict(bo.settings)
+        self.quiet = quiet
 
     def configure(self, **opts):
         args = [self.limit]
@@ -20,7 +22,13 @@ class BonesisView(object):
         self.control = self.bo.solver(*args, settings=self.settings, **opts)
         self.interrupted = False
         self.configure_show()
+        if not self.quiet:
+            print("Grounding...", end="", flush=True)
+            start = time.process_time()
         self.control.ground([("base",[])])
+        if not self.quiet:
+            end = time.process_time()
+            print(f"done in {end-start:.1f}s")
 
     def configure_show(self):
         for tpl in self.show_templates:

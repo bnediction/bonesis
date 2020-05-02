@@ -1,5 +1,6 @@
 
 import random
+import time
 
 import clingo
 
@@ -91,6 +92,8 @@ class solve_diverse:
         self.control.ground([("skip", [])])
 
     def __iter__(self):
+        self.start_time = time.time()
+        self.first_time = None
         return self
 
     def __next__(self):
@@ -101,6 +104,14 @@ class solve_diverse:
             for model in solutions:
                 found = True
                 self.__counter += 1
+                now = time.time()
+                if self.first_time is None:
+                    self.first_time = now
+                elapsed = now-self.start_time
+                print("\rFound {} solutions in {:.1f}s (first in {:.1f}s; rate {:.1f}s)".format(
+                    self.__counter, elapsed,
+                    self.first_time-self.start_time,
+                    elapsed/self.__counter), end="", flush=True)
                 atoms = model.symbols(atoms=True)
                 obj = self.on_model(model)
                 self.driver.on_solution(atoms)

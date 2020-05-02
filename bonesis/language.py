@@ -56,6 +56,10 @@ def declare_operator(operator):
 def reach_operator(left, right):
     return left.iface.reach(left, right)
 
+@declare_operator("__rshift__") # >>
+def allreach_operator(left, right):
+    return left.iface.allreach(left, right)
+
 @declare_operator("__truediv__") # /
 def nonreach_operator(left, right):
     return left.iface.nonreach(left, right)
@@ -96,6 +100,7 @@ __language_api__["obs"] = ObservationVar
 
 @different_operator
 @reach_operator
+@allreach_operator
 @nonreach_operator
 class ConfigurationVar(BonesisVar):
     def __init__(self, name=None, obs=None):
@@ -151,15 +156,30 @@ class fixed(BonesisPredicate):
             self.type_error()
         super().__init__(arg)
 
-@reach_operator
-@nonreach_operator
 @language_api
-class reach(BonesisPredicate):
+class all_fixpoints(BonesisPredicate):
+    _unit_types = (ObservationVar,)
+    def __init__(self, arg):
+        if isinstance(arg, (set, list, tuple)):
+            for e in arg:
+                if not isinstance(e, self._unit_types):
+                    self.type_error()
+        elif isinstance(arg, self._unit_types):
+            arg = (arg,)
+        else:
+            self.type_error()
+        super().__init__(arg)
+
+@language_api
+class fixpoints_in(all_fixpoints):
+    pass
+
+@language_api
+class allreach(BonesisPredicate):
     """
     left: cfg, reach()
-    right: cfg, obs, reach(), fixed()
+    right: cfg, all_fixpoints()
     """
-
     @classmethod
     def left_arg(celf, arg):
         if isinstance(arg, ConfigurationVar):
@@ -167,7 +187,26 @@ class reach(BonesisPredicate):
         if isinstance(arg, reach):
             return celf.left_arg(arg.right())
         celf.type_error()
+    @classmethod
+    def right_arg(celf, arg):
+        if isinstance(arg, (ConfigurationVar, all_fixpoints)):
+            return arg
+        celf.type_error()
 
+    def __init__(self, left, right):
+        left = self.left_arg(left)
+        right = self.right_arg(right)
+        super().__init__(left, right)
+
+@reach_operator
+@allreach_operator
+@nonreach_operator
+@language_api
+class reach(allreach):
+    """
+    left: cfg, reach()
+    right: cfg, obs, reach(), fixed()
+    """
     @classmethod
     def right_arg(celf, arg):
         if isinstance(arg, ConfigurationVar):
@@ -178,10 +217,6 @@ class reach(BonesisPredicate):
             return celf.right_arg(arg.left())
         celf.type_error()
 
-    def __init__(self, left, right):
-        left = self.left_arg(left)
-        right = self.right_arg(right)
-        super().__init__(left, right)
 
 @language_api
 class nonreach(reach):

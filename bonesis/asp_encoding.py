@@ -191,6 +191,11 @@ class ASPModel_DNF(object):
         ]
         self.push(rules)
 
+    @unique_usage
+    def load_template_all_fixpoints(self):
+        self.load_template_fixpoint()
+        self.push_file(aspf("QBF-fixpoint.asp"))
+
     def encode_argument(self, arg):
         if isinstance(arg, ConfigurationVar):
             return arg.name
@@ -218,6 +223,11 @@ class ASPModel_DNF(object):
         self.load_template_trapspace()
         return [clingo.Function("is_tp", (cfg.name,n)) \
                     for n in self.data[cfg.obs.name]]
+
+    def encode_all_fixpoints(self, arg):
+        self.load_template_all_fixpoints()
+        return [clingo.Function("is_global_fp", ((clingo.Function("obs"), obs.name),))
+                for obs in arg]
 
     def encode_constant(self, node, b):
         return [clingo.Function("constant", (node, s2v(b)))]
