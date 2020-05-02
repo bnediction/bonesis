@@ -44,6 +44,15 @@ class ManagedIface(object):
         del self.recovery[sid]
 
 
+@language_api
+class mutant(object):
+    def __init__(self, mutations):
+        self.mutations = mutations
+    def __enter__(self):
+        return ManagedIface(self.mgr.mutant_context(self.mutations))
+    def __exit__(self, *args):
+        pass
+
 def declare_operator(operator):
     def decorator(func):
         def wrapper(K):
@@ -160,6 +169,8 @@ class fixed(BonesisPredicate):
 class all_fixpoints(BonesisPredicate):
     _unit_types = (ObservationVar,)
     def __init__(self, arg):
+        if hasattr(self.mgr, "mutations"):
+            raise TypeError(f"Cannot use {self.__class__.__name__} in a mutant context")
         if isinstance(arg, (set, list, tuple)):
             for e in arg:
                 if not isinstance(e, self._unit_types):
@@ -175,13 +186,14 @@ class all_attractors(all_fixpoints):
 
 @language_api
 class fixpoints_in(all_fixpoints):
-    pass
+    def publish(self):
+        pass
 
 @language_api
 class allreach(BonesisPredicate):
     """
     left: cfg, reach()
-    right: cfg, all_fixpoints()
+    right: obs, set([bs]), all_fixpoints()
     """
     @classmethod
     def left_arg(celf, arg):
@@ -192,7 +204,14 @@ class allreach(BonesisPredicate):
         celf.type_error()
     @classmethod
     def right_arg(celf, arg):
-        if isinstance(arg, (ConfigurationVar, all_fixpoints)):
+        if isinstance(arg, ObservationVar):
+            return {arg}
+        elif isinstance(arg, set):
+            for elt in arg:
+                if not isinstance(elt, ObservationVar):
+                    celf.type_error()
+            return arg
+        elif isinstance(arg, all_fixpoints):
             return arg
         celf.type_error()
 

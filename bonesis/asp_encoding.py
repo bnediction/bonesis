@@ -180,7 +180,9 @@ class ASPModel_DNF(object):
     @unique_usage
     def load_template_cfg(self):
         rules = [
-            "1 {cfg(X,N,(-1;1))} 1 :- cfg(X), node(N)"
+            "1 {cfg(X,N,(-1;1))} 1 :- cfg(X), node(N), not clamped(X,N,_)",
+            "cfg(X,N,V) :- cfg(X), node(N), clamped(X,N,V)",
+            "clamped(do_not_use,do_not_use,do_not_use).",
         ]
         self.push(rules)
 
@@ -238,6 +240,9 @@ class ASPModel_DNF(object):
         self.load_template_all_attractors()
         return [clingo.Function("is_global_at", ((clingo.Function("obs"), obs.name),))
                 for obs in arg]
+
+    def encode_clamped(self, cfg, node, b):
+        return [clingo.Function("clamped", (cfg.name, node, s2v(b)))]
 
     def encode_constant(self, node, b):
         return [clingo.Function("constant", (node, s2v(b)))]

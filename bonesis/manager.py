@@ -44,3 +44,21 @@ class BonesisManager(object):
             if isinstance(obj, BonesisTerm):
                 assert obj.mgr is self, "mixed managers"
         self.push_term(name, *args)
+
+    def mutant_context(self, mutations):
+        return _MutantManager(self, mutations)
+
+class _MutantManager(BonesisManager):
+    def __init__(self, parent, mutations):
+        self.bo = parent.bo
+        self.properties = parent.properties
+        self.observations = parent.observations
+        self.configurations = parent.configurations
+        self.mutations = mutations
+        self.managed_configurations = set()
+
+    def register_configuration(self, cfg):
+        super().register_configuration(cfg)
+        if cfg.name not in self.managed_configurations:
+            for n, v in self.mutations.items():
+                self.push_term("clamped", cfg, n, v)
