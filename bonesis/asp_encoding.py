@@ -182,7 +182,7 @@ class ASPModel_DNF(object):
         rules = [
             "1 {cfg(X,N,(-1;1))} 1 :- cfg(X), node(N), not clamped(X,N,_)",
             "cfg(X,N,V) :- cfg(X), node(N), clamped(X,N,V)",
-            "clamped(do_not_use,do_not_use,do_not_use).",
+            "clamped(do_not_use,do_not_use,do_not_use)",
         ]
         self.push(rules)
 
