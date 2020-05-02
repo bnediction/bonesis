@@ -98,6 +98,7 @@ class solve_diverse:
 
     def __next__(self):
         if self.limit and self.__counter >= self.limit:
+            print()
             raise StopIteration
         found = False
         with self.control.solve(yield_=True) as solutions:
@@ -117,6 +118,8 @@ class solve_diverse:
                 self.driver.on_solution(atoms)
                 break
         if not found:
+            if self.__counter:
+                print()
             raise StopIteration
         self.prepare_next(atoms)
         return obj
