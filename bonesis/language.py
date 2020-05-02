@@ -94,6 +94,7 @@ class BonesisVar(BonesisTerm):
     def publish(self):
         pass
 
+@allreach_operator
 class ObservationVar(BonesisVar):
     def __init__(self, name):
         super().__init__(name)
@@ -168,8 +169,9 @@ class fixed(BonesisPredicate):
 @language_api
 class all_fixpoints(BonesisPredicate):
     _unit_types = (ObservationVar,)
+    support_mutations = False
     def __init__(self, arg):
-        if hasattr(self.mgr, "mutations"):
+        if hasattr(self.mgr, "mutations") and not self.support_mutations:
             raise TypeError(f"Cannot use {self.__class__.__name__} in a mutant context")
         if isinstance(arg, (set, list, tuple)):
             for e in arg:
@@ -193,7 +195,7 @@ class fixpoints_in(all_fixpoints):
 class allreach(BonesisPredicate):
     """
     left: cfg, reach()
-    right: obs, set([bs]), all_fixpoints()
+    right: obs, set([bs]), fixpoints_in()
     """
     @classmethod
     def left_arg(celf, arg):
@@ -211,7 +213,7 @@ class allreach(BonesisPredicate):
                 if not isinstance(elt, ObservationVar):
                     celf.type_error()
             return arg
-        elif isinstance(arg, all_fixpoints):
+        elif isinstance(arg, fixpoints_in):
             return arg
         celf.type_error()
 

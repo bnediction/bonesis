@@ -10,7 +10,7 @@ from bonesis0.utils import aspf
 from bonesis0.proxy_control import ProxyControl
 from .domains import BooleanNetwork, InfluenceGraph
 
-from .language import ConfigurationVar
+from .language import *
 from .debug import dbg
 
 def s2v(s):
@@ -240,6 +240,9 @@ class ASPModel_DNF(object):
         self.load_template_all_attractors()
         return [clingo.Function("is_global_at", ((clingo.Function("obs"), obs.name),))
                 for obs in arg]
+
+    def encode_allreach(self, left, right):
+        raise NotImplementedError
 
     def encode_clamped(self, cfg, node, b):
         return [clingo.Function("clamped", (cfg.name, node, s2v(b)))]
