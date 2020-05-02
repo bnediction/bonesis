@@ -169,6 +169,9 @@ class all_fixpoints(BonesisPredicate):
         else:
             self.type_error()
         super().__init__(arg)
+@language_api
+class all_attractors(all_fixpoints):
+    pass
 
 @language_api
 class fixpoints_in(all_fixpoints):
