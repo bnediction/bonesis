@@ -1,5 +1,4 @@
 import bonesis
-import mpbn
 import pandas as pd
 
 from bonesis.language import *
@@ -18,8 +17,7 @@ print(bns.standalone())
 for bn in bns:
     print("-"*20)
     print(bn)
-    mbn = mpbn.MPBooleanNetwork(bn)
-    ait = mbn.attractors(reachable_from=data["x"])
+    ait = bn.attractors(reachable_from=data["x"])
     cols = list(sorted(data["y"].keys()))
     a = pd.DataFrame(ait)[cols].sort_values(by=cols).drop_duplicates()
     print(a)

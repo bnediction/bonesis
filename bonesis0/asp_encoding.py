@@ -5,6 +5,8 @@ from scipy.special import binom
 
 from functools import reduce
 
+from mpbn import MPBooleanNetwork
+
 
 def py_of_symbol(symb):
     if symb.type is asp.SymbolType.String:
@@ -75,10 +77,9 @@ def dnfs_of_facts(fs):
             bn[i] = v == 1
     return bn
 
-from colomoto.minibn import BooleanNetwork
 def minibn_of_facts(fs):
     dnfs = dnfs_of_facts(fs)
-    bn = BooleanNetwork()
+    bn = MPBooleanNetwork()
     def make_lit(l):
         s,v=l
         v = bn.v(v)

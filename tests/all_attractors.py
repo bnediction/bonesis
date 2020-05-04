@@ -1,5 +1,4 @@
 import bonesis
-import mpbn
 
 pkn = bonesis.InfluenceGraph.complete("abc", -1, loops=False)
 data = {
@@ -13,4 +12,4 @@ print(bns.standalone())
 for bn in bns:
     print("-"*20)
     print(bn)
-    print(list(mpbn.MPBooleanNetwork(bn).attractors()))
+    print(list(bn.attractors()))

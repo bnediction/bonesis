@@ -20,7 +20,6 @@ with bo.mutant({"c":1}) as mc:
         cfg >> mc.fixpoints_in({y})
 
 def validate(bn):
-    bn = MPBooleanNetwork(bn)
     print("# all fixpoints")
     fps = [a for a in bn.attractors() if '*' not in a.values()]
     print(pd.DataFrame(fps))
