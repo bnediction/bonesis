@@ -189,7 +189,7 @@ class ASPModel_DNF(object):
     @unique_usage
     def load_template_bind_cfg(self):
         rules = [
-            "cfg(X,N,V) :- bind_cfg(X,O), obs(O,N,V), node(N)"
+            "cfg(X,N,V) :- bind_cfg(X,O), obs(O,N,V), node(N), not clamped(X,N,_)"
         ]
         self.push(rules)
 
