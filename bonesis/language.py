@@ -220,8 +220,9 @@ class _ConfigurableBinaryPredicate(BonesisPredicate):
         super().__init__(left, right)
 
     def publish(self):
-        if self.closed:
-            self.mgr.register_predicate(self.predicate_name, self.options, *self.args)
+        if not self.closed:
+            return
+        self.mgr.register_predicate(self.predicate_name, self.options, *self.args)
 
     def __xor__(self, right):
         return self.__class__(self.left(), right, options=self.options)
@@ -237,7 +238,7 @@ class allreach(_ConfigurableBinaryPredicate):
     """
     @classmethod
     def left_arg(celf, arg):
-        if isinstance(arg, (ConfigurationVar, ObservationVar)):
+        if isinstance(arg, ConfigurationVar):
             return arg
         if isinstance(arg, reach):
             return celf.left_arg(arg.right())
@@ -258,11 +259,22 @@ class allreach(_ConfigurableBinaryPredicate):
 @allreach_operator
 @nonreach_operator
 @language_api
-class reach(allreach):
+class reach(BonesisPredicate):
     """
     left: cfg, reach()
     right: cfg, obs, reach(), fixed()
     """
+    def __init__(self, left, right):
+        left = self.left_arg(left)
+        right = self.right_arg(right)
+        super().__init__(left, right)
+    @classmethod
+    def left_arg(celf, arg):
+        if isinstance(arg, ConfigurationVar):
+            return arg
+        if isinstance(arg, reach):
+            return celf.left_arg(arg.right())
+        celf.type_error()
     @classmethod
     def right_arg(celf, arg):
         if isinstance(arg, ConfigurationVar):
