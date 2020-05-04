@@ -202,17 +202,38 @@ class all_fixpoints(BonesisPredicate):
 class all_attractors(all_fixpoints):
     pass
 
-@language_api
-class fixpoints_in(all_fixpoints):
-    support_mutations = True
+class _ConfigurableBinaryPredicate(BonesisPredicate):
+    def __init__(self, left, right, options=None):
+        left = self.left_arg(left)
+        self.options = self.default_options if options is None else options
+        self.closed = False
+        if isinstance(right, str):
+            self.options = (right,)
+        elif isinstance(right, tuple) and set({type(t) for t in right}) == {str}:
+            self.options = right
+        else:
+            self.closed = True
+            right = self.right_arg(right)
+        for opt in self.options:
+            if opt not in self.supported_options:
+                raise TypeError(f"unsupported option '{opt}'")
+        super().__init__(left, right)
+
     def publish(self):
-        pass
+        if self.closed:
+            self.mgr.register_predicate(self.predicate_name, self.options, *self.args)
+
+    def __xor__(self, right):
+        return self.__class__(self.left(), right, options=self.options)
+
 
 @language_api
-class allreach(BonesisPredicate):
+class allreach(_ConfigurableBinaryPredicate):
+    supported_options = {"fixpoints", "attractors_contain"}
+    default_options = ("attractors_contain",)
     """
     left: cfg, reach(), obs
-    right: obs, set([obs]), fixpoints_in()
+    right: obs, set([obs])
     """
     @classmethod
     def left_arg(celf, arg):
@@ -230,14 +251,8 @@ class allreach(BonesisPredicate):
                 if not isinstance(elt, ObservationVar):
                     celf.type_error()
             return arg
-        elif isinstance(arg, fixpoints_in):
-            return arg
         celf.type_error()
 
-    def __init__(self, left, right):
-        left = self.left_arg(left)
-        right = self.right_arg(right)
-        super().__init__(left, right)
 
 @reach_operator
 @allreach_operator

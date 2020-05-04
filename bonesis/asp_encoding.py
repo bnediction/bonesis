@@ -251,14 +251,15 @@ class ASPModel_DNF(object):
         return [clingo.Function("is_global_at", ((clingo.Function("obs"), obs.name),))
                 for obs in arg]
 
-    def encode_allreach(self, left, right):
-        if isinstance(right, fixpoints_in):
-            self.load_template_allreach_fixpoints()
-            right = right.args[0]
-            pred = "is_global_fp"
-        elif isinstance(right, set):
+    def encode_allreach(self, options, left, right):
+        if "attractors_contain" in options:
             self.load_template_allreach_attractors()
             pred = "is_global_at"
+        elif "fixpoints" in options:
+            self.load_template_allreach_fixpoints()
+            pred = "is_global_fp"
+        else:
+            raise TypeError(f"invalid options {options}")
         if isinstance(left, ConfigurationVar):
             left = {left}
         return [clingo.Function(pred, ((clingo.Function("obs"), obs.name), cfg.name))
