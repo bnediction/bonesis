@@ -54,11 +54,18 @@ class _MutantManager(BonesisManager):
         self.properties = parent.properties
         self.observations = parent.observations
         self.configurations = parent.configurations
-        self.mutations = mutations
+        self.parent = parent
+        self._mutations = mutations
         self.managed_configurations = set()
+
+    @property
+    def mutations(self):
+        m = dict(super().mutations or {})
+        m.update(self._mutations)
+        return m
 
     def register_configuration(self, cfg):
         super().register_configuration(cfg)
         if cfg.name not in self.managed_configurations:
-            for n, v in self.mutations.items():
+            for n, v in self._mutations.items():
                 self.push_term("clamped", cfg, n, v)

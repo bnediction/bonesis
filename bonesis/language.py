@@ -124,16 +124,24 @@ __language_api__["cfg"] = ConfigurationVar
 
 @language_api
 class BonesisPredicate(BonesisTerm):
+    support_mutations = True
     def __init__(self, *args):
         self.args = args
         if not hasattr(self, "predicate_name"):
             self.predicate_name = self.__class__.__name__
-        for obj in self.args:
+        def auto_iface(obj):
             if isinstance(obj, BonesisTerm):
                 if not hasattr(self, "iface"):
                     self._set_iface(obj.iface)
                 else:
                     assert obj.iface is self.iface, "mixed managers"
+            elif isinstance(obj, (list, set, tuple)):
+                [auto_iface(e) for e in obj]
+        for obj in self.args:
+            auto_iface(obj)
+        assert hasattr(self, "mgr"), "Could not find manager"
+        if hasattr(self.mgr, "mutations") and not self.support_mutations:
+            raise TypeError(f"Cannot use {self.__class__.__name__} in a mutant context")
         super().__init__()
         self.publish()
     @classmethod
@@ -171,8 +179,6 @@ class all_fixpoints(BonesisPredicate):
     _unit_types = (ObservationVar,)
     support_mutations = False
     def __init__(self, arg):
-        if hasattr(self.mgr, "mutations") and not self.support_mutations:
-            raise TypeError(f"Cannot use {self.__class__.__name__} in a mutant context")
         if isinstance(arg, (set, list, tuple)):
             for e in arg:
                 if not isinstance(e, self._unit_types):
@@ -188,18 +194,19 @@ class all_attractors(all_fixpoints):
 
 @language_api
 class fixpoints_in(all_fixpoints):
+    support_mutations = True
     def publish(self):
         pass
 
 @language_api
 class allreach(BonesisPredicate):
     """
-    left: cfg, reach()
-    right: obs, set([bs]), fixpoints_in()
+    left: cfg, reach(), obs
+    right: obs, set([obs]), fixpoints_in()
     """
     @classmethod
     def left_arg(celf, arg):
-        if isinstance(arg, ConfigurationVar):
+        if isinstance(arg, (ConfigurationVar, ObservationVar)):
             return arg
         if isinstance(arg, reach):
             return celf.left_arg(arg.right())

@@ -180,7 +180,7 @@ class ASPModel_DNF(object):
     @unique_usage
     def load_template_cfg(self):
         rules = [
-            "1 {cfg(X,N,(-1;1))} 1 :- cfg(X), node(N), not clamped(X,N,_)",
+            "1 {cfg(X,N,(-1;1))} 1 :- cfg(X), node(N)",
             "cfg(X,N,V) :- cfg(X), node(N), clamped(X,N,V)",
             "clamped(do_not_use,do_not_use,do_not_use)",
         ]
@@ -202,6 +202,16 @@ class ASPModel_DNF(object):
     def load_template_all_attractors(self):
         self.load_template_eval()
         self.push_file(aspf("QBF-attractor.asp"))
+
+    @unique_usage
+    def load_template_allreach_fixpoints(self):
+        self.load_template_eval()
+        self.push_file(aspf("QBF-reachable-fixpoint.asp"))
+
+    @unique_usage
+    def load_template_allreach_attractors(self):
+        self.load_template_eval()
+        self.push_file(aspf("QBF-reachable-attractor.asp"))
 
     def encode_argument(self, arg):
         if isinstance(arg, ConfigurationVar):
@@ -242,7 +252,17 @@ class ASPModel_DNF(object):
                 for obs in arg]
 
     def encode_allreach(self, left, right):
-        raise NotImplementedError
+        if isinstance(right, fixpoints_in):
+            self.load_template_allreach_fixpoints()
+            right = right.args[0]
+            pred = "is_global_fp"
+        elif isinstance(right, set):
+            self.load_template_allreach_attractors()
+            pred = "is_global_at"
+        if isinstance(left, ConfigurationVar):
+            left = {left}
+        return [clingo.Function(pred, ((clingo.Function("obs"), obs.name), cfg.name))
+                    for obs in right for cfg in left]
 
     def encode_clamped(self, cfg, node, b):
         return [clingo.Function("clamped", (cfg.name, node, s2v(b)))]
