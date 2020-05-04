@@ -195,7 +195,7 @@ class ASPModel_DNF(object):
 
     @unique_usage
     def load_template_all_fixpoints(self):
-        self.load_template_fixpoint()
+        self.load_template_eval()
         self.push_file(aspf("QBF-fixpoint.asp"))
 
     @unique_usage

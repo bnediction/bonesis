@@ -64,8 +64,9 @@ class _MutantManager(BonesisManager):
 
     @property
     def mutations(self):
-        m = dict(super().mutations or {})
-        m.update(self._mutations)
+        m = self._mutations.copy()
+        if hasattr(self.parent, "mutations"):
+            m.update(self.parent.mutations)
         return m
 
     def register_configuration(self, cfg):

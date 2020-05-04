@@ -9,6 +9,7 @@ from .debug import *
 from .domains import *
 from .language import ManagedIface
 from .manager import BonesisManager
+from .snippets import *
 from .utils import OverlayedDict
 from .views import *
 

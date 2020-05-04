@@ -9,7 +9,8 @@ cfg((_z_,S),N,-1) ; cfg((_z_,S),N,1) :- node(N), is_global_fp(_,S), not clamped(
 
 % Check properties:
 %% Extension of perturbations for the evaluations below:
-2 {clamped((fp,S),N,V); clamped((_z_,S),N,V)} 2 :- clamped(S,N,V); is_global_fp(_,S).
+4 { clamped((fp,S),N,V); cfg((fp,S),N,V);
+    clamped((_z_,S),N,V); cfg((_z_,S),N,V) } 4 :- clamped(S,N,V); is_global_fp(_,S).
 
 %% Either the configuration _z_ is non reachable from S:
 mcfg((fp,S),N,V) :- cfg(S,N,V), is_global_fp(_,S).

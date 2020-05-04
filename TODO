@@ -1,4 +1,4 @@
-## Milestone 1
+## Milestone +1
 
 Views:
 - bn with projections on nodes
@@ -15,14 +15,17 @@ Tests
 
 Jupyter menu
 
-## Milestone 2
+## Milestone +2
 
-- properties under mutations
-- infer mutations
+- direct obs/cfg specifications (no need of data)
 
 Views:
 - diversity with project
 - diversity "try hard"
 - nodes
 - raw in files (with resume)
+
+## Milestone +3
+
+- infer mutations
 
