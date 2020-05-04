@@ -1,4 +1,5 @@
 mcfg((pr,X,Y),N,V) :- reach(X,Y), cfg(X,N,V).
+clamped((pr,X,Y),N,V) :- reach(X,Y), clamped(X,N,V).
 ext((pr,X,Y),N,V) :- reach(X,Y), eval((pr,X,Y),N,V), cfg(Y,N,V),
                         not locked((pr,X,Y),N).
 {ext((pr,X,Y),N,V)} :- reach(X,Y), eval((pr,X,Y),N,V), cfg(Y,N,-V),
