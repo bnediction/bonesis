@@ -10,6 +10,10 @@ class BonesisManager(object):
         self.observations = set()
         self.configurations = set()
 
+    def assert_node_exists(self, node, assertion=KeyError):
+        if not node in self.bo.domain:
+            raise assertion(node)
+
     def push(self, rule):
         self.properties.append(rule)
 

@@ -264,6 +264,9 @@ class ASPModel_DNF(object):
         return [clingo.Function(pred, ((clingo.Function("obs"), obs.name), cfg.name))
                     for obs in right for cfg in left]
 
+    def encode_cfg_assign(self, cfg, node, b):
+        return [clingo.Function("cfg", (cfg.name, node, s2v(b)))]
+
     def encode_clamped(self, cfg, node, b):
         return [clingo.Function("clamped", (cfg.name, node, s2v(b)))]
 
