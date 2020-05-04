@@ -19,12 +19,12 @@ class BonesisView(object):
         args = [self.limit]
         if self.project:
             args.append("--project")
-        self.control = self.bo.solver(*args, settings=self.settings, **opts)
-        self.interrupted = False
-        self.configure_show()
         if not self.quiet:
             print("Grounding...", end="", flush=True)
             start = time.process_time()
+        self.control = self.bo.solver(*args, settings=self.settings, **opts)
+        self.interrupted = False
+        self.configure_show()
         self.control.ground([("base",[])])
         if not self.quiet:
             end = time.process_time()
