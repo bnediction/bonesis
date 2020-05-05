@@ -15,18 +15,20 @@ class BonesisView(object):
         self.settings = OverlayedDict(bo.settings)
         self.quiet = quiet
 
-    def configure(self, **opts):
+    def configure(self, ground=True, **opts):
         args = [self.limit]
         if self.project:
             args.append("--project")
-        if not self.quiet:
+        if not self.quiet and ground:
             print("Grounding...", end="", flush=True)
             start = time.process_time()
-        self.control = self.bo.solver(*args, settings=self.settings, **opts)
+        self.control = self.bo.solver(*args, settings=self.settings,
+                ground=ground, **opts)
         self.interrupted = False
         self.configure_show()
-        self.control.ground([("base",[])])
-        if not self.quiet:
+        if ground:
+            self.control.ground([("base",[])])
+        if ground and not self.quiet:
             end = time.process_time()
             print(f"done in {end-start:.1f}s")
 

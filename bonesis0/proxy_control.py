@@ -16,7 +16,7 @@ class ProxyControl(object):
 
     def standalone(self, clingo_prog="clingo", custom_arguments=[],
                         output_filename=None):
-        content = "#!/bin/sh\n%s %s - <<EOF\n%s\nEOF\n" % (clingo_prog, \
+        content = "#!/usr/bin/env bash\n%s %s \"${@}\" - <<EOF\n%s\nEOF\n" % (clingo_prog, \
             " ".join(self.cmdline_arguments+custom_arguments), self.input)
         if not output_filename:
             return content
