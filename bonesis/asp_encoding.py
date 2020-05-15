@@ -43,7 +43,7 @@ class ASPModel_DNF(object):
     def solver(self, *args, ground=True, settings={}, **kwargs):
         arguments = []
         arguments.extend(settings.get("clingo_options", ()))
-        if "parallel" in settings:
+        if settings.get("parallel"):
             arguments += ["-t", settings["parallel"]]
         arguments.extend(args)
         arguments += [f"-c {const}={repr(value)}" for (const, value) \
@@ -124,7 +124,7 @@ class ASPModel_DNF(object):
                     facts.append(clingo.Function("constant", [n, s2v(c)]))
                 else:
                     for m, v in literals_of_clause(c):
-                        facts.append(clingo.Function("clause", [n, cid,m, v]))
+                        facts.append(clingo.Function("clause", [n, cid+1, m, v]))
         return facts
 
     def encode_domain_InfluenceGraph(self, pkn):
