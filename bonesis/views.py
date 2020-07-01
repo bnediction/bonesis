@@ -23,11 +23,11 @@ class BonesisView(object):
             print("Grounding...", end="", flush=True)
             start = time.process_time()
         self.control = self.bo.solver(*args, settings=self.settings,
-                ground=ground, **opts)
+                ground=False, **opts)
         self.interrupted = False
         self.configure_show()
         if ground:
-            self.control.ground([("base",[])])
+            self.control.ground([("base",())])
         if ground and not self.quiet:
             end = time.process_time()
             print(f"done in {end-start:.1f}s")
