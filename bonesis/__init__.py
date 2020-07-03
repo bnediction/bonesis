@@ -40,7 +40,7 @@ class BoNesis(object):
         self.iface.install(self)
 
     def set_constant(self, cst, value):
-        self.aspmodel.constant[cst] = value
+        self.aspmodel.constants[cst] = value
 
     def install_language(self, scope):
         self.iface.install(scope)
