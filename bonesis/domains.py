@@ -27,6 +27,11 @@ class BooleanNetwork(BonesisDomain, minibn.BooleanNetwork):
         for n, f in bn.items():
             self[n] = self.ba.dnf(f).simplify()
 
+label_map = {
+    1: "+",
+    -1: "-",
+    0: "?"
+}
 sign_map = {
     "->": 1,
     "-|": -1,
@@ -59,18 +64,25 @@ class InfluenceGraph(BonesisDomain, nx.MultiDiGraph):
             maxclause=None,
             allow_skipping_nodes=False,
             canonic=True,
-            exact=False):
+            exact=False,
+            autolabel=True):
         nx.MultiDiGraph.__init__(self, graph)
         # TODO: ensures graph is well-formed
         self.maxclause = maxclause
         self.allow_skipping_nodes = allow_skipping_nodes
         self.canonic = canonic
         self.exact = exact
+        if autolabel:
+            for a, b, data in self.edges(data=True):
+                if "label" not in data:
+                    l = label_map.get(data.get("sign"))
+                    if l:
+                        data["label"] = l
 
     def sources(self):
         return set([n for n,i in self.in_degree(self.nodes()) if i == 0])
     def unsource(self):
-        self.add_edges_from([(n, n, {"sign": 1}) for n in self.sources()])
+        self.add_edges_from([(n, n, {"sign": 1, "label": "+"}) for n in self.sources()])
 
     def max_indegree(self):
         return max(dict(self.in_degree()).values())
