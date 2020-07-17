@@ -283,6 +283,9 @@ class ASPModel_DNF(object):
             f":- not {diff}"
         ]
 
+    def encode_custom(self, code):
+        return [code.strip().rstrip(".")]
+
     show = {
         "boolean_network":
             ["clause/4", "constant/2"],

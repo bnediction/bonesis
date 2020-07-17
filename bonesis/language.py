@@ -301,3 +301,10 @@ class different(BonesisPredicate):
                 not isinstance(right, ConfigurationVar):
             self.type_error()
         super().__init__(left, right)
+
+@language_api
+class custom(BonesisPredicate):
+    def __init__(self, arg):
+        if not isinstance(arg, str):
+            self.type_error()
+        super().__init__(arg)
