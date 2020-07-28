@@ -38,6 +38,7 @@ class ASPModel_DNF(object):
         self.properties = properties
         self.constants = self.__class__.default_constants.copy()
         self.constants.update(constants)
+        self.ba = boolean.BooleanAlgebra()
         self._silenced = set()
 
     def solver(self, *args, ground=True, settings={}, **kwargs):
@@ -97,11 +98,11 @@ class ASPModel_DNF(object):
             return self.encode_domain_InfluenceGraph(domain)
         raise TypeError(f"I don't know what to do with {type(domain)}")
 
-    def encode_domain_BooleanNetwork(self, bn):
+    def encode_BooleanFunction(self, n, f, ensure_dnf=True):
         def clauses_of_dnf(f):
-            if f == bn.ba.FALSE:
+            if f == self.ba.FALSE:
                 return [False]
-            if f == bn.ba.TRUE:
+            if f == self.ba.TRUE:
                 return [True]
             if isinstance(f, boolean.OR):
                 return f.args
@@ -116,15 +117,23 @@ class ASPModel_DNF(object):
             lits = c.args if isinstance(c, boolean.AND) else [c]
             return map(make_literal, lits)
         facts = []
+        if ensure_dnf:
+            f = self.ba.dnf(f).simplify()
+        for cid, c in enumerate(clauses_of_dnf(f)):
+            if isinstance(c, bool):
+                facts.append(clingo.Function("constant", [n, s2v(c)]))
+            else:
+                for m, v in literals_of_clause(c):
+                    facts.append(clingo.Function("clause", [n, cid+1, m, v]))
+        return facts
+
+    def encode_domain_BooleanNetwork(self, bn):
+        self.ba = bn.ba
+        facts = []
         facts.append(asp.Function("nbnode", [asp.Number(len(bn))]))
         for n, f in bn.items():
             facts.append(clingo.Function("node", [n]))
-            for cid, c in enumerate(clauses_of_dnf(f)):
-                if isinstance(c, bool):
-                    facts.append(clingo.Function("constant", [n, s2v(c)]))
-                else:
-                    for m, v in literals_of_clause(c):
-                        facts.append(clingo.Function("clause", [n, cid+1, m, v]))
+            facts += self.encode_BooleanFunction(n, f, ensure_dnf=False)
         return facts
 
     def encode_domain_InfluenceGraph(self, pkn):
