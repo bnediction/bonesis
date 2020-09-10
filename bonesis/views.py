@@ -4,14 +4,15 @@ import time
 
 from .debug import dbg
 from .utils import OverlayedDict
-from bonesis0.asp_encoding import minibn_of_facts
+from bonesis0.asp_encoding import minibn_of_facts, py_of_symbol
 from bonesis0 import diversity
 
 class BonesisView(object):
-    def __init__(self, bo, limit=0, quiet=False):
+    def __init__(self, bo, limit=0, quiet=False, mode="solve"):
         self.bo = bo
         self.aspmodel = bo.aspmodel
         self.limit = limit
+        self.mode = mode
         self.settings = OverlayedDict(bo.settings)
         self.quiet = quiet
 
@@ -19,6 +20,8 @@ class BonesisView(object):
         args = [self.limit]
         if self.project:
             args.append("--project")
+        if self.mode == "optN":
+            args += ["--opt-mode=optN", "--opt-strategy=usc"]
         if not self.quiet and ground:
             print("Grounding...", end="", flush=True)
             start = time.process_time()
@@ -54,6 +57,9 @@ class BonesisView(object):
             self.cur_model = next(self._iterator)
         finally:
             t.cancel() if t is not None else None
+        if self.mode == "optN":
+            if not self.cur_model.optimality_proven:
+                return next(self)
         return self.format_model(self.cur_model)
 
     def count(self):
@@ -66,6 +72,14 @@ class BonesisView(object):
     def standalone(self, *args, **kwargs):
         self.configure(ground=False)
         return self.control.standalone(*args, **kwargs)
+
+class NodesView(BonesisView):
+    project = True
+    show_templates = ["node"]
+    def format_model(self, model):
+        atoms = model.symbols(shown=True)
+        return {py_of_symbol(a.arguments[0]) for a in atoms\
+                    if a.name == "node"}
 
 class BooleanNetworksView(BonesisView):
     project = True
