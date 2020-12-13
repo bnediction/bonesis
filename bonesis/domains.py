@@ -60,7 +60,7 @@ class InfluenceGraph(BonesisDomain, nx.MultiDiGraph):
         "exact",
         "maxclause",
     )
-    def __init__(self, graph,
+    def __init__(self, graph=None,
             maxclause=None,
             allow_skipping_nodes=False,
             canonic=True,
