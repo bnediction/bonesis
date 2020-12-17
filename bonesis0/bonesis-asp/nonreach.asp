@@ -1,19 +1,20 @@
-%% maxreach iterations to check the neg reach
-#const bounded_nonreach=-1.
-iter(1..bounded_nonreach) :- bounded_nonreach >= 0.
-iter(1..M) :- bounded_nonreach < 0, nbnode(M).
-:- locked(X,Y,bounded_nonreach,N); not locked(X,Y,bounded_nonreach-1,N);
-    bounded_nonreach < M; nbnode(M); bounded_nonreach >= 0.
+mcfg((nr,X,Y,1..K),N,V) :- nonreach(X,Y,K), cfg(X,N,V).
+clamped((nr,X,Y,1..K),N,V) :- nonreach(X,Y,K), clamped(X,N,V).
 
-locked(X,Y,I+1,N) :- cfg(X,N,V); cfg(Y,N,V); iter(I+1);
-                        ext((nr,X,Y,I),N,-V); not ext((nr,X,Y,I),N,V).
-locked(X,Y,I+1,N) :- locked(X,Y,I,N), iter(I+1).
+ext((nr,X,Y,I),N,V) :- eval((nr,X,Y,I),N,V), not locked((nr,X,Y,I),N).
 
-mcfg((nr,X,Y,I),N,V) :- nonreach(X,Y); cfg(X,N,V); iter(I).
-clamped((nr,X,Y,I),N,V) :- nonreach(X,Y); clamped(X,N,V); iter(I).
-ext((nr,X,Y,I),N,V) :- eval((nr,X,Y,I),N,V); not locked(X,Y,I,N).
-nr_ok(X,Y) :- nonreach(X,Y); cfg(Y,N,V); not mcfg((nr,X,Y,K),N,V); nbnode(K);
-    bounded_nonreach < 0.
-nr_ok(X,Y) :- nonreach(X,Y); cfg(Y,N,V); not mcfg((nr,X,Y,bounded_nonreach),N,V);
-    bounded_nonreach >= 0.
-:- not nr_ok(X,Y), nonreach(X,Y).
+nr_bad(X,Y,I,N) :- cfg(X,N,V), cfg(Y,N,V),
+                    ext((nr,X,Y,I),N,-V), not ext((nr,X,Y,I),N,V).
+locked((nr,X,Y,I+1..K),N) :- nr_bad(X,Y,I,N), nonreach(X,Y,K), I < K.
+
+% K is too small
+nr_overflow(X,Y) :- nonreach(X,Y,K), not nr_ok(X,Y), nbnode(M), K < M, nr_bad(X,Y,K,_).
+:- nr_overflow(X,Y).
+
+nr_ok(X,Y) :- nonreach(X,Y,K), cfg(Y,N,V), not mcfg((nr,X,Y,K),N,V).
+:- nonreach(X,Y,K), not nr_ok(X,Y).
+
+#const bounded_nonreach=0.
+nonreach(X,Y,K) :- nonreach(X,Y), cfg(X,_,_), cfg(Y,_,_), nbnode(K), bounded_nonreach <= 0.
+nonreach(X,Y,bounded_nonreach) :- nonreach(X,Y), cfg(X,_,_), cfg(Y,_,_), bounded_nonreach > 0.
+nonreach(_bofake,_bofake).

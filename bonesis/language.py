@@ -73,7 +73,11 @@ def allreach_operator(left, right):
 def nonreach_operator(left, right):
     return left.iface.nonreach(left, right)
 
-@declare_operator("__ne__")
+@declare_operator("__floordiv__") # //
+def final_nonreach_operator(left, right):
+    return left.iface.final_nonreach(left, right)
+
+@declare_operator("__ne__") # !=
 def different_operator(left, right):
     return left.iface.different(left, right)
 
@@ -86,6 +90,14 @@ class BonesisTerm(object):
         self.iface = iface
         self.mgr = self.iface.manager
 
+    def __ge__(a, b):
+        raise TypeError(f"'{a.__class__.__name__}' objects do not support '>=' operator")
+    def __rshift__(a, b):
+        raise TypeError(f"'{a.__class__.__name__}' objects do not support '>>' operator")
+    def __truediv__(a, b):
+        raise TypeError(f"'{a.__class__.__name__}' objects do not support '/' operator")
+    def __floordiv__(a, b):
+        raise TypeError(f"'{a.__class__.__name__}' objects do not support '//' operator")
     def __ne__(a, b):
         raise TypeError(f"'{a.__class__.__name__}' objects do not support '!=' operator")
 
@@ -115,6 +127,7 @@ __language_api__["obs"] = ObservationVar
 @reach_operator
 @allreach_operator
 @nonreach_operator
+@final_nonreach_operator
 class ConfigurationVar(BonesisVar):
     def __init__(self, name=None, obs=None):
         self.obs = obs
@@ -262,6 +275,7 @@ class allreach(_ConfigurableBinaryPredicate):
 @reach_operator
 @allreach_operator
 @nonreach_operator
+@final_nonreach_operator
 @language_api
 class reach(BonesisPredicate):
     """
@@ -292,11 +306,22 @@ class reach(BonesisPredicate):
 
 @language_api
 class nonreach(reach):
+    def __init__(self, left, right):
+        if isinstance(right, fixed):
+            self.predicate_name = "final_nonreach"
+        super().__init__(left, right)
     @classmethod
     def right_arg(celf, arg):
         if isinstance(arg, ObservationVar):
             celf.type_error() # universal constraint
         return super().right_arg(arg)
+
+@language_api
+class final_nonreach(nonreach):
+    def __init__(self, left, right):
+        if not isinstance(right, fixed):
+            self.type_error()
+        super().__init__(left, right)
 
 @language_api
 class different(BonesisPredicate):

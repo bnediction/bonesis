@@ -177,6 +177,14 @@ class ASPModel_DNF(object):
         self.push_file(aspf("nonreach.asp"))
 
     @unique_usage
+    def load_template_final_nonreach(self):
+        self.load_template_nonreach()
+        rules = [
+            "nonreach(X,Y,1) :- final_nonreach(X,Y)",
+        ]
+        self.push(rules)
+
+    @unique_usage
     def load_template_fixpoint(self):
         self.load_template_eval()
         self.push_file(aspf("fixpoint.asp"))
