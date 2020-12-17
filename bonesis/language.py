@@ -86,6 +86,9 @@ class BonesisTerm(object):
         self.iface = iface
         self.mgr = self.iface.manager
 
+    def __ne__(a, b):
+        raise TypeError(f"'{a.__class__.__name__}' objects do not support '!=' operator")
+
 class BonesisVar(BonesisTerm):
     def __init__(self, name):
         super().__init__()
@@ -173,6 +176,7 @@ class constant(BonesisPredicate):
         assert node in self.mgr.bo.domain
 
 @language_api
+@different_operator
 class fixed(BonesisPredicate):
     def __init__(self, arg):
         if isinstance(arg, ConfigurationVar):
@@ -296,7 +300,19 @@ class nonreach(reach):
 
 @language_api
 class different(BonesisPredicate):
+    """
+    left: cfg, fixed()
+    right: cfg, fixed()
+    """
     def __init__(self, left, right):
+        if isinstance(left, fixed):
+            if left.predicate_name != "fixpoint":
+                self.type_error()
+            left = left.left()
+        if isinstance(right, fixed):
+            if right.predicate_name != "fixpoint":
+                self.type_error()
+            right = right.right()
         if not isinstance(left, ConfigurationVar) or \
                 not isinstance(right, ConfigurationVar):
             self.type_error()
