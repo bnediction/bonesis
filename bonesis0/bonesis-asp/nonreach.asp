@@ -8,8 +8,7 @@ nr_bad(X,Y,I,N) :- cfg(X,N,V), cfg(Y,N,V),
 locked((nr,X,Y,I+1..K),N) :- nr_bad(X,Y,I,N), nonreach(X,Y,K), I < K.
 
 % K is too small
-nr_overflow(X,Y) :- nonreach(X,Y,K), not nr_ok(X,Y), nbnode(M), K < M, nr_bad(X,Y,K,_).
-:- nr_overflow(X,Y).
+%nr_overflow(X,Y) :- nonreach(X,Y,K), nbnode(M), K < M, nr_bad(X,Y,K,_).
 
 nr_ok(X,Y) :- nonreach(X,Y,K), cfg(Y,N,V), not mcfg((nr,X,Y,K),N,V).
 :- nonreach(X,Y,K), not nr_ok(X,Y).
