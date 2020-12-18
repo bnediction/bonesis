@@ -14,6 +14,7 @@ setup(name=NAME,
         "networkx",
         "numpy",
         "pandas",
+        "scipy",
     ],
     classifiers=[
         "Intended Audience :: Science/Research",
