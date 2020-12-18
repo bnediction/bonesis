@@ -30,7 +30,7 @@ def unique_usage(method):
 
 class ASPModel_DNF(object):
     default_constants = {
-        "bounded_nonreach": 3,
+        "bounded_nonreach": 0,
     }
     def __init__(self, domain, data, properties, **constants):
         self.domain = domain
