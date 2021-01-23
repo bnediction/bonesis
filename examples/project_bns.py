@@ -23,6 +23,7 @@ for node in ["a","b"]:
 
 print(functions.as_dict())
 print(functions.as_dict("count"))
+print(functions.as_dict("count", keys="ab"))
 
 dom = bonesis.InfluenceGraph.complete("ab", loops=False,
         allow_skipping_nodes=True)

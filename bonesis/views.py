@@ -163,12 +163,13 @@ class LocalFunctionsViews(ProjectedBooleanNetworksViews):
         "list": list,
         "count": lambda v: v.count(),
     }
-    def as_dict(self, method="list"):
+    def as_dict(self, method="list", keys=None):
         if method not in self.do:
             raise ValueError("unknown method")
         func = self.do[method]
         d = {}
-        for n in self.bo.domain:
+        nodes = self.bo.domain if keys is None else keys
+        for n in nodes:
             with self.view(n) as fs:
                 d[n] = func(fs)
         return d
