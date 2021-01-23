@@ -11,14 +11,14 @@ from bonesis0 import diversity
 
 
 class BonesisView(object):
-    def __init__(self, bo, limit=0, quiet=False, mode="solve",
-                    solutions="all"):
+    def __init__(self, bo, limit=0, quiet=False, mode="solve", **settings):
         self.bo = bo
         self.aspmodel = bo.aspmodel
         self.limit = limit
         self.mode = mode
-        self.solutions = solutions
         self.settings = OverlayedDict(bo.settings)
+        for k,v in settings.items():
+            self.settings[k] = v
         self.quiet = quiet
 
     def configure(self, ground=True, **opts):
@@ -27,7 +27,7 @@ class BonesisView(object):
             args.append("--project")
         if self.mode == "optN":
             args += ["--opt-mode=optN", "--opt-strategy=usc"]
-        if self.solutions == "subset-minimal":
+        if self.settings["solutions"] == "subset-minimal":
             args += ["--heuristic", "Domain",
                     "--enum-mode", "domRec", "--dom-mod", "5,16"]
         if not self.quiet and ground:

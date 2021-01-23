@@ -18,6 +18,7 @@ __language_api__ = ["obs", "cfg"]
 settings = {
     "parallel": multiprocessing.cpu_count(),
     "clingo_options": (),
+    "solutions": "all",
 }
 
 class BoNesis(object):
