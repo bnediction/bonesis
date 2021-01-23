@@ -1,18 +1,23 @@
 
-from threading import Timer
+from threading import Timer, Lock
 import time
+
+import clingo
 
 from .debug import dbg
 from .utils import OverlayedDict
 from bonesis0.asp_encoding import minibn_of_facts, py_of_symbol
 from bonesis0 import diversity
 
+
 class BonesisView(object):
-    def __init__(self, bo, limit=0, quiet=False, mode="solve"):
+    def __init__(self, bo, limit=0, quiet=False, mode="solve",
+                    solutions="all"):
         self.bo = bo
         self.aspmodel = bo.aspmodel
         self.limit = limit
         self.mode = mode
+        self.solutions = solutions
         self.settings = OverlayedDict(bo.settings)
         self.quiet = quiet
 
@@ -22,6 +27,9 @@ class BonesisView(object):
             args.append("--project")
         if self.mode == "optN":
             args += ["--opt-mode=optN", "--opt-strategy=usc"]
+        if self.solutions == "subset-minimal":
+            args += ["--heuristic", "Domain",
+                    "--enum-mode", "domRec", "--dom-mod", "5,16"]
         if not self.quiet and ground:
             print("Grounding...", end="", flush=True)
             start = time.process_time()
@@ -73,13 +81,14 @@ class BonesisView(object):
         self.configure(ground=False)
         return self.control.standalone(*args, **kwargs)
 
+
 class NodesView(BonesisView):
     project = True
-    show_templates = ["node"]
     def format_model(self, model):
         atoms = model.symbols(shown=True)
         return {py_of_symbol(a.arguments[0]) for a in atoms\
                     if a.name == "node"}
+
 
 class BooleanNetworksView(BonesisView):
     project = True
@@ -87,6 +96,83 @@ class BooleanNetworksView(BonesisView):
     def format_model(self, model):
         atoms = model.symbols(shown=True)
         return minibn_of_facts(atoms)
+
+
+class ProjectedBooleanNetworksView(object):
+    def __init__(self, parent_view, nodes):
+        self.parent = parent_view
+        self.nodes = nodes
+        self.externals = [clingo.Function("myshow", [clingo.String(n)])\
+                for n in self.nodes]
+
+    def __enter__(self):
+        self.parent.acquire()
+        for e in self.externals:
+            self.parent.control.assign_external(e, True)
+        return self.parent
+
+    def __exit__(self, *args):
+        for e in self.externals:
+            self.parent.control.assign_external(e, False)
+        self.parent.release()
+
+
+class ProjectedBooleanNetworksViews(BooleanNetworksView):
+    def __init__(self, *args, skip_empty=False, ground=True, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.skip_empty = skip_empty
+        super().configure(ground=ground)
+        self.lock = Lock()
+
+    def acquire(self):
+        return self.lock.acquire(False)
+    def release(self):
+        return self.lock.release()
+
+    def configure(self, **kwargs):
+        return
+
+    def configure_show(self):
+        self.control.add("base", [], \
+            "#external myshow(N): node(N)."\
+            "#show."\
+            "#show clause(A,B,C,D): myshow(A), clause(A,B,C,D)."\
+            "#show constant(A,B): constant(A,B), myshow(A).")
+        if self.skip_empty:
+            self.control.add("base", [], "node(N) :- myshow(N).")
+
+    def view(self, nodes):
+        for n in nodes:
+            if n not in self.bo.domain:
+                raise ValueError(f"Undefined node '{n}'")
+        return ProjectedBooleanNetworksView(self, nodes)
+
+
+class LocalFunctionsViews(ProjectedBooleanNetworksViews):
+
+    def view(self, node):
+        return super().view((node,))
+
+    def format_model(self, model):
+        bn = super().format_model(model)
+        if not bn:
+            return None
+        return bn.popitem()[1]
+
+    do = {
+        "list": list,
+        "count": lambda v: v.count(),
+    }
+    def as_dict(self, method="list"):
+        if method not in self.do:
+            raise ValueError("unknown method")
+        func = self.do[method]
+        d = {}
+        for n in self.bo.domain:
+            with self.view(n) as fs:
+                d[n] = func(fs)
+        return d
+
 
 class DiverseBooleanNetworksView(BooleanNetworksView):
     project = False

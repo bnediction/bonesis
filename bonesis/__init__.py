@@ -75,3 +75,8 @@ class BoNesis(object):
         return BooleanNetworksView(self, *args, **kwargs)
     def diverse_boolean_networks(self, *args, **kwargs):
         return DiverseBooleanNetworksView(self, *args, **kwargs)
+
+    def projected_boolean_networks(self, **kwargs):
+        return ProjectedBooleanNetworksViews(self, **kwargs)
+    def local_functions(self, **kwargs):
+        return LocalFunctionsViews(self, **kwargs)
