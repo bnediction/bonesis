@@ -98,7 +98,7 @@ class BooleanNetworksView(BonesisView):
         return minibn_of_facts(atoms)
 
 
-class ProjectedBooleanNetworksView(object):
+class ProjectedBooleanNetworksContext(object):
     def __init__(self, parent_view, nodes):
         self.parent = parent_view
         self.nodes = nodes
@@ -145,11 +145,10 @@ class ProjectedBooleanNetworksViews(BooleanNetworksView):
         for n in nodes:
             if n not in self.bo.domain:
                 raise ValueError(f"Undefined node '{n}'")
-        return ProjectedBooleanNetworksView(self, nodes)
+        return ProjectedBooleanNetworksContext(self, nodes)
 
 
 class LocalFunctionsViews(ProjectedBooleanNetworksViews):
-
     def view(self, node):
         return super().view((node,))
 
