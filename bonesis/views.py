@@ -4,6 +4,8 @@ import time
 
 import clingo
 
+import pandas as pd
+
 from .debug import dbg
 from .utils import OverlayedDict
 from bonesis0.asp_encoding import minibn_of_facts, py_of_symbol
@@ -172,6 +174,10 @@ class LocalFunctionsViews(ProjectedBooleanNetworksViews):
             with self.view(n) as fs:
                 d[n] = func(fs)
         return d
+
+    def as_dataframe(self, *args, **kwargs):
+        d = self.as_dict(*args, **kwargs)
+        return pd.DataFrame.from_dict(d, orient="index").fillna("").T
 
 
 class DiverseBooleanNetworksView(BooleanNetworksView):
