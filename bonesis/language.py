@@ -349,3 +349,25 @@ class custom(BonesisPredicate):
         if not isinstance(arg, str):
             self.type_error()
         super().__init__(arg)
+
+
+class BonesisOptimization(object):
+    def __init__(self):
+        super().__init__()
+        self.publish()
+    def publish(self):
+        name = self.__class__.__name__
+        idx = name.index("_")
+        opt = name[:idx]
+        name = name[idx+1:]
+        self.mgr.append_optimization(opt, name)
+
+@language_api
+class maximize_nodes(BonesisOptimization):
+    pass
+@language_api
+class maximize_constants(BonesisOptimization):
+    pass
+@language_api
+class maximize_strong_constants(BonesisOptimization):
+    pass

@@ -48,6 +48,9 @@ class BoNesis(object):
     def uninstall_language(self, scope):
         self.iface.uninstall(scope)
 
+    def has_optimizations(self):
+        return bool(self.manager.optimizations)
+
     def load_code(self, prog, defs=None, dest_scope=None):
         scope = {}
         self.install_language(scope)

@@ -32,10 +32,10 @@ class ASPModel_DNF(object):
     default_constants = {
         "bounded_nonreach": 0,
     }
-    def __init__(self, domain, data, properties, **constants):
+    def __init__(self, domain, data, manager, **constants):
         self.domain = domain
         self.data = data
-        self.properties = properties
+        self.manager = manager
         self.constants = self.__class__.default_constants.copy()
         self.constants.update(constants)
         self.ba = boolean.BooleanAlgebra()
@@ -74,7 +74,8 @@ class ASPModel_DNF(object):
         self.reset()
         self.push(self.encode_domain(self.domain))
         self.push(self.encode_data(self.data))
-        self.push(self.encode_properties(self.properties))
+        self.push(self.encode_properties(self.manager.properties))
+        self.push(self.encode_optimizations(self.manager.optimizations))
 
     def __str__(self):
         s = self.prefix
@@ -210,6 +211,15 @@ class ASPModel_DNF(object):
         ]
         self.push(rules)
 
+
+    @unique_usage
+    def load_template_strong_constant(self):
+        rules = [
+            "weak_constant(N) :- cfg(X), node(N), constant(N,V), cfg(X,N,-V)",
+            "strong_constant(N) :- node(N), constant(N), not weak_constant(N)",
+        ]
+        self.push(rules)
+
     @unique_usage
     def load_template_all_fixpoints(self):
         self.load_template_eval()
@@ -235,9 +245,9 @@ class ASPModel_DNF(object):
             return arg.name
         return arg
 
-    def encode_properties(self, manager):
+    def encode_properties(self, properties):
         facts = []
-        for (name, args) in manager.properties:
+        for (name, args) in properties:
             encoder = f"encode_{name}"
             if hasattr(self, encoder):
                 facts.extend(getattr(self, encoder)(*args))
@@ -303,6 +313,21 @@ class ASPModel_DNF(object):
     def encode_custom(self, code):
         return [code.strip().rstrip(".")]
 
+    def encode_opt_nodes(self, opt, priority):
+        return [f"#{opt} {{ 1@{priority},N: node(N) }}"]
+    def encode_opt_constants(self, priority):
+        return [f"#{opt} {{ 1@{priority},N: constant(N) }}"]
+    def encode_opt_strong_constants(self, opt, priority):
+        self.load_template_strong_constant()
+        return [f"#{opt} {{ 1@{priority},N: strong_constant(N) }}"]
+
+    def encode_optimizations(self, optimizations):
+        rules = []
+        for i, (opt, obj) in enumerate(reversed(optimizations)):
+            encoder = f"encode_opt_{obj}"
+            rules += getattr(self, encoder)(opt, (i+1)*10)
+        return rules
+
     show = {
         "boolean_network":
             ["clause/4", "constant/2"],
@@ -312,4 +337,6 @@ class ASPModel_DNF(object):
             ["node/1"],
         "constant":
             ["constant/1"],
+        "strong_constant":
+            ["strong_constant/1"],
     }

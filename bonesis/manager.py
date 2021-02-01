@@ -9,6 +9,7 @@ class BonesisManager(object):
         self.properties = []
         self.observations = set()
         self.configurations = set()
+        self.optimizations = []
 
     def assert_node_exists(self, node, assertion=KeyError):
         if not node in self.bo.domain:
@@ -48,6 +49,9 @@ class BonesisManager(object):
             if isinstance(obj, BonesisTerm):
                 assert obj.mgr is self, "mixed managers"
         self.push_term(name, *args)
+
+    def append_optimization(self, opt, name):
+        self.optimizations.append((opt, name))
 
     def mutant_context(self, mutations):
         return _MutantManager(self, mutations)

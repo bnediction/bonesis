@@ -13,10 +13,12 @@ from bonesis0 import diversity
 
 
 class BonesisView(object):
-    def __init__(self, bo, limit=0, quiet=False, mode="solve", **settings):
+    def __init__(self, bo, limit=0, quiet=False, mode="auto", **settings):
         self.bo = bo
         self.aspmodel = bo.aspmodel
         self.limit = limit
+        if mode == "auto":
+            mode = "optN" if self.bo.has_optimizations() else "solve"
         self.mode = mode
         self.settings = OverlayedDict(bo.settings)
         for k,v in settings.items():
@@ -73,10 +75,10 @@ class BonesisView(object):
         return self.format_model(self.cur_model)
 
     def count(self):
-        c = 0
-        self.configure()
-        for _ in self.control.solve(yield_=True):
-            c += 1
+        k = self.format_model
+        self.format_model = lambda x: 1
+        c = len(list(self))
+        self.format_model = k
         return c
 
     def standalone(self, *args, **kwargs):
@@ -86,10 +88,27 @@ class BonesisView(object):
 
 class NodesView(BonesisView):
     project = True
+    show_templates = ["node"]
     def format_model(self, model):
         atoms = model.symbols(shown=True)
         return {py_of_symbol(a.arguments[0]) for a in atoms\
                     if a.name == "node"}
+
+class NonConstantNodesView(BonesisView):
+    project = True
+    constants = "constant"
+    show_templates = ["node", "strong_constant"]
+    def format_model(self, model):
+        atoms = model.symbols(shown=True)
+        nodes = {py_of_symbol(a.arguments[0]) for a in atoms\
+                    if a.name == "node"}
+        constants = {py_of_symbol(a.arguments[0]) for a in atoms\
+                    if a.name == self.constants}
+        return nodes.difference(constants)
+
+class NonStrongConstantNodesView(NonConstantNodesView):
+    constants = "strong_constant"
+    show_templates = ["node", "strong_constant"]
 
 
 class BooleanNetworksView(BonesisView):
