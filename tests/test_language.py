@@ -29,3 +29,10 @@ class LanguageTest(unittest.TestCase):
             tp_z != x
         with self.assertRaises(TypeError):
             bo.obs("x") != y
+
+    def test_equal(self):
+        bo = self._fresh_bo()
+        x = ~bo.obs("x")
+        y = ~bo.obs("y")
+        x["c"] = y["c"]
+        self.assertIsNone(x["c"] == y["c"])

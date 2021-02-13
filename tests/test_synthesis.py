@@ -7,6 +7,25 @@ def bodebug(bo):
         bo.aspmodel.make()
         fp.write(str(bo.aspmodel))
 
+
+class equalTest(unittest.TestCase):
+    def test_equal1(self):
+        pkn = bonesis.InfluenceGraph.complete("abc", sign=1, loops=False,
+                allow_skipping_nodes=False)
+        data = {
+            "x": {"a": 0},
+            "y": {"a": 1},
+        }
+        bo = bonesis.BoNesis(pkn, data)
+        x = ~bo.obs("x")
+        y = ~bo.obs("y")
+        x >= y
+        x["c"] = y["c"]
+
+        for _, cfgs in bo.boolean_networks(limit=15, extra="configurations"):
+            self.assertEqual(cfgs["x"]["c"], cfgs["y"]["c"])
+
+
 class nonreachTest(unittest.TestCase):
     def setUp(self):
         self.bn1 = bonesis.BooleanNetwork({"a": "b", "b": "c", "c": 1})
