@@ -103,10 +103,18 @@ def minibn_of_facts(fs):
         bn[node] = make_dnf(cs)
     return bn
 
-def configurations_of_facts(fs):
+def configurations_of_facts(fs, pred="cfg", keys="auto"):
     cfgs = {}
+    auto_keys = keys == "auto"
+    select = [] if auto_keys else (None if keys == "all" else keys)
     for a in fs:
-        if a.name != "cfg":
+        if a.name != pred:
+            continue
+        arity = len(a.arguments)
+        if arity == 1 and auto_keys:
+            select.append(py_of_symbol(a.arguments[0]))
+            continue
+        if arity != 3:
             continue
         cid, n, v = a.arguments
         n = n.string
@@ -115,5 +123,6 @@ def configurations_of_facts(fs):
         if cid not in cfgs:
             cfgs[cid] = {}
         cfgs[cid][n] = max(v, 0)
+    if select is not None:
+        return {k: cfgs[k] for k in select}
     return cfgs
-

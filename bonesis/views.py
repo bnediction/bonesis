@@ -8,12 +8,12 @@ import pandas as pd
 
 from .debug import dbg
 from .utils import OverlayedDict
-from bonesis0.asp_encoding import minibn_of_facts, py_of_symbol
+from bonesis0.asp_encoding import minibn_of_facts, configurations_of_facts, py_of_symbol
 from bonesis0 import diversity
 
 
 class BonesisView(object):
-    def __init__(self, bo, limit=0, quiet=False, mode="auto", **settings):
+    def __init__(self, bo, limit=0, quiet=False, mode="auto", extra=None, **settings):
         self.bo = bo
         self.aspmodel = bo.aspmodel
         self.limit = limit
@@ -24,6 +24,18 @@ class BonesisView(object):
         for k,v in settings.items():
             self.settings[k] = v
         self.quiet = quiet
+
+        def parse_extra(extra):
+            if isinstance(extra, str):
+                if extra == "configurations":
+                    return configurations_of_facts
+                raise ValueError(f"Unknown extra '{extra}'")
+            return extra
+        if isinstance(extra, (tuple, list)):
+            extra = tuple(map(parse_extra, extra))
+        elif extra is not None:
+            extra = (parse_extra(extra),)
+        self.extra_model = extra
 
     def configure(self, ground=True, **opts):
         args = [self.limit]
@@ -72,13 +84,21 @@ class BonesisView(object):
         if self.mode == "optN":
             if not self.cur_model.optimality_proven:
                 return next(self)
-        return self.format_model(self.cur_model)
+        return self.parse_model(self.cur_model)
+
+    def parse_model(self, m):
+        model = self.format_model(m)
+        if self.extra_model:
+            atoms = m.symbols(atoms=True)
+            extra = tuple((extra(atoms) for extra in self.extra_model))
+            model = (model,) + extra
+        return model
 
     def count(self):
-        k = self.format_model
-        self.format_model = lambda x: 1
+        k = self.parse_model
+        self.parse_model = lambda x: 1
         c = len(list(self))
-        self.format_model = k
+        self.parse_model = k
         return c
 
     def standalone(self, *args, **kwargs):
@@ -215,10 +235,10 @@ class DiverseBooleanNetworksView(BooleanNetworksView):
         super().configure(**opts)
         self.driver = self.driver_cls(**self.driver_kwargs)
         self.diverse = diversity.solve_diverse(self.control.control, self.driver,
-                limit=self.limit, on_model=super().format_model,
+                limit=self.limit, on_model=super().parse_model,
                 skip_supersets=self.skip_supersets)
 
-    def format_model(self, model):
+    def parse_model(self, model):
         return model
 
     def __iter__(self):
