@@ -30,9 +30,15 @@ class LanguageTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             bo.obs("x") != y
 
-    def test_equal(self):
+    def test_cfg_node_eq(self):
         bo = self._fresh_bo()
         x = ~bo.obs("x")
         y = ~bo.obs("y")
         x["c"] = y["c"]
         self.assertIsNone(x["c"] == y["c"])
+
+    def test_cfg_node_ne(self):
+        bo = self._fresh_bo()
+        x = ~bo.obs("x")
+        y = ~bo.obs("y")
+        self.assertIsNone(x["c"] != y["c"])
