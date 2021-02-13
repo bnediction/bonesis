@@ -1,8 +1,7 @@
 ## Milestone +1
 
 Language:
-- equalities
-- shortcut for differentation trees
+- monotone reach
 
 Tests
 
@@ -10,7 +9,10 @@ Jupyter menu
 
 ## Milestone +2
 
+Language:
 - direct obs/cfg specifications (no need of data)
+- macro for differentation trees?
+- macro for time series?
 
 Views:
 - diversity with project
@@ -20,4 +22,3 @@ Views:
 ## Milestone +3
 
 - infer mutations
-
