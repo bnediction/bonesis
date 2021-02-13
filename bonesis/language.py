@@ -100,6 +100,8 @@ class BonesisTerm(object):
         raise TypeError(f"'{a.__class__.__name__}' objects do not support '//' operator")
     def __ne__(a, b):
         raise TypeError(f"'{a.__class__.__name__}' objects do not support '!=' operator")
+    def __eq__(a, b):
+        raise TypeError(f"'{a.__class__.__name__}' objects do not support '==' operator")
 
 class BonesisVar(BonesisTerm):
     def __init__(self, name):
@@ -136,6 +138,8 @@ class ConfigurationVar(BonesisVar):
         self.mgr.register_configuration(self)
     def __str__(self):
         return f"Configuration({repr(self.name or id(self))})"
+    def __getitem__(self, node):
+        return ConfigurationVarState(self, node)
     def __setitem__(self, node, right):
         self.mgr.assert_node_exists(node)
         if isinstance(right, bool):
@@ -144,9 +148,18 @@ class ConfigurationVar(BonesisVar):
             if not right in [0,1]:
                 raise TypeError("cannot assign integers other than 0/1")
             self.mgr.register_predicate("cfg_assign", self, node, right)
+        elif isinstance(right, ConfigurationVarState):
+            self.mgr.register_predicate("cfg_equal", self, right.parent, node)
         else:
             raise TypeError(f"Invalid type for assignment {type(right)}")
 __language_api__["cfg"] = ConfigurationVar
+
+class ConfigurationVarState(object):
+    def __init__(self, parent, node):
+        self.parent = parent
+        self.node = node
+    def __eq__(self, b):
+        self.parent[self.node] = b
 
 @language_api
 class BonesisPredicate(BonesisTerm):
