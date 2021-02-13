@@ -149,7 +149,7 @@ class ConfigurationVar(BonesisVar):
                 raise TypeError("cannot assign integers other than 0/1")
             self.mgr.register_predicate("cfg_assign", self, node, right)
         elif isinstance(right, ConfigurationVarState):
-            self.mgr.register_predicate("cfg_equal", self, right.parent, node)
+            self.mgr.register_predicate("cfg_node_eq", self, right.parent, node)
         else:
             raise TypeError(f"Invalid type for assignment {type(right)}")
 __language_api__["cfg"] = ConfigurationVar
@@ -160,6 +160,14 @@ class ConfigurationVarState(object):
         self.node = node
     def __eq__(self, b):
         self.parent[self.node] = b
+    def __ne__(self, right):
+        if not isinstance(right, ConfigurationVarState):
+            raise TypeError(f"Invalid type for equality {type(right)}")
+        self.parent.mgr.register_predicate("cfg_node_ne",
+                self.parent,
+                right.parent,
+                self.node)
+
 
 @language_api
 class BonesisPredicate(BonesisTerm):

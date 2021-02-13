@@ -301,12 +301,20 @@ class ASPModel_DNF(object):
     def encode_constant(self, node, b):
         return [clingo.Function("constant", (node, s2v(b)))]
 
-    def encode_cfg_equal(self, cfg1, cfg2, node):
+    def encode_cfg_node_eq(self, cfg1, cfg2, node):
         c1 = clingo_encode(cfg1.name)
         c2 = clingo_encode(cfg2.name)
         n = clingo_encode(node)
         return [
             f":- node({n}), cfg({c1},{n},V), cfg({c2},{n},-V)"
+        ]
+
+    def encode_cfg_node_ne(self, cfg1, cfg2, node):
+        c1 = clingo_encode(cfg1.name)
+        c2 = clingo_encode(cfg2.name)
+        n = clingo_encode(node)
+        return [
+            f":- node({n}), cfg({c1},{n},V), cfg({c2},{n},V)"
         ]
 
     def encode_different(self, cfg1, cfg2):
