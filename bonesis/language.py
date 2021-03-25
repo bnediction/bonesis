@@ -110,6 +110,8 @@ class BonesisVar(BonesisTerm):
         self.publish()
     def publish(self):
         pass
+    def __hash__(self):
+        return hash((self.__class__.__name__,self.name))
 
 @allreach_operator
 class ObservationVar(BonesisVar):
