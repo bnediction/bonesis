@@ -22,10 +22,12 @@ def clingo_encode(val):
 def unique_usage(method):
     name = method.__name__
     def wrapper(self, *args, **kwargs):
-        if name in self._silenced:
-            return
-        self._silenced.add(name)
-        return method(self, *args, **kwargs)
+        key = name
+        if key in self._silenced:
+            return self._silenced[key]
+        ret = method(self, *args, **kwargs)
+        self._silenced[key] = ret
+        return ret
     return wrapper
 
 class ASPModel_DNF(object):
@@ -39,7 +41,7 @@ class ASPModel_DNF(object):
         self.constants = self.__class__.default_constants.copy()
         self.constants.update(constants)
         self.ba = boolean.BooleanAlgebra()
-        self._silenced = set()
+        self._silenced = {}
 
     def solver(self, *args, ground=True, settings={}, **kwargs):
         arguments = []
