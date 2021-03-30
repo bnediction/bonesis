@@ -291,12 +291,13 @@ class ASPModel_DNF(object):
     def encode_all_fixpoints(self, arg):
         self.load_template_eval()
         satcfg = self.saturating_configuration()
+        mycfg = self.fresh_atom("cfg")
         condition = self.make_saturation_condition(satcfg)
         rules = [
             # trigger eval
-            f"mcfg({satcfg},N,V) :- cfg({satcfg},N,V)",
+            f"mcfg({mycfg},N,V) :- cfg({satcfg},N,V)",
             # not a fixed a point
-            f"{condition} :- cfg({satcfg},N,V), eval({satcfg},N,-V)",
+            f"{condition} :- cfg({satcfg},N,V), eval({mycfg},N,-V)",
         ] + [
             # match one given observation
             f"{condition} :- cfg({satcfg},N,V): obs({clingo_encode(obs.name)},N,V)"
