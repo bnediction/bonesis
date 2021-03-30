@@ -42,6 +42,7 @@ class ASPModel_DNF(object):
         self.constants.update(constants)
         self.ba = boolean.BooleanAlgebra()
         self._silenced = {}
+        self.__fresh_id = -1
 
     def solver(self, *args, ground=True, settings={}, **kwargs):
         arguments = []
@@ -93,6 +94,10 @@ class ASPModel_DNF(object):
     def push_file(self, filename):
         with open(filename) as fp:
             self.prefix += fp.read()
+
+    def fresh_atom(self, qualifier=""):
+        self.__fresh_id += 1
+        return f"__bo{qualifier}{self._fresh_id}"
 
     def encode_domain(self, domain):
         if isinstance(domain, BooleanNetwork):
