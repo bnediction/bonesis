@@ -97,7 +97,7 @@ class ASPModel_DNF(object):
 
     def fresh_atom(self, qualifier=""):
         self.__fresh_id += 1
-        return f"__bo{qualifier}{self._fresh_id}"
+        return clingo.Function(f"__bo{qualifier}{self.__fresh_id}")
 
     def encode_domain(self, domain):
         if isinstance(domain, BooleanNetwork):
@@ -228,9 +228,22 @@ class ASPModel_DNF(object):
         self.push(rules)
 
     @unique_usage
-    def load_template_all_fixpoints(self):
-        self.load_template_eval()
-        self.push_file(aspf("QBF-fixpoint.asp"))
+    def saturating_configuration(self):
+        cfgid = self.fresh_atom("cfg")
+        rules = [
+            f"cfg({cfgid},N,-1); cfg({cfgid},N,1) :- node(N)",
+            f"cfg({cfgid},N,-V) :- cfg({cfgid},N,V), saturate({cfgid})",
+            f"saturate({cfgid}) :- valid({cfgid},Z): expect_valid({cfgid},Z)",
+            f":- not saturate({cfgid})",
+        ]
+        self.push(rules)
+        return cfgid
+
+    def make_saturation_condition(self, satid):
+        condid = self.fresh_atom("cond")
+        condition = clingo.Function("valid", (satid, condid))
+        self.push([clingo.Function("expect_valid", (satid, condid))])
+        return condition
 
     @unique_usage
     def load_template_all_attractors(self):
@@ -276,9 +289,19 @@ class ASPModel_DNF(object):
                     for n in self.data[cfg.obs.name]]
 
     def encode_all_fixpoints(self, arg):
-        self.load_template_all_fixpoints()
-        return [clingo.Function("is_global_fp", ((clingo.Function("obs"), obs.name),))
+        self.load_template_eval()
+        satcfg = self.saturating_configuration()
+        condition = self.make_saturation_condition(satcfg)
+        rules = [
+            # trigger eval
+            f"mcfg({satcfg},N,V) :- cfg({satcfg},N,V)",
+            # not a fixed a point
+            f"{condition} :- cfg({satcfg},N,V), eval({satcfg},N,-V)",
+        ] + [
+            # match one given observation
+            f"{condition} :- cfg({satcfg},N,V): obs({clingo_encode(obs.name)},N,V)"
                 for obs in arg]
+        return rules
 
     def encode_all_attractors(self, arg):
         self.load_template_all_attractors()
