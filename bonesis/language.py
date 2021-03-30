@@ -224,10 +224,10 @@ class fixed(BonesisPredicate):
             self.type_error()
         super().__init__(arg)
 
+
 @language_api
 class all_fixpoints(BonesisPredicate):
     _unit_types = (ObservationVar,)
-    support_mutations = False
     def __init__(self, arg):
         if isinstance(arg, (set, list, tuple)):
             for e in arg:
@@ -238,9 +238,12 @@ class all_fixpoints(BonesisPredicate):
         else:
             self.type_error()
         super().__init__(arg)
+
+
 @language_api
 class all_attractors(all_fixpoints):
-    pass
+    support_mutations = False
+
 
 class _ConfigurableBinaryPredicate(BonesisPredicate):
     def __init__(self, left, right, options=None):

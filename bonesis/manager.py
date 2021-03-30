@@ -18,8 +18,8 @@ class BonesisManager(object):
     def push(self, rule):
         self.properties.append(rule)
 
-    def push_term(self, name, *args):
-        self.push((name, args))
+    def push_term(self, name, *args, **kwargs):
+        self.push((name, args, kwargs))
 
     def register_observation(self, obs):
         if not obs.name in self.bo.data:
@@ -44,11 +44,11 @@ class BonesisManager(object):
             if cfg.obs:
                 self.push_term("bind_cfg", cfg.name, cfg.obs.name)
 
-    def register_predicate(self, name, *args):
+    def register_predicate(self, name, *args, **kwargs):
         for obj in args:
             if isinstance(obj, BonesisTerm):
                 assert obj.mgr is self, "mixed managers"
-        self.push_term(name, *args)
+        self.push_term(name, *args, **kwargs)
 
     def append_optimization(self, opt, name):
         self.optimizations.append((opt, name))
@@ -57,21 +57,29 @@ class BonesisManager(object):
         return _MutantManager(self, mutations)
 
 class _MutantManager(BonesisManager):
+    _mutant_id = 0
     def __init__(self, parent, mutations):
         self.bo = parent.bo
         self.properties = parent.properties
         self.observations = parent.observations
         self.configurations = parent.configurations
         self.parent = parent
-        self._mutations = mutations
         self.managed_configurations = set()
+        self._mutations = mutations
+        self.mutations = self.get_mutations()
+        self.__class__._mutant_id += 1
+        self.mutant_name = self.__class__._mutant_id
+        self.push_term("mutant", self.mutant_name, self.mutations)
 
-    @property
-    def mutations(self):
+    def get_mutations(self):
         m = self._mutations.copy()
         if hasattr(self.parent, "mutations"):
             m.update(self.parent.mutations)
         return m
+
+    def register_predicate(self, name, *args, **kwargs):
+        super().register_predicate(name, *args, **kwargs,
+                mutant=self.mutant_name)
 
     def register_configuration(self, cfg):
         super().register_configuration(cfg)

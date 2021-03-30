@@ -267,11 +267,13 @@ class ASPModel_DNF(object):
 
     def encode_properties(self, properties):
         facts = []
-        for (name, args) in properties:
+        for (name, args, kwargs) in properties:
             encoder = f"encode_{name}"
             if hasattr(self, encoder):
-                facts.extend(getattr(self, encoder)(*args))
+                facts.extend(getattr(self, encoder)(*args, **kwargs))
             else:
+                if kwargs:
+                    raise NotImplementedError(f"encode {name} with {kwargs}")
                 tpl = f"load_template_{name}"
                 if hasattr(self, tpl):
                     getattr(self, tpl)()
@@ -288,7 +290,7 @@ class ASPModel_DNF(object):
         return [clingo.Function("is_tp", (cfg.name,n)) \
                     for n in self.data[cfg.obs.name]]
 
-    def encode_all_fixpoints(self, arg):
+    def encode_all_fixpoints(self, arg, mutant=None):
         self.load_template_eval()
         satcfg = self.saturating_configuration()
         mycfg = self.fresh_atom("cfg")
@@ -302,7 +304,14 @@ class ASPModel_DNF(object):
             # match one given observation
             f"{condition} :- cfg({satcfg},N,V): obs({clingo_encode(obs.name)},N,V)"
                 for obs in arg]
+        if mutant is not None:
+            rules.append(f"clamped({mycfg},N,V) :- mutant({mutant},N,V)")
         return rules
+
+    def encode_mutant(self, name, mutations):
+        mutant = clingo_encode(name)
+        return [clingo.Function("mutant", (mutant, node, s2v(b)))
+            for node, b in mutations.items()]
 
     def encode_all_attractors(self, arg):
         self.load_template_all_attractors()
