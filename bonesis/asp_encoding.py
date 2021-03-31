@@ -344,16 +344,13 @@ class ASPModel_DNF(object):
         return [clingo.Function(pred, ((clingo.Function("obs"), obs.name), cfg.name))
                     for obs in right for cfg in left]
 
-    def encode_cfg_assign(self, cfg, node, b):
+    def encode_cfg_assign(self, cfg, node, b, mutant=None):
         return [clingo.Function("cfg", (cfg.name, node, s2v(b)))]
 
-    def encode_clamped(self, cfg, node, b):
-        return [clingo.Function("clamped", (cfg.name, node, s2v(b)))]
-
-    def encode_constant(self, node, b):
+    def encode_constant(self, node, b, mutant=None):
         return [clingo.Function("constant", (node, s2v(b)))]
 
-    def encode_cfg_node_eq(self, cfg1, cfg2, node):
+    def encode_cfg_node_eq(self, cfg1, cfg2, node, mutant=None):
         c1 = clingo_encode(cfg1.name)
         c2 = clingo_encode(cfg2.name)
         n = clingo_encode(node)
@@ -361,7 +358,7 @@ class ASPModel_DNF(object):
             f":- node({n}), cfg({c1},{n},V), cfg({c2},{n},-V)"
         ]
 
-    def encode_cfg_node_ne(self, cfg1, cfg2, node):
+    def encode_cfg_node_ne(self, cfg1, cfg2, node, mutant=None):
         c1 = clingo_encode(cfg1.name)
         c2 = clingo_encode(cfg2.name)
         n = clingo_encode(node)
@@ -369,7 +366,7 @@ class ASPModel_DNF(object):
             f":- node({n}), cfg({c1},{n},V), cfg({c2},{n},V)"
         ]
 
-    def encode_different(self, cfg1, cfg2):
+    def encode_different(self, cfg1, cfg2, mutant=None):
         diff = clingo.Function("diff", (cfg1.name, cfg2.name))
         c1 = clingo_encode(cfg1.name)
         c2 = clingo_encode(cfg2.name)
