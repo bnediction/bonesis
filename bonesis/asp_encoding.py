@@ -236,11 +236,6 @@ class ASPModel_DNF(object):
         return condition
 
     @unique_usage
-    def load_template_all_attractors(self):
-        self.load_template_eval()
-        self.push_file(aspf("QBF-attractor.asp"))
-
-    @unique_usage
     def load_template_allreach_fixpoints(self):
         self.load_template_eval()
         self.push_file(aspf("QBF-reachable-fixpoint.asp"))
@@ -325,10 +320,22 @@ class ASPModel_DNF(object):
             rules += self.apply_mutant_to_mcfg(mutant, mycfg)
         return rules
 
-    def encode_all_attractors_overlap(self, arg):
-        self.load_template_all_attractors()
-        return [clingo.Function("is_global_at", ((clingo.Function("obs"), obs.name),))
+    def encode_all_attractors_overlap(self, arg, mutant=None):
+        self.load_template_eval()
+        satcfg = self.saturating_configuration()
+        mycfg = self.fresh_atom("cfg")
+        condition = self.make_saturation_condition(satcfg)
+        rules = [
+            # minimal trap space containing cfg
+            f"mcfg({mycfg},N,V) :- cfg({satcfg},N,V)",
+            f"mcfg({mycfg},N,V) :- eval({mycfg},N,V)",
+        ] + [
+            # contain at least one given observation
+            f"{condition} :- mcfg({mycfg},N,V): obs({clingo_encode(obs.name)},N,V)"
                 for obs in arg]
+        if mutant is not None:
+            rules += self.apply_mutant_to_mcfg(mutant, mycfg)
+        return rules
 
     def encode_allreach(self, options, left, right):
         if "attractors_contain" in options:
