@@ -281,6 +281,14 @@ class ASPModel_DNF(object):
                 facts.append(clingo.Function(name, args))
         return facts
 
+    def encode_mutant(self, name, mutations):
+        mutant = clingo_encode(name)
+        return [clingo.Function("mutant", (mutant, node, s2v(b)))
+            for node, b in mutations.items()]
+
+    def apply_mutant_to_mcfg(self, mutant, mcfg):
+        return [f"clamped({mcfg},N,V) :- mutant({mutant},N,V)"]
+
     def encode_fixpoint(self, cfg):
         self.load_template_fixpoint()
         return [clingo.Function("is_fp", (cfg.name,))]
@@ -305,13 +313,8 @@ class ASPModel_DNF(object):
             f"{condition} :- cfg({satcfg},N,V): obs({clingo_encode(obs.name)},N,V)"
                 for obs in arg]
         if mutant is not None:
-            rules.append(f"clamped({mycfg},N,V) :- mutant({mutant},N,V)")
+            rules += self.apply_mutant_to_mcfg(mutant, mycfg)
         return rules
-
-    def encode_mutant(self, name, mutations):
-        mutant = clingo_encode(name)
-        return [clingo.Function("mutant", (mutant, node, s2v(b)))
-            for node, b in mutations.items()]
 
     def encode_all_attractors(self, arg):
         self.load_template_all_attractors()

@@ -80,9 +80,3 @@ class _MutantManager(BonesisManager):
     def register_predicate(self, name, *args, **kwargs):
         super().register_predicate(name, *args, **kwargs,
                 mutant=self.mutant_name)
-
-    def register_configuration(self, cfg):
-        super().register_configuration(cfg)
-        if cfg.name not in self.managed_configurations:
-            for n, v in self._mutations.items():
-                self.push_term("clamped", cfg, n, v)
