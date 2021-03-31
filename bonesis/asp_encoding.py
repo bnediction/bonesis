@@ -287,11 +287,21 @@ class ASPModel_DNF(object):
             for node, b in mutations.items()]
 
     def apply_mutant_to_mcfg(self, mutant, mcfg):
+        if mutant is None:
+            return []
         return [f"clamped({mcfg},N,V) :- mutant({mutant},N,V)"]
 
-    def encode_fixpoint(self, cfg):
-        self.load_template_fixpoint()
-        return [clingo.Function("is_fp", (cfg.name,))]
+    def encode_fixpoint(self, cfg, mutant=None):
+        self.load_template_eval()
+        myfp = self.fresh_atom("fp")
+        cfgid = clingo_encode(cfg.name)
+        rules = [
+            # trigger eval
+            f"mcfg({myfp},N,V) :- cfg({cfgid},N,V)",
+            # check fixed point constraint
+            f":- cfg({cfgid},N,V), eval({myfp},N,-V)"
+        ] + self.apply_mutant_to_mcfg(mutant, myfp)
+        return rules
 
     def encode_trapspace(self, cfg):
         self.load_template_trapspace()
