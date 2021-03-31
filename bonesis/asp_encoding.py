@@ -302,11 +302,12 @@ class ASPModel_DNF(object):
         ] + self.apply_mutant_to_mcfg(mutant, myts)
         return rules
 
-    def encode_all_fixpoints(self, arg, mutant=None):
+    def encode_all_fixpoints(self, arg, mutant=None,
+            _condition=None):
         self.load_template_eval()
         satcfg = self.saturating_configuration()
         mycfg = self.fresh_atom("cfg")
-        condition = self.make_saturation_condition(satcfg)
+        condition = _condition or self.make_saturation_condition(satcfg)
         rules = [
             # trigger eval
             f"mcfg({mycfg},N,V) :- cfg({satcfg},N,V)",
@@ -315,16 +316,16 @@ class ASPModel_DNF(object):
         ] + [
             # match one given observation
             f"{condition} :- cfg({satcfg},N,V): obs({clingo_encode(obs.name)},N,V)"
-                for obs in arg]
-        if mutant is not None:
-            rules += self.apply_mutant_to_mcfg(mutant, mycfg)
+                for obs in arg
+        ] + self.apply_mutant_to_mcfg(mutant, mycfg)
         return rules
 
-    def encode_all_attractors_overlap(self, arg, mutant=None):
+    def encode_all_attractors_overlap(self, arg, mutant=None,
+            _condition=None):
         self.load_template_eval()
         satcfg = self.saturating_configuration()
         mycfg = self.fresh_atom("cfg")
-        condition = self.make_saturation_condition(satcfg)
+        condition = _condition or self.make_saturation_condition(satcfg)
         rules = [
             # minimal trap space containing cfg
             f"mcfg({mycfg},N,V) :- cfg({satcfg},N,V)",
@@ -332,24 +333,41 @@ class ASPModel_DNF(object):
         ] + [
             # contain at least one given observation
             f"{condition} :- mcfg({mycfg},N,V): obs({clingo_encode(obs.name)},N,V)"
-                for obs in arg]
-        if mutant is not None:
-            rules += self.apply_mutant_to_mcfg(mutant, mycfg)
+                for obs in arg
+        ] + self.apply_mutant_to_mcfg(mutant, mycfg)
         return rules
 
-    def encode_allreach(self, options, left, right):
+    def encode_allreach(self, options, left, right, mutant=None):
+        if isinstance(left, ConfigurationVar):
+            left = (left,)
+
+        self.load_template_eval()
+        satcfg = self.saturating_configuration()
+        condition = self.make_saturation_condition(satcfg)
+
+        args = [right]
+        kwargs = {"mutant": mutant,
+            "_condition": condition}
         if "attractors_overlap" in options:
-            self.load_template_allreach_attractors()
-            pred = "is_global_at"
+            rules = self.encode_all_attractors_overlap(*args, **kwargs)
         elif "fixpoints" in options:
-            self.load_template_allreach_fixpoints()
-            pred = "is_global_fp"
+            rules = self.encode_all_fixpoints(*args, **kwargs)
         else:
             raise TypeError(f"invalid options {options}")
-        if isinstance(left, ConfigurationVar):
-            left = {left}
-        return [clingo.Function(pred, ((clingo.Function("obs"), obs.name), cfg.name))
-                    for obs in right for cfg in left]
+
+        # satcfg is not reachable from one of the initial configurations (left)
+        for cfg in left:
+            cfgid = clingo_encode(cfg.name)
+            mcfg0 = self.fresh_atom("cfg")
+            rules += [
+                # minimal trap space containing cfg
+                f"mcfg({mcfg0},N,V) :- cfg({cfgid},N,V)",
+                f"mcfg({mcfg0},N,V) :- eval({mcfg0},N,V)",
+                # satcfg is not in it
+                f"{condition} :- cfg({satcfg},N,V), not mcfg({mcfg0},N,V)",
+            ]
+            rules += self.apply_mutant_to_mcfg(mutant, mcfg0)
+        return rules
 
     def encode_cfg_assign(self, cfg, node, b, mutant=None):
         return [clingo.Function("cfg", (cfg.name, node, s2v(b)))]

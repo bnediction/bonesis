@@ -11,7 +11,7 @@ data = {
 }
 bo = bonesis.BoNesis(pkn, data)
 
-+bo.obs("x") >> fixpoints_in({bo.obs("y")})
++bo.obs("x") >> "fixpoints" ^ {bo.obs("y")}
 
 bns = bo.boolean_networks(limit=10)
 print(bns.standalone())
