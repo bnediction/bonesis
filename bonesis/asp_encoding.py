@@ -325,7 +325,7 @@ class ASPModel_DNF(object):
             rules += self.apply_mutant_to_mcfg(mutant, mycfg)
         return rules
 
-    def encode_all_attractors(self, arg):
+    def encode_all_attractors_overlap(self, arg):
         self.load_template_all_attractors()
         return [clingo.Function("is_global_at", ((clingo.Function("obs"), obs.name),))
                 for obs in arg]

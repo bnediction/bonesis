@@ -5,7 +5,7 @@ data = {
     "fp0": {"a": 0, "b": 0, "c": 0},
 }
 bo = bonesis.BoNesis(pkn, data)
-bo.all_attractors(bo.obs("fp0"))
+bo.all_attractors_overlap(bo.obs("fp0"))
 
 bns = bo.boolean_networks(limit=10)
 print(bns.standalone())

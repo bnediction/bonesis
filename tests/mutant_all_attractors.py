@@ -7,10 +7,10 @@ data = {
 }
 bo = bonesis.BoNesis(pkn, data)
 
-bo.all_attractors({bo.obs(a) for a in data})
+bo.all_attractors_overlap({bo.obs(a) for a in data})
 
 with bo.mutant({"c": 1}) as m:
-    m.all_attractors(bo.obs("a0"))
+    m.all_attractors_overlap(bo.obs("a0"))
 
 bns = bo.boolean_networks(limit=10)
 print(bns.standalone())

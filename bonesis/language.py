@@ -238,7 +238,7 @@ class all_fixpoints(BonesisPredicate):
 
 
 @language_api
-class all_attractors(all_fixpoints):
+class all_attractors_overlap(all_fixpoints):
     pass
 
 
