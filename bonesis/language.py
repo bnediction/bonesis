@@ -173,7 +173,6 @@ class ConfigurationVarState(object):
 
 @language_api
 class BonesisPredicate(BonesisTerm):
-    support_mutations = True
     def __init__(self, *args):
         self.args = args
         if not hasattr(self, "predicate_name"):
@@ -189,8 +188,6 @@ class BonesisPredicate(BonesisTerm):
         for obj in self.args:
             auto_iface(obj)
         assert hasattr(self, "mgr"), "Could not find manager"
-        if hasattr(self.mgr, "mutations") and not self.support_mutations:
-            raise TypeError(f"Cannot use {self.__class__.__name__} in a mutant context")
         super().__init__()
         self.publish()
     @classmethod
@@ -242,7 +239,7 @@ class all_fixpoints(BonesisPredicate):
 
 @language_api
 class all_attractors(all_fixpoints):
-    support_mutations = False
+    pass
 
 
 class _ConfigurableBinaryPredicate(BonesisPredicate):
