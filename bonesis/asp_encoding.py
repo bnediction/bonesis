@@ -193,16 +193,6 @@ class ASPModel_DNF(object):
         self.push(rules)
 
     @unique_usage
-    def load_template_fixpoint(self):
-        self.load_template_eval()
-        self.push_file(aspf("fixpoint.asp"))
-
-    @unique_usage
-    def load_template_trapspace(self):
-        self.load_template_eval()
-        self.push_file(aspf("trapspace.asp"))
-
-    @unique_usage
     def load_template_cfg(self):
         rules = [
             "1 {cfg(X,N,(-1;1))} 1 :- cfg(X), node(N)",
@@ -303,10 +293,19 @@ class ASPModel_DNF(object):
         ] + self.apply_mutant_to_mcfg(mutant, myfp)
         return rules
 
-    def encode_trapspace(self, cfg):
-        self.load_template_trapspace()
-        return [clingo.Function("is_tp", (cfg.name,n)) \
-                    for n in self.data[cfg.obs.name]]
+    def encode_trapspace(self, cfg, mutant=None):
+        self.load_template_eval()
+        myts = self.fresh_atom("ts")
+        cfgid = clingo_encode(cfg.name)
+        rules = [
+            # minimal trap space containing cfg
+            f"mcfg({myts},N,V) :- cfg({cfgid},N,V)",
+            f"mcfg({myts},N,V) :- eval({myts},N,V)",
+        ] + [ # trap space constraint
+            f":- cfg({cfgid},{clingo_encode(n)},V), mcfg({myts},{clingo_encode(n)},-V)"
+                for n in self.data[cfg.obs.name]
+        ] + self.apply_mutant_to_mcfg(mutant, myts)
+        return rules
 
     def encode_all_fixpoints(self, arg, mutant=None):
         self.load_template_eval()
