@@ -338,7 +338,7 @@ class ASPModel_DNF(object):
         return rules
 
     def encode_allreach(self, options, left, right):
-        if "attractors_contain" in options:
+        if "attractors_overlap" in options:
             self.load_template_allreach_attractors()
             pred = "is_global_at"
         elif "fixpoints" in options:

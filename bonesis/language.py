@@ -270,8 +270,8 @@ class _ConfigurableBinaryPredicate(BonesisPredicate):
 
 @language_api
 class allreach(_ConfigurableBinaryPredicate):
-    supported_options = {"fixpoints", "attractors_contain"}
-    default_options = ("attractors_contain",)
+    supported_options = {"fixpoints", "attractors_overlap"}
+    default_options = ("attractors_overlap",)
     """
     left: cfg, reach(), obs
     right: obs, set([obs])
