@@ -11,7 +11,7 @@ from bonesis0.proxy_control import ProxyControl
 from .domains import BooleanNetwork, InfluenceGraph
 
 from .language import *
-from .debug import dbg
+from .debug import dbg, debug_enabled
 
 def s2v(s):
     return 1 if s > 0 else -1
@@ -46,6 +46,8 @@ class ASPModel_DNF(object):
 
     def solver(self, *args, ground=True, settings={}, **kwargs):
         arguments = []
+        if not debug_enabled():
+            arguments += ["-W", "no-atom-undefined"]
         arguments.extend(settings.get("clingo_options", ()))
         if settings.get("parallel"):
             arguments += ["-t", settings["parallel"]]
