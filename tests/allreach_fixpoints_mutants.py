@@ -17,7 +17,7 @@ with bo.mutant({"c":1}) as mc:
     y = mc.obs("y")
     for cfg in bonesis.matching_configurations(mc.obs("x")):
         cfg >= mc.fixed(+y)
-        cfg >> mc.fixpoints_in({y})
+        cfg >> "fixpoints" ^ {y}
 
 def validate(bn):
     print("# all fixpoints")
