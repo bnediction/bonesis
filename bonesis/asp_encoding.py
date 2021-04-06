@@ -302,6 +302,26 @@ class ASPModel_DNF(object):
         ] + self.apply_mutant_to_mcfg(mutant, myts)
         return rules
 
+    def encode_reach(self, cfg1, cfg2, mutant=None):
+        self.load_template_eval()
+        Z = self.fresh_atom("reach")
+        X = clingo_encode(cfg1.name)
+        Y = clingo_encode(cfg2.name)
+        rules = [
+            # init mcfg
+            f"mcfg({Z},N,V) :- cfg({X},N,V)",
+            # extensions
+            f"ext({Z},N,V) :- eval({Z},N,V), cfg({Y},N,V)",
+            f"{{ext({Z},N,V)}} :- eval({Z},N,V), cfg({Y},N,-V)",
+            # constraints
+            f":- cfg({Y},N,V), not mcfg({Z},N,V)",
+            f":- cfg({Y},N,V), ext({Z},N,-V), not ext({Z},N,V)",
+        ] + self.apply_mutant_to_mcfg(mutant, Z)
+        return rules
+
+    # TODO: encode_nonreach
+    # TODO: encode_final_nonreach
+
     def encode_all_fixpoints(self, arg, mutant=None,
             _condition=None):
         self.load_template_eval()
