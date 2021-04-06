@@ -175,24 +175,6 @@ class ASPModel_DNF(object):
         self.push_file(aspf("eval.asp"))
 
     @unique_usage
-    def load_template_reach(self):
-        self.load_template_eval()
-        self.push_file(aspf("reach.asp"))
-
-    @unique_usage
-    def load_template_nonreach(self):
-        self.load_template_eval()
-        self.push_file(aspf("nonreach.asp"))
-
-    @unique_usage
-    def load_template_final_nonreach(self):
-        self.load_template_nonreach()
-        rules = [
-            "nonreach(X,Y,1) :- final_nonreach(X,Y)",
-        ]
-        self.push(rules)
-
-    @unique_usage
     def load_template_cfg(self):
         rules = [
             "1 {cfg(X,N,(-1;1))} 1 :- cfg(X), node(N)",
@@ -319,8 +301,32 @@ class ASPModel_DNF(object):
         ] + self.apply_mutant_to_mcfg(mutant, Z)
         return rules
 
-    # TODO: encode_nonreach
-    # TODO: encode_final_nonreach
+    def encode_nonreach(self, cfg1, cfg2, mutant=None, bounded="auto"):
+        self.load_template_eval()
+        Z = self.fresh_atom("nonreach")
+        X = clingo_encode(cfg1.name)
+        Y = clingo_encode(cfg2.name)
+        rules = [
+            f"mcfg(({Z},1..K),N,V) :- reach_steps({Z},K), cfg({X},N,V)",
+            f"ext(({Z},I),N,V) :- eval(({Z},I),N,V), not locked(({Z},I),N)",
+            f"reach_bad({Z},I,N) :- cfg({X},N,V), cfg({Y},N,V), ext(({Z},I),N,-V), not ext(({Z},I),N,V)",
+            f"locked(({Z},I+1..K),N) :- reach_bad({Z},I,N), reach_steps({Z},K), I < K",
+            f"nr_ok({Z}) :- reach_steps({Z},K), cfg({Y},N,V), not mcfg(({Z},K),N,V)",
+            f":- not nr_ok({Z})",
+        ]
+        if bounded == "auto":
+            rules += [
+                f"reach_steps({Z},K) :- nbnode(K), bounded_nonreach <= 0",
+                f"reach_steps({Z},bounded_nonreach) :- bounded_nonreach > 0",
+            ]
+        else:
+            rules += [f"reach_steps({Z},{bounded})"]
+        if mutant is not None:
+            rules += [f"clamped(({Z},1..K),N,V) :- mutant({mutant},N,V)"]
+        return rules
+
+    def encode_final_nonreach(self, cfg1, cfg2, mutant=None):
+        return self.encode_nonreach(cfg1, cfg2, mutant=mutant, bounded=1)
 
     def encode_all_fixpoints(self, arg, mutant=None,
             _condition=None):
