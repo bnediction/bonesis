@@ -40,6 +40,11 @@ class BoNesis(object):
         self.iface = ManagedIface(self.manager)
         self.iface.install(self)
 
+    def debug(self, asp_output="/tmp/debug.asp"):
+        with open(asp_output, "w") as fp:
+            self.aspmodel.make()
+            fp.write(str(self.aspmodel))
+
     def set_constant(self, cst, value):
         self.aspmodel.constants[cst] = value
 

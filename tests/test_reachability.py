@@ -2,47 +2,7 @@ import unittest
 
 import bonesis
 
-def bodebug(bo):
-    with open("/tmp/debug.asp", "w") as fp:
-        bo.aspmodel.make()
-        fp.write(str(bo.aspmodel))
-
-
-class TestConfiguration(unittest.TestCase):
-    def test_node_equal1(self):
-        pkn = bonesis.InfluenceGraph.complete("abc", sign=1, loops=False,
-                allow_skipping_nodes=False)
-        data = {
-            "x": {"a": 0},
-            "y": {"a": 1},
-        }
-        bo = bonesis.BoNesis(pkn, data)
-        x = ~bo.obs("x")
-        y = ~bo.obs("y")
-        x >= y
-        x["c"] = y["c"]
-
-        for _, cfgs in bo.boolean_networks(limit=15, extra="configurations"):
-            self.assertEqual(cfgs["x"]["c"], cfgs["y"]["c"])
-
-    def test_node_diff1(self):
-        pkn = bonesis.InfluenceGraph.complete("abc", sign=1, loops=False,
-                allow_skipping_nodes=False)
-        data = {
-            "x": {"a": 0},
-            "y": {"a": 1},
-        }
-        bo = bonesis.BoNesis(pkn, data)
-        x = ~bo.obs("x")
-        y = ~bo.obs("y")
-        x >= y
-        x["c"] != y["c"]
-
-        for _, cfgs in bo.boolean_networks(limit=15, extra="configurations"):
-            self.assertNotEqual(cfgs["x"]["c"], cfgs["y"]["c"])
-
-
-class nonreachTest(unittest.TestCase):
+class NonReachTest(unittest.TestCase):
     def setUp(self):
         self.bn1 = bonesis.BooleanNetwork({"a": "b", "b": "c", "c": 1})
         self.bn2 = bonesis.BooleanNetwork({"a": "b", "b": "c", "c": "c"})
@@ -102,3 +62,4 @@ class nonreachTest(unittest.TestCase):
             bo = bonesis.BoNesis(getattr(self, bn), self.data)
             +bo.obs(x) // bo.fixed(~bo.obs(y))
             t(bo.is_satisfiable(), f"final_nonreach({x},{y}) [{bn}]")
+
