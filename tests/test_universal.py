@@ -10,7 +10,7 @@ class TestUniversal(unittest.TestCase):
             "1": {"a": 1, "b": 1, "c": 1},
         }
 
-    def test_allfixpoints(self):
+    def test_all_fixpoints(self):
         bo = bonesis.BoNesis(self.dom1, self.data1)
         bo.fixed(bo.obs("0"))
         bo.all_fixpoints({bo.obs("0")})
