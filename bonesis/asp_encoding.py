@@ -249,16 +249,6 @@ class ASPModel_DNF(object):
         self.push([clingo.Function("expect_valid", (satid, condid))])
         return condition
 
-    @unique_usage
-    def load_template_allreach_fixpoints(self):
-        self.load_template_eval()
-        self.push_file(aspf("QBF-reachable-fixpoint.asp"))
-
-    @unique_usage
-    def load_template_allreach_attractors(self):
-        self.load_template_eval()
-        self.push_file(aspf("QBF-reachable-attractor.asp"))
-
     def encode_argument(self, arg):
         if isinstance(arg, ConfigurationVar):
             return arg.name
