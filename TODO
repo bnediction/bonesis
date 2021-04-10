@@ -3,6 +3,8 @@
 Language:
 - monotone reach
 
+- mutant: make obs override configurable
+
 Tests
 
 Jupyter menu

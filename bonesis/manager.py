@@ -42,7 +42,7 @@ class BonesisManager(object):
             self.configurations.add(cfg.name)
             self.push_term("cfg", cfg.name)
             if cfg.obs:
-                self.push_term("bind_cfg", cfg.name, cfg.obs.name)
+                self.register_predicate("bind_cfg", cfg.name, cfg.obs.name)
 
     def register_predicate(self, name, *args, **kwargs):
         for obj in args:

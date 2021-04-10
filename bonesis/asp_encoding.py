@@ -212,18 +212,30 @@ class ASPModel_DNF(object):
     def load_template_cfg(self):
         rules = [
             "1 {cfg(X,N,(-1;1))} 1 :- cfg(X), node(N)",
-            "cfg(X,N,V) :- cfg(X), node(N), clamped(X,N,V)",
-            "clamped(do_not_use,do_not_use,do_not_use)",
         ]
         self.push(rules)
 
     @unique_usage
     def load_template_bind_cfg(self):
         rules = [
-            "cfg(X,N,V) :- bind_cfg(X,O), obs(O,N,V), node(N), not clamped(X,N,_)"
+            "cfg(X,N,V) :- bind_cfg(X,O), obs(O,N,V), node(N)"
         ]
         self.push(rules)
 
+    @unique_usage
+    def load_template_bind_cfg_mutant(self):
+        rules = [
+            "cfg(X,N,V) :- bind_cfg(X,O,mutant(M)), obs(O,N,V), node(N), not mutant(M,N,_)",
+            "cfg(X,N,V) :- bind_cfg(X,O,mutant(M)), obs(O,N,_), node(N), mutant(M,N,V)"
+        ]
+        self.push(rules)
+
+    def encode_bind_cfg(self, cfg, obs, mutant=None):
+        args = (cfg, obs)
+        if mutant is not None:
+            self.load_template_bind_cfg_mutant()
+            args = args + (clingo.Function("mutant", (mutant,)),)
+        return [clingo.Function("bind_cfg", args)]
 
     @unique_usage
     def load_template_strong_constant(self):
