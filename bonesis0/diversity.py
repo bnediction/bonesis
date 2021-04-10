@@ -13,7 +13,12 @@ class diversity_driver:
         return (a.name, len(a.arguments)) in self.preds
     def initialize(self, control):
         self.control = control
-        self.control.load(aspf("diversity.asp"))
+        self.control.add("diversity", [], """
+            #heuristic clause(N,C,L,S) : avoidclause(N,C,L,S). [10,false]
+            #heuristic constant(N) : avoidconstant(N). [2,false]
+            #heuristic clause(N,C,L,S). [1,false] %subset
+            #external avoidclause(N,C,L,S) : clause(N,C,L,S).
+            #external avoidconstant(N) : constant(N).""")
         self.control.ground([("diversity",[])])
         self.control.configuration.solver[0].heuristic = "Domain"
         self.control.configuration.solve.models = "1"
