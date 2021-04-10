@@ -235,6 +235,8 @@ class ASPModel_DNF(object):
         if mutant is not None:
             self.load_template_bind_cfg_mutant()
             args = args + (clingo.Function("mutant", (mutant,)),)
+        else:
+            self.load_template_bind_cfg()
         return [clingo.Function("bind_cfg", args)]
 
     @unique_usage
