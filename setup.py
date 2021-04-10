@@ -21,9 +21,6 @@ setup(name=NAME,
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
     keywords="computational systems biology",
-
-    include_package_data = True,
-    packages = find_packages(),
-    package_data = {"bonesis0": ["bonesis-asp/*.asp"]}
+    packages = find_packages()
 )
 
