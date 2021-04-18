@@ -6,7 +6,6 @@ import tempfile
 import boolean
 
 from bonesis0.asp_encoding import *
-from bonesis0.utils import aspf
 from bonesis0.proxy_control import ProxyControl
 from .domains import BooleanNetwork, InfluenceGraph
 

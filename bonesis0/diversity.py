@@ -4,7 +4,6 @@ import time
 
 import clingo
 
-from .utils import aspf
 from .asp_encoding import minibn_of_facts
 
 class diversity_driver:
