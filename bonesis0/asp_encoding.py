@@ -1,12 +1,12 @@
 
 import clingo as asp
+clingo_Tuple = asp.Tuple_ if hasattr(asp, "Tuple_") else asp.Tuple
 
 from scipy.special import binom
 
 from functools import reduce
 
 from mpbn import MPBooleanNetwork
-
 
 def py_of_symbol(symb):
     if symb.type is asp.SymbolType.String:
@@ -16,6 +16,18 @@ def py_of_symbol(symb):
     if symb.type is asp.SymbolType.Function:
         return tuple(map(py_of_symbol, symb.arguments))
     raise ValueError
+
+def symbol_of_py(obj):
+    if isinstance(obj, str):
+        return asp.String(obj)
+    elif isinstance(obj, int):
+        return asp.Number(obj)
+    elif isinstance(obj, tuple):
+        return clingo_Tuple([symbol_of_py(o) for o in obj])
+    return obj
+
+def symbols(*objs):
+    return [symbol_of_py(obj) for obj in objs]
 
 def string_of_facts(facts):
     if not facts:
@@ -32,16 +44,16 @@ def nb_clauses(d):
 def pkn_to_facts(pkn, maxclause=None, allow_skipping_nodes=False):
     facts = []
     if not allow_skipping_nodes:
-        facts.append(asp.Function("nbnode", [asp.Number(len(pkn.nodes()))]))
+        facts.append(asp.Function("nbnode", symbols(len(pkn.nodes()))))
         for n in pkn.nodes():
-            facts.append(asp.Function("node", (n,)))
+            facts.append(asp.Function("node", symbols(n)))
     else:
         facts.append("nbnode(NB) :- NB = #count{N: node(N)}")
         for n in pkn.nodes():
-            facts.append("{{{}}}".format(asp.Function("node", (n,))))
+            facts.append("{{{}}}".format(asp.Function("node", symbols(n))))
     for (orig, dest, data) in pkn.edges(data=True):
         if data["sign"] in ["ukn","?","0",0]:
-            args = asp.Tuple((orig, dest)).arguments
+            args = symbols(orig, dest)
             f = "in({},{},(-1;1))".format(*args)
             facts.append(f)
         else:
@@ -49,14 +61,14 @@ def pkn_to_facts(pkn, maxclause=None, allow_skipping_nodes=False):
             if ds in ["-","+"]:
                 ds += "1"
             s = int(ds)
-            facts.append(asp.Function("in", (orig, dest, s)))
+            facts.append(asp.Function("in", symbols(orig, dest, s)))
     def bounded_nb_clauses(d):
         nbc = nb_clauses(d)
         if maxclause:
             nbc = min(maxclause, nbc)
         return nbc
     for n, i in pkn.in_degree(pkn.nodes()):
-        facts.append(asp.Function("maxC", (n, bounded_nb_clauses(i))))
+        facts.append(asp.Function("maxC", symbols(n, bounded_nb_clauses(i))))
     return facts
 
 def obs_to_facts(pstate, obsid):

@@ -15,8 +15,7 @@ from .debug import dbg, debug_enabled
 def s2v(s):
     return 1 if s > 0 else -1
 
-def clingo_encode(val):
-    return clingo.Function("", (val,)).arguments[0]
+clingo_encode = symbol_of_py
 
 def unique_usage(method):
     name = method.__name__
@@ -130,18 +129,18 @@ class ASPModel_DNF(object):
             f = self.ba.dnf(f).simplify()
         for cid, c in enumerate(clauses_of_dnf(f)):
             if isinstance(c, bool):
-                facts.append(clingo.Function("constant", [n, s2v(c)]))
+                facts.append(clingo.Function("constant", symbols(n, s2v(c))))
             else:
                 for m, v in literals_of_clause(c):
-                    facts.append(clingo.Function("clause", [n, cid+1, m, v]))
+                    facts.append(clingo.Function("clause", symbols(n, cid+1, m, v)))
         return facts
 
     def encode_domain_BooleanNetwork(self, bn):
         self.ba = bn.ba
         facts = []
-        facts.append(asp.Function("nbnode", [asp.Number(len(bn))]))
+        facts.append(asp.Function("nbnode", symbols(len(bn))))
         for n, f in bn.items():
-            facts.append(clingo.Function("node", [n]))
+            facts.append(clingo.Function("node", symbols(n)))
             facts += self.encode_BooleanFunction(n, f, ensure_dnf=False)
         return facts
 
@@ -161,7 +160,7 @@ class ASPModel_DNF(object):
             for (n, b) in obs.items():
                 if b not in [0,1]:
                     continue
-                facts.append(clingo.Function("obs", [k, n, s2v(b)]))
+                facts.append(clingo.Function("obs", symbols(k, n, s2v(b))))
         return facts
 
     @unique_usage
@@ -233,10 +232,10 @@ class ASPModel_DNF(object):
         args = (cfg, obs)
         if mutant is not None:
             self.load_template_bind_cfg_mutant()
-            args = args + (clingo.Function("mutant", (mutant,)),)
+            args = args + (clingo.Function("mutant", symbols(mutant)),)
         else:
             self.load_template_bind_cfg()
-        return [clingo.Function("bind_cfg", args)]
+        return [clingo.Function("bind_cfg", symbols(*args))]
 
     @unique_usage
     def load_template_strong_constant(self):
@@ -282,12 +281,11 @@ class ASPModel_DNF(object):
                 if hasattr(self, tpl):
                     getattr(self, tpl)()
                 args = tuple(map(self.encode_argument, args))
-                facts.append(clingo.Function(name, args))
+                facts.append(clingo.Function(name, symbols(*args)))
         return facts
 
     def encode_mutant(self, name, mutations):
-        mutant = clingo_encode(name)
-        return [clingo.Function("mutant", (mutant, node, s2v(b)))
+        return [clingo.Function("mutant", symbols(name, node, s2v(b)))
             for node, b in mutations.items()]
 
     def apply_mutant_to_mcfg(self, mutant, mcfg):
