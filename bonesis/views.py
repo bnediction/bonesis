@@ -71,7 +71,7 @@ class BonesisView(object):
 
     def __iter__(self):
         self.configure()
-        self._iterator = self.control.solve(yield_=True)
+        self._iterator = iter(self.control.solve(yield_=True))
         return self
 
     def __next__(self):
