@@ -431,10 +431,10 @@ class ASPModel_DNF(object):
         return rules
 
     def encode_cfg_assign(self, cfg, node, b, mutant=None):
-        return [clingo.Function("cfg", (cfg.name, node, s2v(b)))]
+        return [clingo.Function("cfg", symbols(cfg.name, node, s2v(b)))]
 
     def encode_constant(self, node, b, mutant=None):
-        return [clingo.Function("constant", (node, s2v(b)))]
+        return [clingo.Function("constant", symbols(node, s2v(b)))]
 
     def encode_cfg_node_eq(self, cfg1, cfg2, node, mutant=None):
         c1 = clingo_encode(cfg1.name)
@@ -453,7 +453,7 @@ class ASPModel_DNF(object):
         ]
 
     def encode_different(self, cfg1, cfg2, mutant=None):
-        diff = clingo.Function("diff", (cfg1.name, cfg2.name))
+        diff = clingo.Function("diff", symbols(cfg1.name, cfg2.name))
         c1 = clingo_encode(cfg1.name)
         c2 = clingo_encode(cfg2.name)
         return [
