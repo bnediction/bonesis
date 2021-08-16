@@ -24,6 +24,7 @@ class BonesisView(object):
         for k,v in settings.items():
             self.settings[k] = v
         self.quiet = quiet
+        self.filters = []
 
         def parse_extra(extra):
             if isinstance(extra, str):
@@ -37,8 +38,11 @@ class BonesisView(object):
             extra = (parse_extra(extra),)
         self.extra_model = extra
 
+    def add_filter(self, func):
+        self.filters.append(func)
+
     def configure(self, ground=True, **opts):
-        args = [self.limit]
+        args = [0]
         if self.project:
             args.append("--project")
         if self.mode == "optN":
@@ -72,19 +76,28 @@ class BonesisView(object):
     def __iter__(self):
         self.configure()
         self._iterator = iter(self.control.solve(yield_=True))
+        self._counter = 0
         return self
 
     def __next__(self):
+        if self.limit and self._counter >= self.limit:
+            raise StopIteration
         t = Timer(self.settings["timeout"], self.interrupt) \
                 if "timeout" in self.settings else None
         try:
             self.cur_model = next(self._iterator)
         finally:
             t.cancel() if t is not None else None
-        if self.mode == "optN":
-            if not self.cur_model.optimality_proven:
+        if self.mode.startswith("opt") \
+                and not self.cur_model.optimality_proven:
+            return next(self)
+        pmodel = self.parse_model(self.cur_model)
+        for func in self.filters:
+            if not func(pmodel):
+                print(f"Skipping solution not verifying {func.__name__}")
                 return next(self)
-        return self.parse_model(self.cur_model)
+        self._counter += 1
+        return pmodel
 
     def parse_model(self, m):
         model = self.format_model(m)
@@ -96,7 +109,8 @@ class BonesisView(object):
 
     def count(self):
         k = self.parse_model
-        self.parse_model = lambda x: 1
+        if not self.filters:
+            self.parse_model = lambda x: 1
         c = len(list(self))
         self.parse_model = k
         return c
@@ -131,9 +145,16 @@ class NonStrongConstantNodesView(NonConstantNodesView):
     show_templates = ["node", "strong_constant"]
 
 
+def bn_nocyclic_attractors(bn):
+    return not bn.has_cyclic_attractor()
+
 class BooleanNetworksView(BonesisView):
     project = True
     show_templates = ["boolean_network"]
+    def __init__(self, *args, no_cyclic_attractors=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        if no_cyclic_attractors:
+            self.add_filter(bn_nocyclic_attractors)
     def format_model(self, model):
         atoms = model.symbols(shown=True)
         return minibn_of_facts(atoms)
@@ -244,4 +265,5 @@ class DiverseBooleanNetworksView(BooleanNetworksView):
     def __iter__(self):
         self.configure()
         self._iterator = iter(self.diverse)
+        self._counter = 0
         return self
