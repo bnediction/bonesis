@@ -5,6 +5,10 @@ Language:
 
 - mutant: make obs override configurable
 
+- add recipe to force inhibotr-dominant rules
+
+Proper messaging (logging)
+
 Tests
 
 Jupyter menu
