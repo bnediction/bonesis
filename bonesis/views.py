@@ -7,6 +7,7 @@ import clingo
 import pandas as pd
 
 from .debug import dbg
+from .snippets import bn_nocyclic_attractors
 from .utils import OverlayedDict
 from bonesis0.asp_encoding import minibn_of_facts, configurations_of_facts, py_of_symbol
 from bonesis0 import diversity
@@ -144,9 +145,6 @@ class NonStrongConstantNodesView(NonConstantNodesView):
     constants = "strong_constant"
     show_templates = ["node", "strong_constant"]
 
-
-def bn_nocyclic_attractors(bn):
-    return not bn.has_cyclic_attractor()
 
 class BooleanNetworksView(BonesisView):
     project = True

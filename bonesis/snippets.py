@@ -13,3 +13,5 @@ def matching_configurations(obs):
             cfg[n] = b
         yield cfg
 
+def bn_nocyclic_attractors(bn):
+    return not bn.has_cyclic_attractor()
