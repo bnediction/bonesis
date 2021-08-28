@@ -14,6 +14,7 @@ from bonesis0 import diversity
 
 
 class BonesisView(object):
+    single_shot = True
     def __init__(self, bo, limit=0, quiet=False, mode="auto", extra=None, **settings):
         self.bo = bo
         self.aspmodel = bo.aspmodel
@@ -44,6 +45,8 @@ class BonesisView(object):
 
     def configure(self, ground=True, **opts):
         args = [0]
+        if self.single_shot:
+            args.append("--single-shot")
         if self.project:
             args.append("--project")
         if self.mode == "optN":
@@ -178,6 +181,7 @@ class ProjectedBooleanNetworksContext(object):
 
 
 class ProjectedBooleanNetworksViews(BooleanNetworksView):
+    single_shot = False
     def __init__(self, *args, skip_empty=False, ground=True, **kwargs):
         super().__init__(*args, **kwargs)
         self.skip_empty = skip_empty
@@ -239,6 +243,7 @@ class LocalFunctionsViews(ProjectedBooleanNetworksViews):
 
 
 class DiverseBooleanNetworksView(BooleanNetworksView):
+    single_shot = False
     project = False
     def __init__(self, bo, driver="fraction",
             driver_kwargs=dict(pc_drive=50, pc_forget=50),
