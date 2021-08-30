@@ -45,7 +45,7 @@ class BonesisView(object):
 
     def configure(self, ground=True, **opts):
         args = [0]
-        if self.single_shot:
+        if self.single_shot and hasattr(clingo, "version") and clingo.version() >= (5,5,0):
             args.append("--single-shot")
         if self.project:
             args.append("--project")
