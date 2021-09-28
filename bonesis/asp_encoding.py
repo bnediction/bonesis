@@ -224,7 +224,8 @@ class ASPModel_DNF(object):
     def load_template_bind_cfg_mutant(self):
         rules = [
             "cfg(X,N,V) :- bind_cfg(X,O,mutant(M)), obs(O,N,V), node(N), not mutant(M,N,_)",
-            "cfg(X,N,V) :- bind_cfg(X,O,mutant(M)), obs(O,N,_), node(N), mutant(M,N,V), not weak_mutant(M,N,V)",
+            "cfg(X,N,V) :- bind_cfg(X,O,mutant(M)), obs(O,_,_), node(N), mutant(M,N,V), not weak_mutant(M,N,V)",
+            # TODO: next rule should account for non-weak mutant on same node
             "cfg(X,N,V) :- bind_cfg(X,O,mutant(M)), obs(O,N,V), node(N), mutant(M,N,W), weak_mutant(M,N,W)"
         ]
         self.push(rules)
