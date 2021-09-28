@@ -49,7 +49,7 @@ def sign_of_label(label):
     if label in sign_map:
         return sign_map[label]
     label = label.lower()
-    if label.startswith("act"):
+    if label.startswith("act") or label.startswith("stim"):
         return 1
     if label.startswith("inh"):
         return -1
@@ -88,6 +88,27 @@ class InfluenceGraph(BonesisDomain, nx.MultiDiGraph):
 
     def max_indegree(self):
         return max(dict(self.in_degree()).values())
+
+    @classmethod
+    def from_csv(celf, filename, column_source=0, column_target=1, column_sign=2,
+                    sep=",",
+                    unsource=True, **kwargs):
+        df = pd.read_csv(filename, sep=sep)
+        def get_colname(spec):
+            return df.columns[spec] if isinstance(spec, int) else spec
+        column_source = get_colname(column_source)
+        column_target = get_colname(column_target)
+        column_sign = get_colname(column_sign)
+        df.rename(columns = {
+            column_source: "in",
+            column_target: "out",
+            column_sign: "sign"}, inplace=True)
+        df["sign"] = df["sign"].map(sign_of_label)
+        g = nx.from_pandas_edgelist(df, "in", "out", ["sign"], nx.MultiDiGraph())
+        pkn = celf(g, **kwargs)
+        if unsource:
+            pkn.unsource()
+        return pkn
 
     @classmethod
     def from_sif(celf, filename, sep="\\s+", unsource=True, **kwargs):
