@@ -66,9 +66,10 @@ class BoNesis(object):
         if dest_scope is not None:
             dest_scope.update(ret)
         return ret
+
     def load(self, script, defs=None, dest_scope=None):
         with open(script) as fp:
-            return self._load_code(fp.read(), defs=defs, dest_scope=None)
+            return self.load_code(fp.read(), defs=defs, dest_scope=None)
 
     def solver(self, *args, **kwargs):
         self.aspmodel.make()
