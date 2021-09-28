@@ -47,11 +47,18 @@ class ManagedIface(object):
 @language_api
 class mutant(object):
     def __init__(self, mutations):
+        for node in mutations:
+            self.mgr.assert_node_exists(node)
         self.mutations = mutations
     def __enter__(self):
         return ManagedIface(self.mgr.mutant_context(self.mutations))
     def __exit__(self, *args):
         pass
+
+@language_api
+class treatment(mutant):
+    def __enter__(self):
+        return ManagedIface(self.mgr.mutant_context(self.mutations, weak=True))
 
 def declare_operator(operator):
     def decorator(func):

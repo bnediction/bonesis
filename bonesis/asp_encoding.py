@@ -224,7 +224,8 @@ class ASPModel_DNF(object):
     def load_template_bind_cfg_mutant(self):
         rules = [
             "cfg(X,N,V) :- bind_cfg(X,O,mutant(M)), obs(O,N,V), node(N), not mutant(M,N,_)",
-            "cfg(X,N,V) :- bind_cfg(X,O,mutant(M)), obs(O,N,_), node(N), mutant(M,N,V)"
+            "cfg(X,N,V) :- bind_cfg(X,O,mutant(M)), obs(O,N,_), node(N), mutant(M,N,V), not weak_mutant(M,N,V)",
+            "cfg(X,N,V) :- bind_cfg(X,O,mutant(M)), obs(O,N,V), node(N), mutant(M,N,W), weak_mutant(M,N,W)"
         ]
         self.push(rules)
 
@@ -286,6 +287,10 @@ class ASPModel_DNF(object):
 
     def encode_mutant(self, name, mutations):
         return [clingo.Function("mutant", symbols(name, node, s2v(b)))
+            for node, b in mutations.items()]
+
+    def encode_weak_mutant(self, name, mutations):
+        return [clingo.Function("weak_mutant", symbols(name, node, s2v(b)))
             for node, b in mutations.items()]
 
     def apply_mutant_to_mcfg(self, mutant, mcfg):

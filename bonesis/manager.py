@@ -53,12 +53,12 @@ class BonesisManager(object):
     def append_optimization(self, opt, name):
         self.optimizations.append((opt, name))
 
-    def mutant_context(self, mutations):
-        return _MutantManager(self, mutations)
+    def mutant_context(self, *args, **kwargs):
+        return _MutantManager(self, *args, **kwargs)
 
 class _MutantManager(BonesisManager):
     _mutant_id = 0
-    def __init__(self, parent, mutations):
+    def __init__(self, parent, mutations, weak=False):
         self.bo = parent.bo
         self.properties = parent.properties
         self.observations = parent.observations
@@ -70,6 +70,8 @@ class _MutantManager(BonesisManager):
         self.__class__._mutant_id += 1
         self.mutant_name = self.__class__._mutant_id
         self.push_term("mutant", self.mutant_name, self.mutations)
+        if weak:
+            self.push_term("weak_mutant", self.mutant_name, self._mutations)
 
     def get_mutations(self):
         m = self._mutations.copy()

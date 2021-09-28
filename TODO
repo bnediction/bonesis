@@ -3,13 +3,12 @@
 Language:
 - monotone reach
 
-- mutant: make obs override configurable
-
 - add recipe to force inhibotr-dominant rules
 
 Proper messaging (logging)
 
 Tests
+- treatment
 
 Jupyter menu
 
