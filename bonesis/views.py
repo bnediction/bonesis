@@ -52,6 +52,10 @@ class BonesisView(object):
         if self.mode == "optN":
             args += ["--opt-mode=optN", "--opt-strategy=usc"]
         if self.settings["solutions"] == "subset-minimal":
+            # workaround https://github.com/potassco/clingo/issues/340
+            parallel = self.settings.get("parallel", 0)
+            if isinstance(parallel, int) and parallel >= 15:
+                self.settings["parallel"] = 14
             args += ["--heuristic", "Domain",
                     "--enum-mode", "domRec", "--dom-mod", "5,16"]
         if not self.quiet and ground:
