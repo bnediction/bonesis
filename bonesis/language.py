@@ -63,7 +63,7 @@ class mutant(object):
         self.iface.pop_manager()
 
 @language_api
-class treatment(mutant):
+class action(mutant):
     def __enter__(self):
         return ManagedIface(self.mgr.mutant_context(self.mutations, weak=True),
                 self.iface)
