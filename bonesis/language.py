@@ -6,17 +6,24 @@ def language_api(cls):
     return cls
 
 class ManagedIface(object):
-    def __init__(self, manager):
+    def __init__(self, manager, parent=None):
         self.manager = manager
+        self.stack_manager = [] if parent is None else parent.stack_manager
+        self.stack_manager.append(manager)
         self.recovery = {}
         def managed(cls):
             class Managed(cls):
                 iface = self
-                mgr = self.manager
+                @property
+                def mgr(_):
+                    return self.stack_manager[-1]
             Managed.__name__ = cls.__name__
             return Managed
         for name, cls in __language_api__.items():
             setattr(self, name, managed(cls))
+
+    def pop_manager(self):
+        self.stack_manager.pop()
 
     def install(self, scope):
         sid = id(scope)
@@ -51,14 +58,15 @@ class mutant(object):
             self.mgr.assert_node_exists(node)
         self.mutations = mutations
     def __enter__(self):
-        return ManagedIface(self.mgr.mutant_context(self.mutations))
+        return ManagedIface(self.mgr.mutant_context(self.mutations), self.iface)
     def __exit__(self, *args):
-        pass
+        self.iface.pop_manager()
 
 @language_api
 class treatment(mutant):
     def __enter__(self):
-        return ManagedIface(self.mgr.mutant_context(self.mutations, weak=True))
+        return ManagedIface(self.mgr.mutant_context(self.mutations, weak=True),
+                self.iface)
 
 def declare_operator(operator):
     def decorator(func):
@@ -188,8 +196,6 @@ class BonesisPredicate(BonesisTerm):
             if isinstance(obj, BonesisTerm):
                 if not hasattr(self, "iface"):
                     self._set_iface(obj.iface)
-                else:
-                    assert obj.iface is self.iface, "mixed managers"
             elif isinstance(obj, (list, set, tuple)):
                 [auto_iface(e) for e in obj]
         for obj in self.args:
