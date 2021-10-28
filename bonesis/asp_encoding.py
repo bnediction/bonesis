@@ -382,7 +382,7 @@ class ASPModel_DNF(object):
             f"{condition} :- cfg({satcfg},N,V), eval({mycfg},N,-V)",
         ] + [
             # match one given observation
-            f"{condition} :- cfg({satcfg},N,V): obs({clingo_encode(obs.name)},N,V)"
+            f"{condition} :- cfg({satcfg},N,V): obs({clingo_encode(obs.name)},N,V), node(N)"
                 for obs in arg
         ] + self.apply_mutant_to_mcfg(mutant, mycfg)
         return rules
@@ -399,7 +399,7 @@ class ASPModel_DNF(object):
             f"mcfg({mycfg},N,V) :- eval({mycfg},N,V)",
         ] + [
             # contain at least one given observation
-            f"{condition} :- mcfg({mycfg},N,V): obs({clingo_encode(obs.name)},N,V)"
+            f"{condition} :- mcfg({mycfg},N,V): obs({clingo_encode(obs.name)},N,V), node(N)"
                 for obs in arg
         ] + self.apply_mutant_to_mcfg(mutant, mycfg)
         return rules
