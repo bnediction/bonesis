@@ -17,6 +17,11 @@ setup(name=NAME,
         "pandas",
         "scipy",
     ],
+    entry_points = {
+        "console_scripts": [
+            "bonesis-utils=bonesis.cli:main_utils",
+        ],
+    },
     classifiers=[
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering :: Bio-Informatics",

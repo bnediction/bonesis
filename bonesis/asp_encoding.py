@@ -497,3 +497,8 @@ class ASPModel_DNF(object):
         "strong_constant":
             ["strong_constant/1"],
     }
+
+    @staticmethod
+    def minibn_of_json_facts(str_facts):
+        fs = map(clingo.parse_term, str_facts)
+        return minibn_of_facts(fs)
