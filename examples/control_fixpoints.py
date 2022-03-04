@@ -19,3 +19,11 @@ for res in view:
 
 for res in bo.assignments(solutions="all"):
     print(res)
+
+bo = bonesis.BoNesis(dom, data)
+control = bo.Some()
+with bo.mutant(control) as m:
+    m.all_fixpoints(bo.obs("111"))
+
+for res in control.assignments():
+    print(res)

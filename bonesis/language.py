@@ -69,6 +69,10 @@ class Some(object):
     def copy(self):
         return self
 
+    def assignments(self, **kwargs):
+        from .views import SingleSomeView
+        return SingleSomeView(self, self.mgr.bo, **kwargs)
+
 @language_api
 class SomeFreeze(Some):
     pass

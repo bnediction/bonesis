@@ -9,7 +9,8 @@ import pandas as pd
 from .debug import dbg
 from .snippets import bn_nocyclic_attractors
 from .utils import OverlayedDict
-from bonesis0.asp_encoding import minibn_of_facts, configurations_of_facts, py_of_symbol
+from bonesis0.asp_encoding import (minibn_of_facts,
+        configurations_of_facts, py_of_symbol, symbol_of_py)
 from bonesis0 import diversity
 
 
@@ -292,3 +293,19 @@ class SomeView(BonesisView):
                 name, n, v = py_of_symbol(a)
                 somes[name][n] = max(v,0)
         return somes
+
+class SingleSomeView(SomeView):
+    def __init__(self, some, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.some = some
+    def configure_show(self):
+        if self.some.dtype == "Freeze":
+            name = symbol_of_py(self.some.name)
+            self.control.add("base", [],
+                    "#show."
+                    f"#show some_freeze(M,N,V) : some_freeze(M,N,V), M={name}.")
+        else:
+            raise NotImplementedError
+    def format_model(self, model):
+        somes = super().format_model(model)
+        return somes[self.some.name]
