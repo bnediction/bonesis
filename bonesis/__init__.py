@@ -90,3 +90,6 @@ class BoNesis(object):
         return ProjectedBooleanNetworksViews(self, **kwargs)
     def local_functions(self, **kwargs):
         return LocalFunctionsViews(self, **kwargs)
+
+    def assignments(self, solutions="subset-minimal", **kwargs):
+        return SomeView(self, solutions=solutions, **kwargs)

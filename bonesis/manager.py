@@ -1,7 +1,7 @@
 
 import clingo
 
-from .language import BonesisTerm
+from .language import BonesisTerm, Some
 
 class BonesisManager(object):
     def __init__(self, bo):
@@ -9,6 +9,7 @@ class BonesisManager(object):
         self.properties = []
         self.observations = set()
         self.configurations = set()
+        self.some = {}
         self.optimizations = []
 
     def assert_node_exists(self, node, assertion=KeyError):
@@ -50,6 +51,13 @@ class BonesisManager(object):
                 assert obj.mgr is self, "mixed managers"
         self.push_term(name, *args, **kwargs)
 
+    def register_some(self, some):
+        if some.name is None:
+            some.name = f"__some{len(self.some)}"
+        assert some.name not in self.some, "Duplicate Some identifier"
+        self.some[some.name] = some
+        self.push_term("some", some)
+
     def append_optimization(self, opt, name):
         self.optimizations.append((opt, name))
 
@@ -63,6 +71,7 @@ class _MutantManager(BonesisManager):
         self.properties = parent.properties
         self.observations = parent.observations
         self.configurations = parent.configurations
+        self.some = parent.some
         self.parent = parent
         self.managed_configurations = set()
         self._mutations = mutations

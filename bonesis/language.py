@@ -50,12 +50,37 @@ class ManagedIface(object):
                 delv(k)
         del self.recovery[sid]
 
+@language_api
+class Some(object):
+    def __init__(self, name=None, **opts):
+        self.name = name
+        self.opts = opts
+        self.dtype = self.__class__.__name__[4:] or None
+        self.publish()
+    def publish(self):
+        self.mgr.register_some(self)
+    def _decl_dtype(self, dtype):
+        if self.dtype is None:
+            self.dtype = dtype
+        else:
+            assert self.dtype == dtype, "Some used with incompatible types"
+    def __str__(self):
+        return f"Some{self.dtype}(\"{self.name}\")"
+    def copy(self):
+        return self
+
+@language_api
+class SomeFreeze(Some):
+    pass
 
 @language_api
 class mutant(object):
     def __init__(self, mutations):
-        for node in mutations:
-            self.mgr.assert_node_exists(node)
+        if isinstance(mutations, Some):
+            mutations._decl_dtype("Freeze")
+        else:
+            for node in mutations:
+                self.mgr.assert_node_exists(node)
         self.mutations = mutations
     def __enter__(self):
         return ManagedIface(self.mgr.mutant_context(self.mutations), self.iface)

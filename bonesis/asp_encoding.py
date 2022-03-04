@@ -286,13 +286,39 @@ class ASPModel_DNF(object):
                 facts.append(clingo.Function(name, symbols(*args)))
         return facts
 
-    def encode_mutant(self, name, mutations):
-        return [clingo.Function("mutant", symbols(name, node, s2v(b)))
+    def encode_some(self, some):
+        if some.dtype is None:
+            raise TypeError(f"{some} has no type!")
+        encoder = getattr(self, f"encode_some_{some.dtype.lower()}")
+        return encoder(some.name, some.opts)
+
+    def encode_some_freeze(self, name, opts):
+        min_size = opts.get("min_size", 1)
+        max_size = opts.get("max_size", 1)
+        #TODO: user-specified domain
+        name = clingo_encode(name)
+        rules = [
+            f"{min_size}"
+                f" {{ some_freeze({name},N,(1;-1)) : node(N) }}"
+                f" {max_size}",
+        ]
+        if max_size > 1:
+            rules += [
+                f":- some_freeze({name},N,V), some_freeze({name},N,-V)"
+            ]
+        return rules
+
+    def encode_mutant(self, name, mutations, __pred="mutant"):
+        if isinstance(mutations, Some):
+            # copy 'Some' mutation
+            name = clingo_encode(name)
+            some = clingo_encode(mutations.name)
+            return [f"{__pred}({name},N,V) :- some_freeze({some},N,V)"]
+        return [clingo.Function(__pred, symbols(name, node, s2v(b)))
             for node, b in mutations.items()]
 
     def encode_weak_mutant(self, name, mutations):
-        return [clingo.Function("weak_mutant", symbols(name, node, s2v(b)))
-            for node, b in mutations.items()]
+        self.encode_mutant(name, mutatinons, __pred="weak_mutant")
 
     def apply_mutant_to_mcfg(self, mutant, mcfg):
         if mutant is None:
@@ -496,6 +522,8 @@ class ASPModel_DNF(object):
             ["constant/1"],
         "strong_constant":
             ["strong_constant/1"],
+        "some":
+            ["some_freeze/3"]
     }
 
     @staticmethod

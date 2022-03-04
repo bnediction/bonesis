@@ -274,3 +274,21 @@ class DiverseBooleanNetworksView(BooleanNetworksView):
         self._iterator = iter(self.diverse)
         self._counter = 0
         return self
+
+
+class SomeView(BonesisView):
+    project = True
+    show_templates = ["some"]
+    def format_model(self, model):
+        def init_some(dtype):
+            if dtype == "Freeze":
+                return {}
+            raise NotImplementedError
+        somes = {name: init_some(some.dtype)
+            for name, some in self.bo.manager.some.items()}
+
+        for a in model.symbols(shown=True):
+            if a.name == "some_freeze":
+                name, n, v = py_of_symbol(a)
+                somes[name][n] = max(v,0)
+        return somes
