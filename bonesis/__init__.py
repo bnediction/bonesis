@@ -92,4 +92,4 @@ class BoNesis(object):
         return LocalFunctionsViews(self, **kwargs)
 
     def assignments(self, solutions="subset-minimal", **kwargs):
-        return SomeView(self, solutions=solutions, **kwargs)
+        return AllSomeView(self, solutions=solutions, **kwargs)

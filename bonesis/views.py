@@ -1,4 +1,5 @@
 
+import itertools
 from threading import Timer, Lock
 import time
 
@@ -7,8 +8,9 @@ import clingo
 import pandas as pd
 
 from .debug import dbg
+from .language import SomeFreeze
 from .snippets import bn_nocyclic_attractors
-from .utils import OverlayedDict
+from .utils import OverlayedDict, frozendict
 from bonesis0.asp_encoding import (minibn_of_facts,
         configurations_of_facts, py_of_symbol, symbol_of_py)
 from bonesis0 import diversity
@@ -277,7 +279,7 @@ class DiverseBooleanNetworksView(BooleanNetworksView):
         return self
 
 
-class SomeView(BonesisView):
+class AllSomeView(BonesisView):
     project = True
     show_templates = ["some"]
     def format_model(self, model):
@@ -294,7 +296,7 @@ class SomeView(BonesisView):
                 somes[name][n] = max(v,0)
         return somes
 
-class SingleSomeView(SomeView):
+class SomeView(AllSomeView):
     def __init__(self, some, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.some = some
@@ -309,3 +311,60 @@ class SingleSomeView(SomeView):
     def format_model(self, model):
         somes = super().format_model(model)
         return somes[self.some.name]
+
+def SomeFreezeComplementaryView(some, *args, **kwargs):
+        subset_min = kwargs["solutions"] == "subset-minimal"
+
+        kwargs["solutions"] = "all"
+        coview = SomeView(some, *args, **kwargs)
+        opts = SomeFreeze.default_opts | some.opts
+
+
+        nodes = list(some.mgr.bo.domain)
+        elements = [(n,0) for n in nodes] + [(n,1) for n in nodes]
+
+        def freeze_add(fs, e):
+            coe = (e[0], 1-e[1])
+            if coe in fs:
+                return fs
+            return fs.union((e,))
+
+        def enlarge_candidates(candidates, elements):
+            return map(lambda y: freeze_add(*y),
+                    itertools.product(candidates, elements))
+
+        candidates = [frozendict({})]
+        for _ in range(opts["min_size"]):
+            candidates = enlarge_candidates(candidates, elements)
+
+        min_size = opts["min_size"]
+        max_size = opts["max_size"]
+        good = set()
+        for size in range(min_size, max_size+1):
+            some.opts["min_size"] = size
+            some.opts["max_size"] = size
+            coassignments = set(map(frozendict, coview))
+
+            bad = set()
+            for candidate in candidates:
+                if len(candidate) != size:
+                    continue
+                if candidate not in coassignments:
+                    ignore = False
+                    for g in good:
+                        if g.issubset(candidate):
+                            ignore = True
+                            break
+                    if not ignore:
+                        yield dict(candidate)
+                        if subset_min and size > 1:
+                            good.add(candidate)
+                else:
+                    bad.add(candidate)
+            if size != opts["max_size"]:
+                if subset_min and size == 1:
+                    elements = [next(iter(c)) for c in bad]
+                candidates = enlarge_candidates(bad, elements)
+        # restore
+        opts["min_size"] = min_size
+        opts["max_size"] = max_size

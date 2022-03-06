@@ -293,8 +293,9 @@ class ASPModel_DNF(object):
         return encoder(some.name, some.opts)
 
     def encode_some_freeze(self, name, opts):
-        min_size = opts.get("min_size", 1)
-        max_size = opts.get("max_size", 1)
+        opts = SomeFreeze.default_opts | opts
+        min_size = opts["min_size"]
+        max_size = opts["max_size"]
         #TODO: user-specified domain
         name = clingo_encode(name)
         rules = [

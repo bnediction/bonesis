@@ -69,13 +69,22 @@ class Some(object):
     def copy(self):
         return self
 
-    def assignments(self, **kwargs):
-        from .views import SingleSomeView
-        return SingleSomeView(self, self.mgr.bo, **kwargs)
+    def assignments(self, solutions="subset-minimal", **kwargs):
+        from .views import SomeView
+        return SomeView(self, self.mgr.bo, solutions=solutions, **kwargs)
+    def complementary_assignments(self, solutions="subset-minimal", **kwargs):
+        if self.dtype == "Freeze":
+            from .views import SomeFreezeComplementaryView
+            return SomeFreezeComplementaryView(self, self.mgr.bo,
+                    solutions=solutions, **kwargs)
+        raise TypeError()
 
 @language_api
 class SomeFreeze(Some):
-    pass
+    default_opts = {
+        "min_size": 0,
+        "max_size": 1
+    }
 
 @language_api
 class mutant(object):
@@ -94,7 +103,7 @@ class mutant(object):
 @language_api
 class action(mutant):
     def __enter__(self):
-        return ManagedIface(self.mgr.mutant_context(self.mutations, weak=True),
+        returnManagedIface(self.mgr.mutant_context(self.mutations, weak=True),
                 self.iface)
 
 def declare_operator(operator):

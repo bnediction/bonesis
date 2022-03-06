@@ -1,6 +1,9 @@
 
 from itertools import chain
 
+def frozendict(d):
+    return frozenset(d.items())
+
 class OverlayedDict(dict):
     def __init__(self, parent, *args, **kwargs):
         self.parent = parent
