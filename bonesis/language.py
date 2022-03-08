@@ -103,7 +103,7 @@ class mutant(object):
 @language_api
 class action(mutant):
     def __enter__(self):
-        returnManagedIface(self.mgr.mutant_context(self.mutations, weak=True),
+        return ManagedIface(self.mgr.mutant_context(self.mutations, weak=True),
                 self.iface)
 
 def declare_operator(operator):
