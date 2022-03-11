@@ -154,13 +154,14 @@ class ASPModel_DNF(object):
             facts.append(":- in(L,N,S), not edge(L,N,S)")
         return facts
 
+    def encode_obs_data(self, name, data):
+        return [clingo.Function("obs", symbols(name, i, s2v(b)))
+                for (i, b) in data.items() if b in (0,1,True,False)]
+
     def encode_data(self, data):
         facts = []
         for k, obs in data.items():
-            for (n, b) in obs.items():
-                if b not in [0,1]:
-                    continue
-                facts.append(clingo.Function("obs", symbols(k, n, s2v(b))))
+            facts.extend(self.encode_obs_data(k, obs))
         return facts
 
     @unique_usage

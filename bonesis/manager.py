@@ -8,6 +8,7 @@ class BonesisManager(object):
         self.bo = bo
         self.properties = []
         self.observations = set()
+        self.anon_observations = {}
         self.configurations = set()
         self.some = {}
         self.optimizations = []
@@ -23,11 +24,21 @@ class BonesisManager(object):
         self.push((name, args, kwargs))
 
     def register_observation(self, obs):
-        if not obs.name in self.bo.data:
+        if obs.name is None and hasattr(obs, "data"):
+            key = tuple(sorted(obs.data.items()))
+            name = self.anon_observations.get(key, None)
+            if name is None:
+                name = f"_obs{len(self.anon_observations)}"
+                self.anon_observations[key] = name
+            obs.name = name
+        elif not obs.name in self.bo.data:
             raise ValueError(f"No data registered at key {repr(obs.name)}")
         if obs.name not in self.observations:
             self.observations.add(obs.name)
-            self.push_term("obs", obs.name)
+            if hasattr(obs, "data"):
+                self.push_term("obs_data", obs.name, obs.data)
+            else:
+                self.push_term("obs", obs.name)
 
     def register_configuration(self, cfg):
         if cfg.name is None:
@@ -67,11 +78,10 @@ class BonesisManager(object):
 class _MutantManager(BonesisManager):
     _mutant_id = 0
     def __init__(self, parent, mutations, weak=False):
-        self.bo = parent.bo
-        self.properties = parent.properties
-        self.observations = parent.observations
-        self.configurations = parent.configurations
-        self.some = parent.some
+        for prop in ["bo", "properties",
+                "observations", "anon_observations",
+                "configurations", "some"]:
+            setattr(self, prop, getattr(parent, prop))
         self.parent = parent
         self.managed_configurations = set()
         self._mutations = mutations

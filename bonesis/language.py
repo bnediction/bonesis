@@ -168,7 +168,12 @@ class BonesisVar(BonesisTerm):
 
 @allreach_operator
 class ObservationVar(BonesisVar):
-    def __init__(self, name):
+    def __init__(self, arg):
+        if isinstance(arg, dict):
+            name = None
+            self.data = arg.copy()
+        else:
+            name = arg
         super().__init__(name)
     def publish(self):
         self.mgr.register_observation(self)

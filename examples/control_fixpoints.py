@@ -4,13 +4,12 @@ dom = bonesis.BooleanNetwork({
     "a": "c",
     "b": "a",
     "c": "b"})
-data = {
-    "111": {a: 1 for a in dom.keys()}
-}
 
-bo = bonesis.BoNesis(dom, data)
+M = {a:1 for a in dom}
+
+bo = bonesis.BoNesis(dom)
 with bo.mutant(bo.Some("Ensure111", max_size=2)) as m:
-    m.all_fixpoints(bo.obs("111"))
+    m.all_fixpoints(bo.obs(M))
 
 view = bo.assignments()
 print(view.standalone())
@@ -20,10 +19,10 @@ for res in view:
 for res in bo.assignments(solutions="all"):
     print(res)
 
-bo = bonesis.BoNesis(dom, data)
+bo = bonesis.BoNesis(dom)
 control = bo.Some()
 with bo.mutant(control) as m:
-    m.all_fixpoints(bo.obs("111"))
+    m.all_fixpoints(bo.obs(M))
 
 for res in control.assignments():
     print(res)
