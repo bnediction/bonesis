@@ -510,12 +510,19 @@ class ASPModel_DNF(object):
             f":- node({n}), cfg({c1},{n},V), cfg({c2},{n},V)"
         ]
 
-    def encode_different(self, cfg1, cfg2, mutant=None):
-        diff = clingo.Function("diff", symbols(cfg1.name, cfg2.name))
+    def encode_different(self, cfg1, right, mutant=None):
+        if isinstance(right, ConfigurationVar):
+            pred = "cfg"
+        elif isinstance(right, ObservationVar):
+            pred = "obs"
+        else:
+            raise NotImplementedError
+        right_name = f"{pred}{right.name}"
+        diff = clingo.Function("diff", symbols(cfg1.name, right_name))
         c1 = clingo_encode(cfg1.name)
-        c2 = clingo_encode(cfg2.name)
+        c2 = clingo_encode(right.name)
         return [
-            f"{diff} :- node(N), cfg({c1},N,V), cfg({c2},N,-V)",
+            f"{diff} :- node(N), cfg({c1},N,V), {pred}({c2},N,-V)",
             f":- not {diff}"
         ]
 

@@ -416,7 +416,7 @@ class final_nonreach(nonreach):
 class different(BonesisPredicate):
     """
     left: cfg, fixed()
-    right: cfg, fixed()
+    right: cfg, fixed(), obs
     """
     def __init__(self, left, right):
         if isinstance(left, fixed):
@@ -428,7 +428,7 @@ class different(BonesisPredicate):
                 self.type_error()
             right = right.right()
         if not isinstance(left, ConfigurationVar) or \
-                not isinstance(right, ConfigurationVar):
+                not isinstance(right, (ConfigurationVar,ObservationVar)):
             self.type_error()
         super().__init__(left, right)
 
