@@ -353,6 +353,30 @@ class ASPModel_DNF(object):
         ] + self.apply_mutant_to_mcfg(mutant, myts)
         return rules
 
+    def encode_in_attractor(self, cfg, mutant=None):
+        self.load_template_eval()
+
+        X = clingo_encode(cfg.name)
+        Z = self.fresh_atom("ts")
+
+        Y = self.saturating_configuration()
+        T = self.fresh_atom("ts")
+        condition = self.make_saturation_condition(Y)
+        rules = [
+            # minimal trap space containing X
+            f"mcfg({Z},N,V) :- cfg({X},N,V)",
+            f"mcfg({Z},N,V) :- eval({Z},N,V)",
+            # minimal trap space containing Y
+            f"mcfg({T},N,V) :- cfg({Y},N,V)",
+            f"mcfg({T},N,V) :- eval({T},N,V)",
+            # Z is a subset of T
+            f"{condition} :- mcfg({T},N,V): mcfg({Z},N,V), node(N)",
+            # Y is not in Z
+            f"{condition} :- cfg({Y},N,V), not mcfg({Z},N,V)"
+        ] + self.apply_mutant_to_mcfg(mutant, Z)\
+          + self.apply_mutant_to_mcfg(mutant, T)
+        return rules
+
     def encode_reach(self, cfg1, cfg2, mutant=None):
         self.load_template_eval()
         Z = self.fresh_atom("reach")

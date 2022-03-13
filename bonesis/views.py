@@ -278,6 +278,20 @@ class DiverseBooleanNetworksView(BooleanNetworksView):
         self._counter = 0
         return self
 
+class ConfigurationView(BonesisView):
+    project = True
+    def __init__(self, cfg, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.cfg = cfg
+    def configure_show(self):
+        name = symbol_of_py(self.cfg.name)
+        self.control.add("base", [],
+            "#show."
+            f"#show cfg(X,N,V) : cfg(X,N,V), X={name}.")
+    def format_model(self, model):
+        atoms = model.symbols(shown=True)
+        x = self.cfg.name
+        return configurations_of_facts(atoms, keys=[x])[x]
 
 class AllSomeView(BonesisView):
     project = True

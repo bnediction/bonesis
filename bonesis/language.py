@@ -212,6 +212,9 @@ class ConfigurationVar(BonesisVar):
             self.mgr.register_predicate("cfg_node_eq", self, right.parent, node)
         else:
             raise TypeError(f"Invalid type for assignment {type(right)}")
+    def assignments(self, **kwargs):
+        from .views import ConfigurationView
+        return ConfigurationView(self, self.mgr.bo, **kwargs)
 __language_api__["cfg"] = ConfigurationVar
 
 class ConfigurationVarState(object):
@@ -277,6 +280,13 @@ class fixed(BonesisPredicate):
             self.type_error()
         super().__init__(arg)
 
+@language_api
+@different_operator
+class in_attractor(BonesisPredicate):
+    def __init__(self, arg):
+        if not isinstance(arg, ConfigurationVar):
+            self.type_error()
+        super().__init__(arg)
 
 @language_api
 class all_fixpoints(BonesisPredicate):
@@ -359,7 +369,7 @@ class allreach(_ConfigurableBinaryPredicate):
 class reach(BonesisPredicate):
     """
     left: cfg, reach()
-    right: cfg, obs, reach(), fixed()
+    right: cfg, obs, reach(), fixed(), in_attractor()
     """
     def __init__(self, left, right):
         left = self.left_arg(left)
@@ -378,7 +388,7 @@ class reach(BonesisPredicate):
             return arg
         if isinstance(arg, ObservationVar):
             return celf.right_arg(+arg)
-        if isinstance(arg, (fixed, reach)):
+        if isinstance(arg, (fixed, in_attractor, reach)):
             return celf.right_arg(arg.left())
         celf.type_error()
 
@@ -398,7 +408,7 @@ class nonreach(reach):
 @language_api
 class final_nonreach(nonreach):
     def __init__(self, left, right):
-        if not isinstance(right, fixed):
+        if not isinstance(right, (fixed, in_attractor)):
             self.type_error()
         super().__init__(left, right)
 
