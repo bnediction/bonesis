@@ -415,17 +415,21 @@ class final_nonreach(nonreach):
 @language_api
 class different(BonesisPredicate):
     """
-    left: cfg, fixed()
-    right: cfg, fixed(), obs
+    left: cfg, fixed(), in_attractor()
+    right: cfg, fixed(), in_attractor(), obs
     """
     def __init__(self, left, right):
         if isinstance(left, fixed):
             if left.predicate_name != "fixpoint":
                 self.type_error()
             left = left.left()
+        elif isinstance(left, in_attractor):
+            left = left.left()
         if isinstance(right, fixed):
             if right.predicate_name != "fixpoint":
                 self.type_error()
+            right = right.right()
+        elif isinstance(right, in_attractor):
             right = right.right()
         if not isinstance(left, ConfigurationVar) or \
                 not isinstance(right, (ConfigurationVar,ObservationVar)):
