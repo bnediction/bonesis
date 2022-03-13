@@ -20,6 +20,7 @@ setup(name=NAME,
     entry_points = {
         "console_scripts": [
             "bonesis-utils=bonesis.cli:main_utils",
+            "bonesis-reprogramming=bonesis.cli:main_reprogramming",
         ],
     },
     classifiers=[

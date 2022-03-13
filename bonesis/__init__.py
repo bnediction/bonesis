@@ -19,6 +19,7 @@ settings = {
     "parallel": multiprocessing.cpu_count(),
     "clingo_options": (),
     "solutions": "all",
+    "quiet": False,
 }
 
 class BoNesis(object):

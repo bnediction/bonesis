@@ -18,7 +18,7 @@ from bonesis0 import diversity
 
 class BonesisView(object):
     single_shot = True
-    def __init__(self, bo, limit=0, quiet=False, mode="auto", extra=None, **settings):
+    def __init__(self, bo, limit=0, mode="auto", extra=None, **settings):
         self.bo = bo
         self.aspmodel = bo.aspmodel
         self.limit = limit
@@ -28,7 +28,6 @@ class BonesisView(object):
         self.settings = OverlayedDict(bo.settings)
         for k,v in settings.items():
             self.settings[k] = v
-        self.quiet = quiet
         self.filters = []
 
         def parse_extra(extra):
@@ -61,7 +60,7 @@ class BonesisView(object):
                 self.settings["parallel"] = 14
             args += ["--heuristic", "Domain",
                     "--enum-mode", "domRec", "--dom-mod", "5,16"]
-        if not self.quiet and ground:
+        if not self.settings["quiet"] and ground:
             print("Grounding...", end="", flush=True)
             start = time.process_time()
         self.control = self.bo.solver(*args, settings=self.settings,
@@ -70,7 +69,7 @@ class BonesisView(object):
         self.configure_show()
         if ground:
             self.control.ground([("base",())])
-        if ground and not self.quiet:
+        if ground and not self.settings["quiet"]:
             end = time.process_time()
             print(f"done in {end-start:.1f}s")
 
@@ -375,9 +374,13 @@ def SomeFreezeComplementaryView(some, *args, **kwargs):
                             good.add(candidate)
                 else:
                     bad.add(candidate)
+            if size == 0 and not bad:
+                break
             if size != opts["max_size"]:
                 if subset_min and size == 1:
                     elements = [next(iter(c)) for c in bad]
+                    if not elements:
+                        break
                 candidates = enlarge_candidates(bad, elements)
         # restore
         opts["min_size"] = min_size
