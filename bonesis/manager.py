@@ -1,4 +1,6 @@
 
+import copy
+
 import clingo
 
 from .language import BonesisTerm, Some
@@ -12,6 +14,15 @@ class BonesisManager(object):
         self.configurations = set()
         self.some = {}
         self.optimizations = []
+
+    def reset_from(self, m2):
+        for attr in ["properties",
+                        "observations",
+                        "anon_observations",
+                        "configurations",
+                        "some",
+                        "optimizations"]:
+            setattr(self, attr, copy.copy(getattr(m2, attr)))
 
     def assert_node_exists(self, node, assertion=KeyError):
         if not node in self.bo.domain:

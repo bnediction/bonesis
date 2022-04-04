@@ -1,4 +1,5 @@
 
+import copy
 import multiprocessing
 
 from colomoto import minibn
@@ -40,6 +41,11 @@ class BoNesis(object):
 
         self.iface = ManagedIface(self.manager)
         self.iface.install(self)
+
+    def fork(self):
+        fo = self.__class__(self.domain, self.data)
+        fo.manager.reset_from(self.manager)
+        return fo
 
     def debug(self, asp_output="/tmp/debug.asp"):
         with open(asp_output, "w") as fp:
