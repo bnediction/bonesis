@@ -298,12 +298,17 @@ class ASPModel_DNF(object):
         min_size = opts["min_size"]
         max_size = opts["max_size"]
         #TODO: user-specified domain
+        exclude = opts["exclude"] or ()
         name = clingo_encode(name)
         rules = [
             f"{min_size}"
                 f" {{ some_freeze({name},N,(1;-1)) : node(N) }}"
                 f" {max_size}",
         ]
+        for ex in exclude:
+            assert isinstance(ex, str), "invalid exclude specification"
+            ex = clingo_encode(ex)
+            rules.append(f":- some_freeze({name},{ex},_)")
         if max_size > 1:
             rules += [
                 f":- some_freeze({name},N,V), some_freeze({name},N,-V)"

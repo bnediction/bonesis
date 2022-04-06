@@ -36,6 +36,8 @@ def main_reprogramming():
             help="Reprogram fixed points only")
     ap.add_argument("--allow-no-fixpoint", action="store_true",
             help="When reprogramming fixed points, allow having no fixed points")
+    ap.add_argument("--exclude",
+            help="Perturbation blacklist - JSON format")
     ap.add_argument("--verbose", action="store_true")
     ap.add_argument("--parallel", "-t", default=1, help="Parallel solving")
     args = ap.parse_args()
@@ -50,6 +52,8 @@ def main_reprogramming():
     meth_suffix = ""
     meth_args = (f, M, k)
     meth_kwargs = {}
+    if args.exclude:
+        meth_kwargs["exclude"] = json.loads(args.exclude)
     if args.reachable_from:
         z = json.loads(args.reachable_from)
         meth_prefix = "source_"

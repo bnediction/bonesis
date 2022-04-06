@@ -83,7 +83,8 @@ class Some(object):
 class SomeFreeze(Some):
     default_opts = {
         "min_size": 0,
-        "max_size": 1
+        "max_size": 1,
+        "exclude": (),
     }
 
 @language_api
