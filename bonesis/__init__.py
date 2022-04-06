@@ -1,6 +1,5 @@
 
 import copy
-import multiprocessing
 
 from colomoto import minibn
 import networkx as nx
@@ -17,7 +16,7 @@ from .views import *
 __language_api__ = ["obs", "cfg"]
 
 settings = {
-    "parallel": multiprocessing.cpu_count(),
+    "parallel": 0,
     "clingo_options": (),
     "solutions": "all",
     "quiet": False,

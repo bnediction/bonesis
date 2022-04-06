@@ -1,5 +1,7 @@
 
 import itertools
+import multiprocessing
+import os
 from threading import Timer, Lock
 import time
 
@@ -12,7 +14,10 @@ from .language import SomeFreeze
 from .snippets import bn_nocyclic_attractors
 from .utils import OverlayedDict, frozendict
 from bonesis0.asp_encoding import (minibn_of_facts,
-        configurations_of_facts, py_of_symbol, symbol_of_py)
+        configurations_of_facts,
+        parse_nb_threads,
+        portfolio_path,
+        py_of_symbol, symbol_of_py)
 from bonesis0 import diversity
 
 
@@ -53,17 +58,21 @@ class BonesisView(object):
             args.append("--project")
         if self.mode == "optN":
             args += ["--opt-mode=optN", "--opt-strategy=usc"]
+
+        settings = OverlayedDict(self.settings)
         if self.settings["solutions"] == "subset-minimal":
-            # workaround https://github.com/potassco/clingo/issues/340
-            parallel = self.settings.get("parallel", 0)
-            if isinstance(parallel, int) and parallel >= 15:
-                self.settings["parallel"] = 14
+            if parse_nb_threads(settings.get("parallel")) > 1:
+                args += ["--configuration", portfolio_path('subset_portfolio')]
             args += ["--heuristic", "Domain",
                     "--enum-mode", "domRec", "--dom-mod", "5,16"]
+        else:
+            if self.settings.get("parallel") == 0:
+                settings["parallel"] = multiprocessing.cpu_count()
+
         if not self.settings["quiet"] and ground:
             print("Grounding...", end="", flush=True)
             start = time.process_time()
-        self.control = self.bo.solver(*args, settings=self.settings,
+        self.control = self.bo.solver(*args, settings=settings,
                 ground=False, **opts)
         self.interrupted = False
         self.configure_show()

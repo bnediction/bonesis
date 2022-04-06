@@ -28,6 +28,7 @@ setup(name=NAME,
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
     keywords="computational systems biology",
-    packages = find_packages()
+    packages = find_packages(),
+    package_data = {"bonesis0": ['*.cfg']}
 )
 

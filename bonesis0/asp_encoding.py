@@ -1,4 +1,6 @@
 
+import os
+
 import clingo as asp
 clingo_Tuple = asp.Tuple_ if hasattr(asp, "Tuple_") else asp.Tuple
 
@@ -28,6 +30,17 @@ def symbol_of_py(obj):
 
 def symbols(*objs):
     return [symbol_of_py(obj) for obj in objs]
+
+def portfolio_path(name):
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)),
+            f"{name}.cfg")
+
+def parse_nb_threads(opt):
+    if opt is None:
+        return 0
+    if isinstance(opt, str):
+        opt = int(opt.split(",")[0])
+    return opt
 
 def string_of_facts(facts):
     if not facts:

@@ -37,9 +37,11 @@ def main_reprogramming():
     ap.add_argument("--allow-no-fixpoint", action="store_true",
             help="When reprogramming fixed points, allow having no fixed points")
     ap.add_argument("--verbose", action="store_true")
+    ap.add_argument("--parallel", "-t", default=1, help="Parallel solving")
     args = ap.parse_args()
 
     bonesis.settings["quiet"] = not args.verbose
+    bonesis.settings["parallel"] = args.parallel
 
     f = bonesis.BooleanNetwork(args.bnet_file)
     M = json.loads(args.marker)
