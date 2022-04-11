@@ -87,23 +87,25 @@ def pkn_to_facts(pkn, maxclause=None, allow_skipping_nodes=False):
 def obs_to_facts(pstate, obsid):
     return [asp.Function("obs", [obsid, n, 2*v-1]) for (n,v) in pstate.items()]
 
-def dnfs_of_facts(fs):
+def dnfs_of_facts(fs, ns=""):
     bn = {}
+    clause_func = f"{ns}clause"
+    constant_func = f"{ns}constant"
     for d in fs:
-        if d.name == "clause":
+        if d.name == clause_func:
             (i,cid,lit,sign) = list(map(py_of_symbol, d.arguments))
             if i not in bn:
                 bn[i] = []
             if cid > len(bn[i]):
                 bn[i] += [set() for j in range(cid-len(bn[i]))]
             bn[i][cid-1].add((sign,lit))
-        elif d.name == "constant" and len(d.arguments) == 2:
+        elif d.name == constant_func and len(d.arguments) == 2:
             (i,v) = list(map(py_of_symbol, d.arguments))
             bn[i] = v == 1
     return bn
 
-def minibn_of_facts(fs):
-    dnfs = dnfs_of_facts(fs)
+def minibn_of_facts(fs, ns=""):
+    dnfs = dnfs_of_facts(fs, ns=ns)
     bn = MPBooleanNetwork()
     def make_lit(l):
         s,v=l
