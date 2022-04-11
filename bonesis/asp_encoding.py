@@ -441,7 +441,8 @@ class ASPModel_DNF(object):
 
             # Z is a subset of T
             f"{condition} :- mcfg({T},N,V): mcfg({Z},N,V),node(N)",
-        ] + self.apply_mutant_to_mcfg(mutant, T)
+        ] + self.apply_mutant_to_mcfg(mutant, Z)\
+          + self.apply_mutant_to_mcfg(mutant, T)
         return rules
 
     def encode_reach(self, cfg1, cfg2, mutant=None):
