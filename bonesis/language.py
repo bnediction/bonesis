@@ -186,6 +186,21 @@ class ObservationVar(BonesisVar):
         return f"Observation({repr(self.name)})"
 __language_api__["obs"] = ObservationVar
 
+class HypercubeVar(BonesisVar):
+    def __init__(self, obs=None):
+        if isinstance(obs, dict):
+            obs = self.iface.obs(obs)
+        self.obs = obs
+        super().__init__(None)
+    def publish(self):
+        self.mgr.register_hypercube(self)
+    def __str__(self):
+        return f"Hypercube({id(self)})"
+    def assignments(self, **kwargs):
+        from .views import HypercubeView
+        return HypercubeView(self, self.mgr.bo, **kwargs)
+__language_api__["hypercube"] = HypercubeVar
+
 @different_operator
 @reach_operator
 @allreach_operator

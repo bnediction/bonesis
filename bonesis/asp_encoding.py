@@ -267,6 +267,13 @@ class ASPModel_DNF(object):
         self.push(rules)
 
     @unique_usage
+    def load_template_hypercube(self):
+        rules = [
+            "1 { hypercube(H,N,(-1;1;2)) } 1 :- hypercube(H), node(N)"
+        ]
+        self.push(rules)
+
+    @unique_usage
     def saturating_configuration(self):
         cfgid = self.fresh_atom("cfg")
         rules = [

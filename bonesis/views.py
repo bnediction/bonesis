@@ -301,6 +301,25 @@ class ConfigurationView(BonesisView):
         x = self.cfg.name
         return configurations_of_facts(atoms, keys=[x])[x]
 
+class HypercubeView(BonesisView):
+    project = True
+    def __init__(self, h, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.h = h
+    def configure_show(self):
+        name = symbol_of_py(self.h.name)
+        self.control.add("base", [],
+            "#show."
+            f"#show hypercube(X,N,V) : hypercube(X,N,V), X={name}.")
+    def format_model(self, model):
+        pairs = []
+        for a in model.symbols(shown=True):
+            _, n, v = py_of_symbol(a)
+            if v == 2:
+                v = '*'
+            pairs.append((n,v))
+        return dict(sorted(pairs))
+
 class AllSomeView(BonesisView):
     project = True
     show_templates = ["some"]
