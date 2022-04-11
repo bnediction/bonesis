@@ -67,7 +67,7 @@ class BooleanNetwork(BonesisDomain, minibn.BooleanNetwork):
 
     def __setitem__(self, n, f):
         f = self.ba.dnf(f).simplify()
-        assert formula_well_formed(self.ba, f), f"'{f}' does not look monotone.."
+        assert formula_well_formed(self.ba, f), f"'{f}' for {n} does not look monotone.."
         super().__setitem__(n, f)
 
 label_map = {
