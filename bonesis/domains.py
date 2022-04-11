@@ -12,6 +12,44 @@ import pandas as pd
 class BonesisDomain(object):
     pass
 
+def formula_well_formed(ba, f):
+    pos_lits = set()
+    neg_lits = set()
+    def is_lit(f):
+        if isinstance(f, ba.Symbol):
+            pos_lits.add(f.obj)
+            return True
+        if isinstance(f, ba.NOT) \
+                and isinstance(f.args[0], ba.Symbol):
+            neg_lits.add(f.args[0].obj)
+            return True
+        return False
+
+    def is_clause(f):
+        if is_lit(f):
+            return True
+        if isinstance(f, ba.AND):
+            for g in f.args:
+                if not is_lit(g):
+                    return False
+            return True
+        return False
+
+    def test_monotonicity():
+        both = pos_lits.intersection(neg_lits)
+        return not both
+
+    if f in [ba.TRUE, ba.FALSE]:
+        return True
+    if is_clause(f):
+        return test_monotonicity()
+    if isinstance(f, ba.OR):
+        for g in f.args:
+            if not is_clause(g):
+                return False
+        return test_monotonicity()
+    return False
+
 class BooleanNetwork(BonesisDomain, minibn.BooleanNetwork):
     def __init__(self, bn):
         if isinstance(bn, str):
@@ -25,7 +63,12 @@ class BooleanNetwork(BonesisDomain, minibn.BooleanNetwork):
         super().__init__()
         self.ba = bn.ba
         for n, f in bn.items():
-            self[n] = self.ba.dnf(f).simplify()
+            self[n] = f
+
+    def __setitem__(self, n, f):
+        f = self.ba.dnf(f).simplify()
+        assert formula_well_formed(self.ba, f), f"'{f}' does not look monotone.."
+        super().__setitem__(n, f)
 
 label_map = {
     1: "+",
