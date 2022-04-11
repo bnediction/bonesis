@@ -1,6 +1,7 @@
 
 import clingo
 import os
+import re
 import tempfile
 
 import boolean
@@ -17,10 +18,17 @@ def s2v(s):
 
 clingo_encode = symbol_of_py
 
+RE_ASP_FUNC = re.compile(r"(\w+)\(")
+def apply_ns(rules, ns):
+    def apply_ns_rule(r):
+        return RE_ASP_FUNC.sub(f"{ns}\\1(", r)
+    return list(map(apply_ns_rule, rules))
+
+
 def unique_usage(method):
     name = method.__name__
     def wrapper(self, *args, **kwargs):
-        key = name
+        key = (name, args, tuple(kwargs.items()))
         if key in self._silenced:
             return self._silenced[key]
         ret = method(self, *args, **kwargs)
@@ -100,6 +108,8 @@ class ASPModel_DNF(object):
         return clingo.Function(f"__bo{qualifier}{self.__fresh_id}")
 
     def encode_domain(self, domain):
+        if hasattr(domain, "bonesis_encoder"):
+            return getattr(domain, "bonesis_encoder")(self)
         if isinstance(domain, BooleanNetwork):
             return self.encode_domain_BooleanNetwork(domain)
         elif isinstance(domain, InfluenceGraph):
@@ -165,17 +175,19 @@ class ASPModel_DNF(object):
         return facts
 
     @unique_usage
-    def load_template_domain(self):
+    def load_template_domain(self, ns=""):
         rules = [
             "{clause(N,1..C,L,S): in(L,N,S), maxC(N,C), node(N), node(L)}",
             ":- clause(N,_,L,S), clause(N,_,L,-S)",
-            "1 {constant(N,(-1;1)) } 1 :- node(N), not clause(N,_,_,_)",
+            "1 { constant(N,(-1;1)) } 1 :- node(N), not clause(N,_,_,_)",
             "constant(N) :- constant(N,_)",
         ]
+        if ns:
+            rules = apply_ns(rules, ns)
         self.push(rules)
 
     @unique_usage
-    def load_template_canonic(self):
+    def load_template_canonic(self, ns=""):
         rules = [
             "size(N,C,X) :- X = #count {L,S: clause(N,C,L,S)}; clause(N,C,_,_); maxC(N,_)",
             ":- clause(N,C,_,_); not clause(N,C-1,_,_); C > 1; maxC(N,_)",
@@ -185,13 +197,17 @@ class ASPModel_DNF(object):
             "mindiff(N,C1,C2,L) :- clausediff(N,C1,C2,L); L <= L' : clausediff(N,C1,C2,L'), clause(N,C1,L',_), C1!=C2; maxC(N,_)",
             ":- size(N,C1,X1); size(N,C2,X2); C1 != C2; X1 <= X2; clause(N,C2,L,S) : clause(N,C1,L,S); maxC(N,_)",
         ]
+        if ns:
+            rules = apply_ns(rules, ns)
         self.push(rules)
 
     @unique_usage
-    def load_template_edge(self):
+    def load_template_edge(self, ns=""):
         rules = [
             "edge(L,N,S) :- clause(N,_,L,S)"
         ]
+        if ns:
+            rules = apply_ns(rules, ns)
         self.push(rules)
 
     @unique_usage
