@@ -71,6 +71,7 @@ class BonesisManager(object):
 
     def register_hypercube(self, h):
         name = f"_h{len(self.hypercubes)}"
+        h.name = name
         self.push_term("hypercube", name)
         if h.obs:
             self.register_predicate("bind_hypercube", name, h.obs.name)

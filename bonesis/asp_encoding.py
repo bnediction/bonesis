@@ -281,14 +281,17 @@ class ASPModel_DNF(object):
         self.push(rules)
 
     @unique_usage
-    def saturating_configuration(self):
+    def saturating_configuration(self, fixed=None, free=None):
         cfgid = self.fresh_atom("cfg")
+        free = f", {free}" if free else ""
         rules = [
-            f"cfg({cfgid},N,-1); cfg({cfgid},N,1) :- node(N)",
-            f"cfg({cfgid},N,-V) :- cfg({cfgid},N,V), saturate({cfgid})",
+            f"cfg({cfgid},N,-1); cfg({cfgid},N,1) :- node(N){free}",
+            f"cfg({cfgid},N,-V) :- cfg({cfgid},N,V), saturate({cfgid}){free}",
             f"saturate({cfgid}) :- valid({cfgid},Z): expect_valid({cfgid},Z)",
             f":- not saturate({cfgid})",
         ]
+        if fixed:
+            rules.append(f"cfg({cfgid},N,V) :- node(N), {fixed}")
         self.push(rules)
         return cfgid
 
@@ -412,6 +415,33 @@ class ASPModel_DNF(object):
             f"{condition} :- cfg({Y},N,V), not mcfg({Z},N,V)"
         ] + self.apply_mutant_to_mcfg(mutant, Z)\
           + self.apply_mutant_to_mcfg(mutant, T)
+        return rules
+
+    def encode_attractor(self, h, mutant=None):
+        self.load_template_eval()
+        H = clingo_encode(h.name)
+        Z = self.fresh_atom("ts")
+        Y = self.saturating_configuration(
+                free=f"hypercube({H},N,2)",
+                fixed=f"hypercube({H},N,V), V!=2")
+        T = self.fresh_atom("ts")
+        condition = self.make_saturation_condition(Y)
+        rules = [
+            f"attractor({H})",
+
+            # ensure H is closed
+            f"mcfg({Z},N,V) :- hypercube({H},N,V), V != 2",
+            f"mcfg({Z},N,1) :- hypercube({H},N,2)",
+            f"mcfg({Z},N,-1) :- hypercube({H},N,2)",
+            f":- eval({Z},N,V), not mcfg({Z},N,V)",
+
+            # minimal trap space containing Y
+            f"mcfg({T},N,V) :- cfg({Y},N,V)",
+            f"mcfg({T},N,V) :- eval({T},N,V)",
+
+            # Z is a subset of T
+            f"{condition} :- mcfg({T},N,V): mcfg({Z},N,V),node(N)",
+        ] + self.apply_mutant_to_mcfg(mutant, T)
         return rules
 
     def encode_reach(self, cfg1, cfg2, mutant=None):

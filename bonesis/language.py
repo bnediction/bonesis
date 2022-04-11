@@ -292,6 +292,8 @@ class fixed(BonesisPredicate):
         elif isinstance(arg, ObservationVar):
             self.predicate_name = "trapspace"
             arg = +arg
+        elif isinstance(arg, HypercubeVar):
+            self.predicate_name = "attractor"
         else:
             self.type_error()
         super().__init__(arg)
