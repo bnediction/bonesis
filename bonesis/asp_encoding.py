@@ -399,7 +399,9 @@ class ASPModel_DNF(object):
         X = clingo_encode(cfg.name)
         Z = self.fresh_atom("ts")
 
-        Y = self.saturating_configuration()
+        Y = self.saturating_configuration(
+                free=f"mcfg({Z},N,1),mcfg({Z},N,-1)",
+                fixed=f"mcfg({Z},N,V),not mcfg({Z},N,-V)")
         T = self.fresh_atom("ts")
         condition = self.make_saturation_condition(Y)
         rules = [
@@ -411,8 +413,6 @@ class ASPModel_DNF(object):
             f"mcfg({T},N,V) :- eval({T},N,V)",
             # Z is a subset of T
             f"{condition} :- mcfg({T},N,V): mcfg({Z},N,V), node(N)",
-            # Y is not in Z
-            f"{condition} :- cfg({Y},N,V), not mcfg({Z},N,V)"
         ] + self.apply_mutant_to_mcfg(mutant, Z)\
           + self.apply_mutant_to_mcfg(mutant, T)
         return rules
