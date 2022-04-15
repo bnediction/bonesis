@@ -21,6 +21,7 @@ setup(name=NAME,
         "console_scripts": [
             "bonesis-utils=bonesis.cli:main_utils",
             "bonesis-reprogramming=bonesis.cli:main_reprogramming",
+            "bonesis-attractors=bonesis.cli:main_attractors",
         ],
     },
     classifiers=[

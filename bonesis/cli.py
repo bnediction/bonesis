@@ -21,6 +21,24 @@ def main_utils():
         return ap.print_help()
     return args.func(args)
 
+def main_attractors():
+    ap = ArgumentParser()
+    ap.add_argument("bnet_file",
+            help="file specifying the Boolean network in bnet format")
+    ap.add_argument("--fixpoints-only", action="store_true",
+            help="Enumerate only fixed points")
+    args = ap.parse_args()
+    dom = bonesis.BooleanNetwork(args.bnet_file)
+    bo = bonesis.BoNesis(dom)
+    x = bo.cfg() if args.fixpoints_only else bo.hypercube()
+    bo.fixed(x)
+
+    publish = print
+
+    for sol in x.assignments():
+        publish(sol)
+
+
 
 def main_reprogramming():
     ap = ArgumentParser()
