@@ -8,7 +8,7 @@ import boolean
 
 from bonesis0.asp_encoding import *
 from bonesis0.proxy_control import ProxyControl
-from .domains import BooleanNetwork, InfluenceGraph
+from .domains import BooleanNetwork, BooleanNetworksEnsemble, InfluenceGraph
 
 from .language import *
 from .debug import dbg, debug_enabled
@@ -110,9 +110,11 @@ class ASPModel_DNF(object):
     def encode_domain(self, domain):
         if hasattr(domain, "bonesis_encoder"):
             return getattr(domain, "bonesis_encoder")(self)
+        if isinstance(domain, BooleanNetworksEnsemble):
+            return self.encode_domain_BooleanNetworksEnsemble(domain)
         if isinstance(domain, BooleanNetwork):
             return self.encode_domain_BooleanNetwork(domain)
-        elif isinstance(domain, InfluenceGraph):
+        if isinstance(domain, InfluenceGraph):
             return self.encode_domain_InfluenceGraph(domain)
         raise TypeError(f"I don't know what to do with {type(domain)}")
 
@@ -143,6 +145,20 @@ class ASPModel_DNF(object):
             else:
                 for m, v in literals_of_clause(c):
                     facts.append(clingo.Function("clause", symbols(n, cid+1, m, v)))
+        return facts
+
+    def encode_domain_BooleanNetworksEnsemble(self, bns):
+        preds = set()
+        facts = []
+        for i, bn in enumerate(bns):
+            bn_asp = self.encode_domain_BooleanNetwork(bn)
+            facts.extend([f"bn_ensemble({i},{f})" for f in bn_asp])
+            preds.update([(f.name, len(f.arguments)) for f in bn_asp])
+        facts.append(f"1{{which_bn(0..{len(bns)-1})}}1")
+        for pname, arity in preds:
+            args = [f"A{i}" for i in range(arity)]
+            p = f"{pname}({','.join(args)})"
+            facts.append(f"{p} :- which_bn(BN), bn_ensemble(BN,{p})")
         return facts
 
     def encode_domain_BooleanNetwork(self, bn):

@@ -317,6 +317,8 @@ class HypercubeView(BonesisView):
             _, n, v = py_of_symbol(a)
             if v == 2:
                 v = '*'
+            elif v == -1:
+                v = 0
             pairs.append((n,v))
         return dict(sorted(pairs))
 

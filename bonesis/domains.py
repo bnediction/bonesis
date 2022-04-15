@@ -1,4 +1,5 @@
 
+from zipfile import ZipFile
 import os
 import tempfile
 
@@ -69,6 +70,26 @@ class BooleanNetwork(BonesisDomain, minibn.BooleanNetwork):
         f = self.ba.dnf(f).simplify()
         assert formula_well_formed(self.ba, f), f"'{f}' for {n} does not look monotone.."
         super().__setitem__(n, f)
+
+
+class BooleanNetworksEnsemble(BonesisDomain, list):
+    def __init__(self, bns=None):
+        super().__init__(bns if bns is not None else [])
+
+    @classmethod
+    def from_zip(celf, zipfile, ensure_wellformed=False):
+        bns = celf()
+        make_bn = BooleanNetwork if ensure_wellformed else minibn.BooleanNetwork
+        with ZipFile(zipfile, "r") as bundle:
+            for entry in bundle.infolist():
+                if entry.is_dir() or not \
+                        entry.filename.lower().endswith(".bnet"):
+                    continue
+                with bundle.open(entry) as fp:
+                    bns.append(make_bn(fp.read().decode()))
+        return bns
+
+
 
 label_map = {
     1: "+",
