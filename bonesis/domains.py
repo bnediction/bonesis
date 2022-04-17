@@ -153,6 +153,16 @@ class InfluenceGraph(BonesisDomain, nx.MultiDiGraph):
     def max_indegree(self):
         return max(dict(self.in_degree()).values())
 
+    @property
+    def options(self):
+        return {opt: getattr(self, opt) for opt in self._options}
+
+    def subgraph(self, *args, **kwargs):
+        g = super().subgraph(*args, **kwargs)
+        for opt in self._options:
+            setattr(g, opt, getattr(self, opt))
+        return g
+
     @classmethod
     def from_csv(celf, filename, column_source=0, column_target=1, column_sign=2,
                     sep=",",
