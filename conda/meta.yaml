@@ -1,0 +1,38 @@
+{% set name = "bonesis" %}
+{% set version = "9999" %}
+
+package:
+  name: '{{ name|lower }}'
+  version: '{{ version }}'
+
+source:
+  path: ../
+
+build:
+  script: python -m pip install --no-deps --ignore-installed .
+  noarch: python
+
+requirements:
+  host:
+    - python
+    - pip
+
+  run:
+    - python
+    - boolean.py
+    - clingo
+    - colomoto_jupyter
+    - mpbn >=1.5
+    - networkx
+    - numpy
+    - pandas
+    - scipy
+
+test:
+    imports:
+        - bonesis
+
+about:
+  home: https://github.com/bnediction/bonesis
+  summary: 'Synthesis of Most Permissive Boolean Networks'
+
