@@ -1,0 +1,26 @@
+name: Mirror master
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup SSH keys
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-add - <<< "${{ secrets.SSH_PRIV_MIRROR_BIOASP }}"
+      - name: mirror bioasp
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+          git remote add bioasp git@github.com:bioasp/bonesis.git
+          git push bioasp master -f
+          git push bioasp master -f --tags
