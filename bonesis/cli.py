@@ -1,7 +1,8 @@
-from argparse import ArgumentParser
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from itertools import islice
 import json
 import sys
+import textwrap
 
 import bonesis
 
@@ -23,13 +24,38 @@ def main_utils():
     return args.func(args)
 
 def main_attractors():
-    ap = ArgumentParser()
-    ap.add_argument("bnet_file",
-            help="file specifying the Boolean network in bnet format")
+    ap = ArgumentParser(description=textwrap.dedent("""\
+    This program lists the attractors (possibly restricted to fixed points) of
+    the given Boolean network or domain of Boolean networks.
+
+    The command line currently supports two types of inputs:
+
+    - a single Boolean network, given in BoolNet format (.bnet extension).
+      In that case, we recommend using mpbn <https://github.com/pauleve/mpbn> instead.
+
+    - a domain of Boolean networks specifed with an AEON file (.aeon extension)
+      In that case, the union of the attractors of all the Boolean networks in
+      that domain is returned.
+    """),
+        formatter_class=RawDescriptionHelpFormatter
+    )
+    ap.add_argument("input",
+            help="file specifying the domain of Boolean networks (.bnet or .aeon)")
     ap.add_argument("--fixpoints-only", action="store_true",
             help="Enumerate only fixed points")
     args = ap.parse_args()
-    dom = bonesis.BooleanNetwork(args.bnet_file)
+
+    ext = args.input.lower().split(".")[-1]
+    if ext == "bnet":
+        dom = bonesis.BooleanNetwork(args.input)
+    elif ext == "aeon":
+        from bonesis.aeon import AEONDomain
+        dom = AEONDomain.from_aeon_file(args.input)
+    else:
+        raise ValueError("Unknon file type for input")
+
+    bonesis.settings["quiet"] = True
+
     bo = bonesis.BoNesis(dom)
     x = bo.cfg() if args.fixpoints_only else bo.hypercube()
     bo.fixed(x)
