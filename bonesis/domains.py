@@ -66,6 +66,10 @@ class BooleanNetwork(BonesisDomain, minibn.BooleanNetwork):
         for n, f in bn.items():
             self[n] = f
 
+    @classmethod
+    def load(celf, *args, **kwargs):
+        return celf(minibn.BooleanNetwork.load(*args, **kwargs))
+
     def __setitem__(self, n, f):
         f = self.ba.dnf(f).simplify()
         assert formula_well_formed(self.ba, f), f"'{f}' for {n} does not look monotone.."
