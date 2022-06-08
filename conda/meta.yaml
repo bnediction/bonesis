@@ -22,7 +22,7 @@ requirements:
     - boolean.py
     - clingo
     - colomoto_jupyter
-    - mpbn >=1.5
+    - mpbn >=1.7
     - networkx
     - numpy
     - pandas

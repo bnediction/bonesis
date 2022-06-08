@@ -6,6 +6,7 @@ import tempfile
 from boolean import boolean
 from colomoto import minibn
 from colomoto_jupyter import import_colomoto_tool
+import mpbn
 from numpy.random import choice
 import networkx as nx
 import pandas as pd
@@ -51,30 +52,8 @@ def formula_well_formed(ba, f):
         return test_monotonicity()
     return False
 
-class BooleanNetwork(BonesisDomain, minibn.BooleanNetwork):
-    def __init__(self, bn):
-        if isinstance(bn, str):
-            if "\n" in bn or not os.path.exists(bn):
-                bn = minibn.BooleanNetwork(bn)
-            else:
-                bn = minibn.BooleanNetwork.load(bn)
-        elif isinstance(bn, dict):
-            bn = minibn.BooleanNetwork(bn)
-        assert isinstance(bn, minibn.BooleanNetwork)
-        super().__init__()
-        self.ba = bn.ba
-        for n, f in bn.items():
-            self[n] = f
-
-    @classmethod
-    def load(celf, *args, **kwargs):
-        return celf(minibn.BooleanNetwork.load(*args, **kwargs))
-
-    def __setitem__(self, n, f):
-        f = self.ba.dnf(f).simplify()
-        assert formula_well_formed(self.ba, f), f"'{f}' for {n} does not look monotone.."
-        super().__setitem__(n, f)
-
+class BooleanNetwork(mpbn.MPBooleanNetwork, BonesisDomain):
+    pass
 
 class BooleanNetworksEnsemble(BonesisDomain, list):
     def __init__(self, bns=None):
