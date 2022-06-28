@@ -511,15 +511,21 @@ class ASPModel_DNF(object):
         satcfg = self.saturating_configuration()
         mycfg = self.fresh_atom("cfg")
         condition = _condition or self.make_saturation_condition(satcfg)
+
+        def make_cond(target):
+            if isinstance(target, ObservationVar):
+                from_pred = "obs"
+            elif isinstance(target, ConfigurationVar):
+                from_pred = "cfg"
+            return f"{condition} :- cfg({satcfg},N,V): {from_pred}({clingo_encode(target.name)},N,V), node(N)"
+
         rules = [
             # trigger eval
             f"mcfg({mycfg},N,V) :- cfg({satcfg},N,V)",
             # not a fixed a point
             f"{condition} :- cfg({satcfg},N,V), eval({mycfg},N,-V)",
         ] + [
-            # match one given observation
-            f"{condition} :- cfg({satcfg},N,V): obs({clingo_encode(obs.name)},N,V), node(N)"
-                for obs in arg
+            make_cond(target) for target in arg
         ] + self.apply_mutant_to_mcfg(mutant, mycfg)
         return rules
 
@@ -529,6 +535,14 @@ class ASPModel_DNF(object):
         satcfg = self.saturating_configuration()
         mycfg = self.fresh_atom("cfg")
         condition = _condition or self.make_saturation_condition(satcfg)
+
+        def make_cond(target):
+            if isinstance(target, ObservationVar):
+                from_pred = "obs"
+            elif isinstance(target, ConfigurationVar):
+                from_pred = "cfg"
+            return f"{condition} :- mcfg({mycfg},N,V): {from_pred}({clingo_encode(target.name)},N,V), node(N)"
+
         rules = [
             # minimal trap space containing cfg
             f"mcfg({mycfg},N,V) :- cfg({satcfg},N,V)",

@@ -308,7 +308,7 @@ class in_attractor(BonesisPredicate):
 
 @language_api
 class all_fixpoints(BonesisPredicate):
-    _unit_types = (ObservationVar,)
+    _unit_types = (ObservationVar,ConfigurationVar)
     def __init__(self, arg):
         if isinstance(arg, (set, list, tuple)):
             for e in arg:
@@ -354,6 +354,7 @@ class _ConfigurableBinaryPredicate(BonesisPredicate):
 
 @language_api
 class allreach(_ConfigurableBinaryPredicate):
+    _right_types = (ObservationVar,ConfigurationVar)
     supported_options = {"fixpoints", "attractors_overlap"}
     default_options = ("attractors_overlap",)
     """
@@ -369,11 +370,11 @@ class allreach(_ConfigurableBinaryPredicate):
         celf.type_error()
     @classmethod
     def right_arg(celf, arg):
-        if isinstance(arg, ObservationVar):
+        if isinstance(arg, celf._right_types):
             return {arg}
         elif isinstance(arg, set):
             for elt in arg:
-                if not isinstance(elt, ObservationVar):
+                if not isinstance(elt, celf._right_types):
                     celf.type_error()
             return arg
         celf.type_error()
