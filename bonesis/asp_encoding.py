@@ -61,7 +61,7 @@ class ASPModel_DNF(object):
             if parallel > 64:
                 print("Warning: settings 'parallel' must be <= 64, Using 64.")
                 parallel = 64
-            arguments += ["-t", settings["parallel"]]
+            arguments += ["-t", parallel]
         arguments.extend(args)
         arguments += [f"-c {const}={repr(value)}" for (const, value) \
                         in self.constants.items()]
