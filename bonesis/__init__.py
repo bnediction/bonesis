@@ -16,7 +16,7 @@ from .views import *
 __language_api__ = ["obs", "cfg"]
 
 settings = {
-    "parallel": 0,
+    "parallel": 1,
     "clingo_options": (),
     "solutions": "all",
     "quiet": False,

@@ -65,9 +65,6 @@ class BonesisView(object):
                 args += ["--configuration", portfolio_path('subset_portfolio')]
             args += ["--heuristic", "Domain",
                     "--enum-mode", "domRec", "--dom-mod", "5,16"]
-        else:
-            if self.settings.get("parallel") == 0:
-                settings["parallel"] = multiprocessing.cpu_count()
 
         if not self.settings["quiet"] and ground:
             print("Grounding...", end="", flush=True)
