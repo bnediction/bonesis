@@ -55,7 +55,12 @@ class ASPModel_DNF(object):
         if not debug_enabled():
             arguments += ["-W", "no-atom-undefined"]
         arguments.extend(settings.get("clingo_options", ()))
-        if settings.get("parallel"):
+        parallel = settings.get("parallel")
+        if parallel:
+            parallel = int(parallel)
+            if parallel > 64:
+                print("Warning: settings 'parallel' must be <= 64, Using 64.")
+                parallel = 64
             arguments += ["-t", settings["parallel"]]
         arguments.extend(args)
         arguments += [f"-c {const}={repr(value)}" for (const, value) \
