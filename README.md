@@ -11,9 +11,12 @@ Synthesis of Most Permissive Boolean Networks from network architecture and dyna
 
 ## Installation
 
-Checkout the sources and install with
+### Using pip
 ```
-pip install --user -e .
+pip install bonesis
 ```
 
-
+### Using conda
+```
+conda install -c potassco -c colomoto bonesis
+```
