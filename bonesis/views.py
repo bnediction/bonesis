@@ -100,6 +100,7 @@ class BonesisView(object):
             raise StopIteration
         t = Timer(self.settings["timeout"], self.interrupt) \
                 if "timeout" in self.settings else None
+        t.start() if t is not None else None
         try:
             self.cur_model = next(self._iterator)
         finally:
