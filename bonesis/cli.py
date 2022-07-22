@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from itertools import islice
 import json
 import sys
 
@@ -56,6 +57,8 @@ def main_reprogramming():
             help="When reprogramming fixed points, allow having no fixed points")
     ap.add_argument("--exclude",
             help="Perturbation blacklist - JSON format")
+    ap.add_argument("--limit", type=int,
+            help="Maximum number of solutions")
     ap.add_argument("--verbose", action="store_true")
     ap.add_argument("--parallel", "-t", default=1, help="Parallel solving")
     args = ap.parse_args()
@@ -86,6 +89,8 @@ def main_reprogramming():
     it = meth(*meth_args, **meth_kwargs)
 
     has_one = False
+    if args.limit:
+        it = islice(it, args.limit)
     for sol in it:
         has_one = True
         print(sol)
