@@ -50,7 +50,7 @@ def main_attractors():
         dom = bonesis.BooleanNetwork(args.input)
     elif ext == "aeon":
         from bonesis.aeon import AEONDomain
-        dom = AEONDomain.from_aeon_file(args.input)
+        dom = AEONDomain.from_aeon_file(args.input, canonic=False)
     else:
         raise ValueError("Unknon file type for input")
 

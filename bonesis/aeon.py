@@ -186,12 +186,12 @@ class AEONDomain(BonesisDomain, dict):
             return super().__setitem__(node, func)
 
     @classmethod
-    def from_aeon_file(celf, filename):
+    def from_aeon_file(celf, filename, **opts):
         import biodivine_aeon
         with open(filename) as fp:
             data = fp.read()
         am = biodivine_aeon.BooleanNetwork.from_aeon(data)
-        return celf(am)
+        return celf(am, **opts)
 
 
 class AEONParametersView(bonesis.BonesisView):
