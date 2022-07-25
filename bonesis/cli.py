@@ -43,6 +43,8 @@ def main_attractors():
             help="file specifying the domain of Boolean networks (.bnet or .aeon)")
     ap.add_argument("--fixpoints-only", action="store_true",
             help="Enumerate only fixed points")
+    ap.add_argument("--limit", type=int,
+            help="Maximum number of solutions")
     args = ap.parse_args()
 
     ext = args.input.lower().split(".")[-1]
@@ -60,9 +62,12 @@ def main_attractors():
     x = bo.cfg() if args.fixpoints_only else bo.hypercube()
     bo.fixed(x)
 
-    publish = print
+    it = x.assignments()
+    if args.limit:
+        it = islice(it, args.limit)
 
-    for sol in x.assignments():
+    publish = print
+    for sol in it:
         publish(sol)
 
 
