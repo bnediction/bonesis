@@ -23,6 +23,17 @@ def main_utils():
         return ap.print_help()
     return args.func(args)
 
+def _load_domain(args):
+    ext = args.input.lower().split(".")[-1]
+    if ext == "bnet":
+        dom = bonesis.BooleanNetwork(args.input)
+    elif ext == "aeon":
+        from bonesis.aeon import AEONDomain
+        dom = AEONDomain.from_aeon_file(args.input, canonic=False)
+    else:
+        raise ValueError("Unknon file type for input")
+    return dom
+
 def main_attractors():
     ap = ArgumentParser(description=textwrap.dedent("""\
     This program lists the attractors (possibly restricted to fixed points) of
@@ -47,16 +58,9 @@ def main_attractors():
             help="Maximum number of solutions")
     args = ap.parse_args()
 
-    ext = args.input.lower().split(".")[-1]
-    if ext == "bnet":
-        dom = bonesis.BooleanNetwork(args.input)
-    elif ext == "aeon":
-        from bonesis.aeon import AEONDomain
-        dom = AEONDomain.from_aeon_file(args.input, canonic=False)
-    else:
-        raise ValueError("Unknon file type for input")
-
     bonesis.settings["quiet"] = True
+
+    dom = _load_domain(args)
 
     bo = bonesis.BoNesis(dom)
     x = bo.cfg() if args.fixpoints_only else bo.hypercube()
