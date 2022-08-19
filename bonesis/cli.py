@@ -30,13 +30,16 @@ def _load_domain(args):
     elif ext == "aeon":
         from bonesis.aeon import AEONDomain
         dom = AEONDomain.from_aeon_file(args.input, canonic=False)
+    elif ext == "sif":
+        dom = bonesis.InfluenceGraph.from_sif(args.input, canonic=False,
+                unsource=False, exact=True)
     else:
         raise ValueError("Unknon file type for input")
     return dom
 
 def _setup_argument_domain(ap):
     ap.add_argument("input",
-            help="file specifying the domain of Boolean networks (.bnet or .aeon)")
+            help="file specifying the domain of Boolean networks (supported: .bnet, .sif, .aeon)")
 
 def main_attractors():
     ap = ArgumentParser(description=textwrap.dedent("""\
