@@ -34,6 +34,10 @@ def _load_domain(args):
         raise ValueError("Unknon file type for input")
     return dom
 
+def _setup_argument_domain(ap):
+    ap.add_argument("input",
+            help="file specifying the domain of Boolean networks (.bnet or .aeon)")
+
 def main_attractors():
     ap = ArgumentParser(description=textwrap.dedent("""\
     This program lists the attractors (possibly restricted to fixed points) of
@@ -50,8 +54,7 @@ def main_attractors():
     """),
         formatter_class=RawDescriptionHelpFormatter
     )
-    ap.add_argument("input",
-            help="file specifying the domain of Boolean networks (.bnet or .aeon)")
+    _setup_argument_domain(ap)
     ap.add_argument("--fixpoints-only", action="store_true",
             help="Enumerate only fixed points")
     ap.add_argument("--limit", type=int,
@@ -78,8 +81,7 @@ def main_attractors():
 
 def main_reprogramming():
     ap = ArgumentParser()
-    ap.add_argument("bnet_file",
-            help="file specifying the Boolean network in bnet format")
+    _setup_argument_domain(ap)
     ap.add_argument("marker",
             help="Marker specification (partial configuration) - JSON format")
     ap.add_argument("max_size", type=int,
@@ -101,19 +103,20 @@ def main_reprogramming():
     bonesis.settings["quiet"] = not args.verbose
     bonesis.settings["parallel"] = args.parallel
 
-    f = bonesis.BooleanNetwork(args.bnet_file)
+    dom = _load_domain(args)
+
     M = json.loads(args.marker)
     k = args.max_size
     meth_prefix = ""
     meth_suffix = ""
-    meth_args = (f, M, k)
+    meth_args = (dom, M, k)
     meth_kwargs = {}
     if args.exclude:
         meth_kwargs["exclude"] = json.loads(args.exclude)
     if args.reachable_from:
         z = json.loads(args.reachable_from)
         meth_prefix = "source_"
-        meth_args = (f, z, M, k)
+        meth_args = (dom, z, M, k)
     if args.fixpoints:
         meth_suffix = "_fixpoints"
         meth_kwargs["at_least_one"] = not args.allow_no_fixpoint
