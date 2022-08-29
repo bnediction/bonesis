@@ -40,6 +40,8 @@ class BonesisView(object):
             if isinstance(extra, str):
                 if extra == "configurations":
                     return configurations_of_facts
+                elif extra == "boolean-network":
+                    return minibn_of_facts
                 raise ValueError(f"Unknown extra '{extra}'")
             return extra
         if isinstance(extra, (tuple, list)):
