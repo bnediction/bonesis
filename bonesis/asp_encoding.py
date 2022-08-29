@@ -5,6 +5,7 @@ import re
 import tempfile
 
 import boolean
+import networkx as nx
 
 from bonesis0.asp_encoding import *
 from bonesis0.proxy_control import ProxyControl
@@ -665,3 +666,17 @@ class ASPModel_DNF(object):
     def minibn_of_json_facts(str_facts):
         fs = map(clingo.parse_term, str_facts)
         return minibn_of_facts(fs)
+
+    @staticmethod
+    def influence_graph_from_model(atoms):
+        nodes = (py_of_symbol(a.arguments[0]) for a in atoms\
+                    if a.name == "node")
+        def make_edge(e):
+            a, b, s = e
+            return (a, b, {"sign": s, "label": "+" if s > 0 else "-"})
+        edges = (make_edge(py_of_symbol(a)) for a in atoms\
+                    if a.name == "edge")
+        g = nx.DiGraph()
+        g.add_nodes_from(nodes)
+        g.add_edges_from(edges)
+        return g

@@ -7,6 +7,7 @@ import time
 
 import clingo
 
+import networkx as nx
 import pandas as pd
 
 from .debug import dbg
@@ -160,6 +161,19 @@ class NonConstantNodesView(BonesisView):
 class NonStrongConstantNodesView(NonConstantNodesView):
     constants = "strong_constant"
     show_templates = ["node", "strong_constant"]
+
+
+class InfluenceGraphView(BonesisView):
+    project = True
+    def configure_show(self):
+        self.control.add("base", [], \
+            "#show."\
+            "#show node/1."\
+            "#show edge(A,B,S): clause(B,_,A,S).")
+
+    def format_model(self, model):
+        atoms = model.symbols(shown=True)
+        return self.aspmodel.influence_graph_from_model(atoms)
 
 
 class BooleanNetworksView(BonesisView):

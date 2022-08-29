@@ -97,5 +97,8 @@ class BoNesis(object):
     def local_functions(self, **kwargs):
         return LocalFunctionsViews(self, **kwargs)
 
+    def influence_graphs(self, **kwargs):
+        return InfluenceGraphView(self, **kwargs)
+
     def assignments(self, solutions="subset-minimal", **kwargs):
         return AllSomeView(self, solutions=solutions, **kwargs)
