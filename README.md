@@ -20,3 +20,7 @@ pip install bonesis
 ```
 conda install -c potassco -c colomoto bonesis
 ```
+
+## Documentation
+
+- [Tutorial](https://nbviewer.org/github/bnediction/bonesis/blob/master/examples/Tutorial.ipynb)
