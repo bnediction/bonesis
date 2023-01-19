@@ -101,16 +101,24 @@ class BonesisView(object):
     def __next__(self):
         if self.limit and self._counter >= self.limit:
             raise StopIteration
+
         t = Timer(self.settings["timeout"], self.interrupt) \
                 if "timeout" in self.settings else None
         t.start() if t is not None else None
         try:
             self.cur_model = next(self._iterator)
+            if self.mode == "opt":
+                try:
+                    while True:
+                        self.cur_model = next(self._iterator)
+                except StopIteration:
+                    pass
+            elif self.mode == "optN":
+                while not self.cur_model.optimality_proven:
+                    self.cur_model = next(self._iterator)
         finally:
             t.cancel() if t is not None else None
-        if self.mode.startswith("opt") \
-                and not self.cur_model.optimality_proven:
-            return next(self)
+
         pmodel = self.parse_model(self.cur_model)
         for func in self.filters:
             if not func(pmodel):
