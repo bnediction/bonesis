@@ -9,7 +9,7 @@ setup(name=NAME,
     description = "Synthesis of Most Permissive Boolean Networks",
     install_requires = [
         "boolean.py",
-        "clingo",
+        "clingo>=5.5",
         "colomoto_jupyter",
         "mpbn>=1.7",
         "networkx",
