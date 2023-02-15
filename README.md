@@ -2,7 +2,7 @@
 
 Synthesis of Most Permissive Boolean Networks from network architecture and dynamical properties
 
-**DISCLAIMER - Legal warning:  the use, sharing, and modification of this program and library is allowed for ACADEMIC PURPOSE ONLY.** Please contact loic.pauleve@labri.fr for other usage.
+This software is distributed under the [CeCILL v2.1](http://www.cecill.info/index.en.html) free software license (GNU GPL compatible).
 
 ## Main related publications
 
