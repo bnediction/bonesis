@@ -35,4 +35,5 @@ test:
 about:
   home: https://github.com/bnediction/bonesis
   summary: 'Synthesis of Most Permissive Boolean Networks'
-
+  license: 'CeCILL 2.1'
+  license_file: LICENSE.txt

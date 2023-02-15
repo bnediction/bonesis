@@ -7,6 +7,7 @@ VERSION = '9999'
 setup(name=NAME,
     version=VERSION,
     description = "Synthesis of Most Permissive Boolean Networks",
+    license_files = ('LICENSE.txt', 'Licence_CeCILL_V2.1-fr.txt'),
     install_requires = [
         "boolean.py",
         "clingo>=5.5",
