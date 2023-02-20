@@ -12,3 +12,5 @@ x = bo.cfg()
 
 for v in x.assignments():
     print(v)
+for v in x.assignments(scope=["a","b"]):
+    print(v)

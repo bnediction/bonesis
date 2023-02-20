@@ -90,11 +90,15 @@ def main_attractors():
     _setup_argument_domain(ap)
     ap.add_argument("--fixpoints-only", action="store_true",
             help="Enumerate only fixed points")
+    ap.add_argument("--scope", default=None,
+            help="List of nodes to display - JSON format")
     ap.add_argument("--limit", type=int,
             help="Maximum number of solutions")
     args = ap.parse_args()
 
     bonesis.settings["quiet"] = True
+
+    scope = json.loads(args.scope) if args.scope else None
 
     dom = _load_domain(args)
 
@@ -102,7 +106,7 @@ def main_attractors():
     x = bo.cfg() if args.fixpoints_only else bo.hypercube()
     bo.fixed(x)
 
-    it = x.assignments()
+    it = x.assignments(scope=scope)
     if args.limit:
         it = islice(it, args.limit)
 

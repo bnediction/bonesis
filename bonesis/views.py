@@ -340,29 +340,31 @@ class DiverseBooleanNetworksView(BooleanNetworksView):
 
 class ConfigurationView(BonesisView):
     project = True
-    def __init__(self, cfg, *args, **kwargs):
+    _pred_name = "cfg"
+    def __init__(self, cfg, *args, scope=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.cfg = cfg
+        self.scope = scope
     def configure_show(self):
         name = symbol_of_py(self.cfg.name)
-        self.control.add("base", [],
-            "#show."
-            f"#show cfg(X,N,V) : cfg(X,N,V), X={name}.")
+        self.control.add("base", [], "#show.")
+        if self.scope is not None:
+            for n in self.scope:
+                n = symbol_of_py(n)
+                self.control.add("base", [], f"show_scope({self._pred_name}({name},{n})).")
+            self.control.add("base", [], f"#show {self._pred_name}(X,N,V) : "
+                             f"{self._pred_name}(X,N,V), X={name},"
+                             f"show_scope({self._pred_name}(X,N)).")
+        else:
+            self.control.add("base", [], f"#show {self._pred_name}(X,N,V) :"
+                            f"{self._pred_name}(X,N,V), X={name}.")
     def format_model(self, model):
         atoms = model.symbols(shown=True)
         x = self.cfg.name
         return configurations_of_facts(atoms, keys=[x])[x]
 
-class HypercubeView(BonesisView):
-    project = True
-    def __init__(self, h, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.h = h
-    def configure_show(self):
-        name = symbol_of_py(self.h.name)
-        self.control.add("base", [],
-            "#show."
-            f"#show hypercube(X,N,V) : hypercube(X,N,V), X={name}.")
+class HypercubeView(ConfigurationView):
+    _pred_name = "hypercube"
     def format_model(self, model):
         pairs = []
         for a in model.symbols(shown=True):

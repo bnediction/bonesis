@@ -28,3 +28,5 @@ assert bo.is_satisfiable()
 
 for i, sol in enumerate(h.assignments()):
     print(i, sol)
+for i, sol in enumerate(h.assignments(scope=["a"])):
+    print(i, sol)
