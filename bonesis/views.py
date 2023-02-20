@@ -416,7 +416,7 @@ def SomeFreezeComplementaryView(some, *args, **kwargs):
 
         nodes = list(some.mgr.bo.domain)
         if opts["exclude"]:
-            nodes = filter(lambda n: n not in opts["exclude"], nodes)
+            nodes = [n for n in nodes if n not in opts["exclude"]]
         elements = [(n,0) for n in nodes] + [(n,1) for n in nodes]
 
         def freeze_add(fs, e):
