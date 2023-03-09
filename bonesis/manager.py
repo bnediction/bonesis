@@ -164,7 +164,9 @@ class _ReachabilityScopeManager(BonesisManager):
             setattr(self, prop, getattr(parent, prop))
         self.__options = options
     def register_predicate(self, name, *args, **kwargs):
-        if name in ["bind_cfg"]:
+        if name in ["bind_cfg",
+                    "different",
+                    "fixpoint"] or name.startswith("cfg_"):
             return super().register_predicate(name, *args, **kwargs)
         if name not in ["reach"]:
             raise TypeError(f"Unsupported predicate {name} in scoped reachability")
