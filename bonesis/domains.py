@@ -151,6 +151,7 @@ class InfluenceGraph(BonesisDomain, nx.MultiDiGraph):
         self.allow_skipping_nodes = allow_skipping_nodes
         self.canonic = canonic
         self.exact = exact
+        self.rules = []
         if autolabel:
             for a, b, data in self.edges(data=True):
                 if "label" not in data:

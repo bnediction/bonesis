@@ -112,6 +112,7 @@ def pkn_to_facts(pkn, maxclause=None, allow_skipping_nodes=False):
         return nbc
     for n, i in pkn.in_degree(pkn.nodes()):
         facts.append(asp.Function("maxC", symbols(n, bounded_nb_clauses(i))))
+    facts += pkn.rules
     return facts
 
 def obs_to_facts(pstate, obsid):
