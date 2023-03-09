@@ -6,6 +6,7 @@ class NonReachTest(unittest.TestCase):
     def setUp(self):
         self.bn1 = bonesis.BooleanNetwork({"a": "b", "b": "c", "c": 1})
         self.bn2 = bonesis.BooleanNetwork({"a": "b", "b": "c", "c": "c"})
+        self.bn3 = bonesis.BooleanNetwork({"a": "b", "b": "c", "c": "!c"})
         self.data = {}
         for a in [0,1]:
             for b in [0,1]:
@@ -63,3 +64,20 @@ class NonReachTest(unittest.TestCase):
             +bo.obs(x) // bo.fixed(~bo.obs(y))
             t(bo.is_satisfiable(), f"final_nonreach({x},{y}) [{bn}]")
 
+    def test_scope(self):
+        bn = self.bn3
+        x = bn.zero()
+        for scope, target, t in [
+                ({}, {"a": 1, "c": 0}, self.assertTrue),
+                ({"monotone": True}, {"a": 1, "c": 0}, self.assertFalse),
+                ({"monotone": True}, {"a": 1}, self.assertTrue),
+                ({"max_changes": 1}, {"a": 1}, self.assertFalse),
+                ({"max_changes": 2}, {"a": 1}, self.assertFalse),
+                ({"max_changes": 2}, {"b": 1}, self.assertTrue),
+                ({"max_changes": 3}, {"a": 1}, self.assertTrue),
+                ]:
+            bo = bonesis.BoNesis(bn)
+            with bo.scope_reachability(**scope):
+                ~bo.obs(x) >= ~bo.obs(target)
+                t(bo.is_satisfiable(),
+                    f"scope_reachability({scope}) >= {target}")

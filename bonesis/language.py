@@ -117,8 +117,15 @@ class SomeFreeze(Some):
         "exclude": (),
     }
 
+class BoContext(object):
+    def __enter__(self):
+        mgr = self._make_context()
+        return ManagedIface(mgr, self.iface)
+    def __exit__(self, *args):
+        self.iface.pop_manager()
+
 @language_api
-class mutant(object):
+class mutant(BoContext):
     def __init__(self, mutations):
         if isinstance(mutations, Some):
             mutations._decl_dtype("Freeze")
@@ -126,16 +133,28 @@ class mutant(object):
             for node in mutations:
                 self.mgr.assert_node_exists(node)
         self.mutations = mutations
-    def __enter__(self):
-        return ManagedIface(self.mgr.mutant_context(self.mutations), self.iface)
-    def __exit__(self, *args):
-        self.iface.pop_manager()
+    def _make_context(self):
+        return self.mgr.mutant_context(self.mutations)
 
 @language_api
 class action(mutant):
-    def __enter__(self):
-        return ManagedIface(self.mgr.mutant_context(self.mutations, weak=True),
-                self.iface)
+    def _make_context(self):
+        return self.mgr.mutant_context(self.mutations, weak=True)
+
+@language_api
+class scope_reachability(BoContext):
+    def __init__(self, **options):
+        """
+        monotone:
+          - if True, component having same value in origin and target
+            configurations cannot oscillate
+        max_changes:
+          - if int, limit the dimension of the hypercube used from computing the
+            reachability property
+        """
+        self.__options = options
+    def _make_context(self):
+        return self.mgr.scope_reachability_context(self.__options)
 
 def declare_operator(operator):
     def decorator(func):

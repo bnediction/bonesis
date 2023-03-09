@@ -125,6 +125,10 @@ class BonesisManager(object):
     def mutant_context(self, *args, **kwargs):
         return _MutantManager(self, *args, **kwargs)
 
+    def scope_reachability_context(self, *a, **k):
+        return _ReachabilityScopeManager(self, *a, **k)
+
+
 class _MutantManager(BonesisManager):
     _mutant_id = 0
     def __init__(self, parent, mutations, weak=False):
@@ -151,3 +155,17 @@ class _MutantManager(BonesisManager):
     def register_predicate(self, name, *args, **kwargs):
         super().register_predicate(name, *args, **kwargs,
                 mutant=self.mutant_name)
+
+class _ReachabilityScopeManager(BonesisManager):
+    def __init__(self, parent, options):
+        for prop in ["bo", "properties",
+                "observations", "anon_observations",
+                "configurations", "some"]:
+            setattr(self, prop, getattr(parent, prop))
+        self.__options = options
+    def register_predicate(self, name, *args, **kwargs):
+        if name in ["bind_cfg"]:
+            return super().register_predicate(name, *args, **kwargs)
+        if name not in ["reach"]:
+            raise TypeError(f"Unsupported predicate {name} in scoped reachability")
+        super().register_predicate(name, *args, **self.__options, **kwargs)

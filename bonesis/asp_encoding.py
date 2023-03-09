@@ -497,7 +497,9 @@ class ASPModel_DNF(object):
           + self.apply_mutant_to_mcfg(mutant, T)
         return rules
 
-    def encode_reach(self, cfg1, cfg2, mutant=None):
+    def encode_reach(self, cfg1, cfg2, mutant=None,
+                     monotone=False,
+                     max_changes=None):
         self.load_template_eval()
         Z = self.fresh_atom("reach")
         X = clingo_encode(cfg1.name)
@@ -507,11 +509,18 @@ class ASPModel_DNF(object):
             f"mcfg({Z},N,V) :- cfg({X},N,V)",
             # extensions
             f"ext({Z},N,V) :- eval({Z},N,V), cfg({Y},N,V)",
-            f"{{ext({Z},N,V)}} :- eval({Z},N,V), cfg({Y},N,-V)",
             # constraints
             f":- cfg({Y},N,V), not mcfg({Z},N,V)",
             f":- cfg({Y},N,V), ext({Z},N,-V), not ext({Z},N,V)",
         ] + self.apply_mutant_to_mcfg(mutant, Z)
+        if not monotone:
+            rules += [
+            f"{{ext({Z},N,V)}} :- eval({Z},N,V), cfg({Y},N,-V)"
+            ]
+        if isinstance(max_changes, int) and max_changes > 0:
+            rules += [
+                f":- {max_changes+1} #count {{ N: ext({Z},N,V),cfg({X},N,-V) }}"
+            ]
         return rules
 
     def encode_nonreach(self, cfg1, cfg2, mutant=None, bounded="auto"):
