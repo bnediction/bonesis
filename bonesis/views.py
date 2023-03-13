@@ -54,13 +54,14 @@ from bonesis0 import diversity
 
 class BonesisView(object):
     single_shot = True
-    def __init__(self, bo, limit=0, mode="auto", extra=None, **settings):
+    def __init__(self, bo, limit=0, mode="auto", extra=None, progress=False, **settings):
         self.bo = bo
         self.aspmodel = bo.aspmodel
         self.limit = limit
         if mode == "auto":
             mode = "optN" if self.bo.has_optimizations() else "solve"
         self.mode = mode
+        self.progress = progress if mode.startswith("opt") else False
         self.settings = OverlayedDict(bo.settings)
         for k,v in settings.items():
             self.settings[k] = v
@@ -127,6 +128,9 @@ class BonesisView(object):
         self.configure()
         self._iterator = iter(self.control.solve(yield_=True))
         self._counter = 0
+        if self.progress:
+            self._progressbar = self.progress(desc="Model optimization",
+                                          total=float("inf"))
         return self
 
     def __next__(self):
@@ -138,15 +142,28 @@ class BonesisView(object):
         t.start() if t is not None else None
         try:
             self.cur_model = next(self._iterator)
+
+            def progress():
+                if self.progress:
+                    if self.mode.startswith("opt"):
+                        self._progressbar.set_postfix({"score": self.cur_model.cost},
+                                                      refresh=False)
+                    self._progressbar.update()
+                    self._progressbar.refresh()
+            progress()
+
             if self.mode == "opt":
                 try:
                     while True:
                         self.cur_model = next(self._iterator)
+                        progress()
                 except StopIteration:
-                    pass
+                    if self.progress:
+                        self._progressbar.close()
             elif self.mode == "optN":
                 while not self.cur_model.optimality_proven:
                     self.cur_model = next(self._iterator)
+                    progress()
         finally:
             t.cancel() if t is not None else None
 
