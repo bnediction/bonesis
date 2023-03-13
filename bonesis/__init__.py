@@ -48,6 +48,7 @@ __language_api__ = ["obs", "cfg"]
 settings = {
     "parallel": 1,
     "clingo_options": (),
+    "clingo_opt_strategy": "bb",
     "solutions": "all",
     "quiet": False,
 }

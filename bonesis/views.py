@@ -90,7 +90,8 @@ class BonesisView(object):
         if self.project:
             args.append("--project")
         if self.mode == "optN":
-            args += ["--opt-mode=optN", "--opt-strategy=usc"]
+            opt_strategy = self.settings.get("clingo_opt_strategy", "usc")
+            args += ["--opt-mode=optN", f"--opt-strategy={opt_strategy}"]
 
         settings = OverlayedDict(self.settings)
         if self.settings["solutions"] == "subset-minimal":
