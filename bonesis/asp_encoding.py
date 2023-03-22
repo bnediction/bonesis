@@ -439,9 +439,8 @@ class ASPModel_DNF(object):
             # minimal trap space containing cfg
             f"mcfg({myts},N,V) :- cfg({cfgid},N,V)",
             f"mcfg({myts},N,V) :- eval({myts},N,V)",
-        ] + [ # trap space constraint
-            f":- cfg({cfgid},{clingo_encode(n)},V), mcfg({myts},{clingo_encode(n)},-V)"
-                for n in self.data[cfg.obs.name]
+            # trap space constraint
+            f":- obs({clingo_encode(cfg.obs.name)},N,V), mcfg({myts},N,-V)",
         ] + self.apply_mutant_to_mcfg(mutant, myts)
         return rules
 
