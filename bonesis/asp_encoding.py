@@ -444,6 +444,18 @@ class ASPModel_DNF(object):
         ] + self.apply_mutant_to_mcfg(mutant, myts)
         return rules
 
+    def encode_hypercube(self, h):
+        self.load_template_hypercube()
+        H = clingo_encode(h.name)
+        rules = [f"hypercube({H})" ]
+        if h.min_dimension >= 1:
+            rules.append(f":- #count {{ N: hypercube({H},N,2) }}"
+                                        f"{h.min_dimension-1}")
+        if h.max_dimension:
+            rules.append(f":- {max_dimension+1} #count {{ N: hypercube({H},N,2) }}")
+        print(rules)
+        return rules
+
     def encode_in_attractor(self, cfg, mutant=None):
         self.load_template_eval()
 
