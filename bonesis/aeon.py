@@ -77,10 +77,12 @@ def asp_of_AEONReg(dom, boenc, n, acting_n=None, regs=None, ns=""):
     rules.append(clingo.Function(f"{ns}maxC", symbols(n, nbc)))
     for m in regs:
         reg = dom.rg.find_regulation(m, acting_n)
+        m = dom.rg.get_variable_name(m)
         args = symbols(m, n)
-        if reg["monotonicity"] == "activation":
+        monotonicity = reg.get("monotonicity")
+        if monotonicity == "activation":
             sign = 1
-        elif reg["monotonicity"] == "inhibition":
+        elif monotonicity == "inhibition":
             sign = -1
         else:
             sign = "(-1;1)"
