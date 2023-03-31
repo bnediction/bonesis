@@ -31,6 +31,8 @@
 
 import random
 import time
+from threading import Thread
+from queue import Queue
 
 import clingo
 
@@ -134,27 +136,39 @@ class solve_diverse:
         if self.limit and self.__counter >= self.limit:
             print()
             raise StopIteration
-        found = False
-        with self.control.solve(yield_=True) as solutions:
-            for model in solutions:
-                found = True
-                self.__counter += 1
-                now = time.time()
-                if self.first_time is None:
-                    self.first_time = now
-                elapsed = now-self.start_time
-                print("\rFound {} solutions in {:.1f}s (first in {:.1f}s; rate {:.1f}s)".format(
+
+        ret = []
+        at = []
+        def handle_model(model):
+            self.__counter += 1
+            now = time.time()
+            if self.first_time is None:
+                self.first_time = now
+            elapsed = now-self.start_time
+            print("\rFound {} solutions in {:.1f}s (first in {:.1f}s; rate {:.1f}s)".format(
                     self.__counter, elapsed,
                     self.first_time-self.start_time,
                     elapsed/self.__counter), end="", flush=True)
-                atoms = model.symbols(atoms=True)
-                obj = self.on_model(model)
-                self.driver.on_solution(atoms)
-                break
-        if not found:
-            if self.__counter:
-                print()
-            raise StopIteration
-        self.prepare_next(atoms)
-        return obj
+            atoms = model.symbols(atoms=True)
+            ret.append(self.on_model(model))
+            at.append(atoms)
+            self.driver.on_solution(atoms)
 
+        q = Queue(1)
+        def proxy():
+            sr = self.control.solve(on_model=handle_model)
+            q.put(sr)
+        t = Thread(target=proxy)
+        t.start()
+        try:
+            t.join()
+        except KeyboardInterrupt:
+            self.control.interrupt()
+            t.join()
+        sr = q.get()
+        if sr.satisfiable:
+            self.prepare_next(at[0])
+            return ret[0]
+        if self.__counter:
+            print()
+        raise StopIteration
