@@ -29,6 +29,7 @@
 # knowledge of the CeCILL license and that you accept its terms.
 #
 
+from functools import partial
 import itertools
 import multiprocessing
 import os
@@ -73,6 +74,9 @@ class BonesisView(object):
                     return configurations_of_facts
                 elif extra == "boolean-network":
                     return minibn_of_facts
+                elif extra == "somes":
+                    return partial(AllSomeView.allsomes_from_atoms,
+                                       self.bo.manager)
                 raise ValueError(f"Unknown extra '{extra}'")
             return extra
         if isinstance(extra, (tuple, list)):
@@ -397,19 +401,25 @@ class HypercubeView(ConfigurationView):
 class AllSomeView(BonesisView):
     project = True
     show_templates = ["some"]
-    def format_model(self, model):
+
+    @staticmethod
+    def allsomes_from_atoms(manager, atoms):
         def init_some(dtype):
             if dtype == "Freeze":
                 return {}
             raise NotImplementedError
         somes = {name: init_some(some.dtype)
-            for name, some in self.bo.manager.some.items()}
+            for name, some in manager.some.items()}
 
-        for a in model.symbols(shown=True):
+        for a in atoms:
             if a.name == "some_freeze":
                 name, n, v = py_of_symbol(a)
                 somes[name][n] = max(v,0)
         return somes
+
+    def format_model(self, model):
+        atoms = model.symbols(shown=True)
+        return self.allsomes_from_atoms(self.bo.manager, atoms)
 
 class SomeView(AllSomeView):
     def __init__(self, some, *args, **kwargs):
