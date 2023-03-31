@@ -10,6 +10,9 @@ bad_control = bo.Some(min_size=1)
 with bo.mutant(bad_control) as m:
     m.fixed(bo.obs("never_b"))
 s2 = bo.Some(min_size=1, name="s2")
+
+bad_control != s2
+
 with bo.mutant(s2) as m:
     m.fixed(bo.obs("never_b"))
 

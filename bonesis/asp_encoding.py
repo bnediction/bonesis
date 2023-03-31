@@ -380,6 +380,13 @@ class ASPModel_DNF(object):
         encoder = getattr(self, f"encode_some_{some.dtype.lower()}")
         return encoder(some.name, some.opts)
 
+    def encode_some_different(self, s1, s2):
+        for some in (s1, s2):
+            if s1.dtype is None:
+                raise TypeError(f"{some} has no type!")
+        encoder = getattr(self, f"encode_some_{s1.dtype.lower()}_different")
+        return encoder(s1, s2)
+
     def encode_some_freeze(self, name, opts):
         opts = SomeFreeze.default_opts | opts
         min_size = opts["min_size"]
@@ -401,6 +408,17 @@ class ASPModel_DNF(object):
                 f":- some_freeze({name},N,V), some_freeze({name},N,-V)"
             ]
         return rules
+
+    def encode_some_freeze_different(self, s1, s2):
+        n1 = clingo_encode(s1.name)
+        n2 = clingo_encode(s2.name)
+        ns = "some_freeze"
+        return [
+            f"{ns}_diff({n1},{n2}) :- {ns}({n1},N,V), {ns}({n2},N,-V)",
+            f"{ns}_diff({n1},{n2}) :- {ns}({n1},N,_), not {ns}({n2},N,_)",
+            f"{ns}_diff({n1},{n2}) :- not {ns}({n1},N,_), {ns}({n2},N,_)",
+            f":- not {ns}_diff({n1},{n2})"
+        ]
 
     def encode_mutant(self, name, mutations, __pred="mutant"):
         if isinstance(mutations, Some):

@@ -99,6 +99,11 @@ class Some(object):
     def copy(self):
         return self
 
+    def __ne__(left, right):
+        if not isinstance(right, Some):
+            raise TypeError()
+        left.mgr.register_predicate("some_different", left, right)
+
     def assignments(self, solutions="subset-minimal", **kwargs):
         from .views import SomeView
         return SomeView(self, self.mgr.bo, solutions=solutions, **kwargs)
