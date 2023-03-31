@@ -51,6 +51,10 @@ settings = {
     "clingo_opt_strategy": "bb",
     "solutions": "all",
     "quiet": False,
+    "clingo_gil_workaround": 1,
+        # 0/None: no GIL wrapper for clingo
+        # 1: run clingo in a single background thread
+        # 2: separate thread for each solution
 }
 
 class BoNesis(object):

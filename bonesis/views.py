@@ -50,6 +50,7 @@ from bonesis0.asp_encoding import (minibn_of_facts,
         parse_nb_threads,
         portfolio_path,
         py_of_symbol, symbol_of_py)
+from bonesis0.gil_utils import BGIteratorOnDemand, BGIteratorPersistent
 from bonesis0 import diversity
 
 
@@ -130,7 +131,13 @@ class BonesisView(object):
 
     def __iter__(self):
         self.configure()
-        self._iterator = iter(self.control.solve(yield_=True))
+        self._solve_handler = self.control.solve(yield_=True)
+        self._iterator = iter(self._solve_handler)
+        self._gil_workaround = self.settings.get("clingo_gil_workaround")
+        if self._gil_workaround == 1:
+            self._iterator = BGIteratorPersistent(self._iterator, self.control)
+        elif self._gil_workaround == 2:
+            self._iterator = BGIteratorOnDemand(self._iterator, self.control)
         self._counter = 0
         if self.progress:
             self._progressbar = self.progress(desc="Model optimization",
