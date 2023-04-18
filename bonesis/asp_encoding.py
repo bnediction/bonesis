@@ -471,7 +471,6 @@ class ASPModel_DNF(object):
                                         f"{h.min_dimension-1}")
         if h.max_dimension:
             rules.append(f":- {max_dimension+1} #count {{ N: hypercube({H},N,2) }}")
-        print(rules)
         return rules
 
     def encode_in_attractor(self, cfg, mutant=None):
