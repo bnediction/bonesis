@@ -51,6 +51,8 @@ settings = {
     "clingo_opt_strategy": "bb",
     "solutions": "all",
     "quiet": False,
+    "timeout": 0,
+    "fail_if_timeout": True, # if timeout raise TimeoutError
     "clingo_gil_workaround": 1,
         # 0/None: no GIL wrapper for clingo
         # 1: run clingo in a single background thread

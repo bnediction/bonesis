@@ -50,7 +50,8 @@ from bonesis0.asp_encoding import (minibn_of_facts,
         parse_nb_threads,
         portfolio_path,
         py_of_symbol, symbol_of_py)
-from bonesis0.gil_utils import BGIteratorOnDemand, BGIteratorPersistent
+from bonesis0.clingo_solving import setup_clingo_solve_handler
+from bonesis0.gil_utils import setup_gil_iterator
 from bonesis0 import diversity
 
 
@@ -129,54 +130,49 @@ class BonesisView(object):
         self.interrupted = True
         self.control.interrupt()
 
+
     def __iter__(self):
         self.configure()
-        self._solve_handler = self.control.solve(yield_=True)
+        self._solve_handler = setup_clingo_solve_handler(self.settings,
+                                                     self.control)
         self._iterator = iter(self._solve_handler)
-        self._gil_workaround = self.settings.get("clingo_gil_workaround")
-        if self._gil_workaround == 1:
-            self._iterator = BGIteratorPersistent(self._iterator, self.control)
-        elif self._gil_workaround == 2:
-            self._iterator = BGIteratorOnDemand(self._iterator, self.control)
+        self._iterator = setup_gil_iterator(self.settings, self._iterator,
+                                self._solve_handler, self.control)
         self._counter = 0
         if self.progress:
             self._progressbar = self.progress(desc="Model optimization",
                                           total=float("inf"))
         return self
 
+    def _progress_tick(self):
+        if not self.progress:
+            return
+        if not self.mode.startswith("opt"):
+            return
+        self._progressbar.set_postfix({"score": self.cur_model.cost},
+                                          refresh=False)
+        self._progressbar.update()
+        self._progressbar.refresh()
+
     def __next__(self):
         if self.limit and self._counter >= self.limit:
             raise StopIteration
 
-        t = Timer(self.settings["timeout"], self.interrupt) \
-                if "timeout" in self.settings else None
-        t.start() if t is not None else None
-        try:
-            self.cur_model = next(self._iterator)
+        self.cur_model = next(self._iterator)
+        self._progress_tick()
 
-            def progress():
-                if self.progress:
-                    if self.mode.startswith("opt"):
-                        self._progressbar.set_postfix({"score": self.cur_model.cost},
-                                                      refresh=False)
-                    self._progressbar.update()
-                    self._progressbar.refresh()
-            progress()
-
-            if self.mode == "opt":
-                try:
-                    while True:
-                        self.cur_model = next(self._iterator)
-                        progress()
-                except StopIteration:
-                    if self.progress:
-                        self._progressbar.close()
-            elif self.mode == "optN":
-                while not self.cur_model.optimality_proven:
+        if self.mode == "opt":
+            try:
+                while True:
                     self.cur_model = next(self._iterator)
-                    progress()
-        finally:
-            t.cancel() if t is not None else None
+                    self._progress_tick()
+            except StopIteration:
+                if self.progress:
+                    self._progressbar.close()
+        elif self.mode == "optN":
+            while not self.cur_model.optimality_proven:
+                self.cur_model = next(self._iterator)
+                self._progress_tick()
 
         pmodel = self.parse_model(self.cur_model)
         for func in self.filters:
