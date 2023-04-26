@@ -420,17 +420,17 @@ class ASPModel_DNF(object):
             f":- not {ns}_diff({n1},{n2})"
         ]
 
-    def encode_mutant(self, name, mutations, __pred="mutant"):
+    def encode_mutant(self, name, mutations, pred="mutant"):
         if isinstance(mutations, Some):
             # copy 'Some' mutation
             name = clingo_encode(name)
             some = clingo_encode(mutations.name)
-            return [f"{__pred}({name},N,V) :- some_freeze({some},N,V)"]
-        return [clingo.Function(__pred, symbols(name, node, s2v(b)))
+            return [f"{pred}({name},N,V) :- some_freeze({some},N,V)"]
+        return [clingo.Function(pred, symbols(name, node, s2v(b)))
             for node, b in mutations.items()]
 
     def encode_weak_mutant(self, name, mutations):
-        self.encode_mutant(name, mutatinons, __pred="weak_mutant")
+        return self.encode_mutant(name, mutations, pred="weak_mutant")
 
     def apply_mutant_to_mcfg(self, mutant, mcfg):
         if mutant is None:

@@ -16,3 +16,5 @@ cfg0 >= m.cfg()
 
 bo.aspmodel.make()
 print(bo.aspmodel)
+
+print(bo.is_satisfiable())
