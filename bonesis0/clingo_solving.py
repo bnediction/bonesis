@@ -13,13 +13,22 @@ class BoSolveHandle(object):
         self.clingo_sh = clingo_ctrl.solve(async_=True, yield_=True)
         self.timeout = timeout
         self.fail_if_timeout = fail_if_timeout
-        self.__exited = False
 
     def cancel(self):
         self.clingo_sh.cancel()
 
+    def __enter__(self):
+        self.__exited = False
+        self.clingo_sh.__enter__()
+
+    def __exit__(self, *args):
+        if self.__exited:
+            return
+        self.__exited = True
+        self.clingo_sh.__exit__(*args)
+
     def __iter__(self):
-        with self.clingo_sh:
+        with self:
             while True:
                 self.clingo_sh.resume()
                 if self.timeout > 0:

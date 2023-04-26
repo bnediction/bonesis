@@ -37,6 +37,8 @@ from queue import Queue
 import clingo
 
 from .asp_encoding import minibn_of_facts
+from .clingo_solving import setup_clingo_solve_handler
+from .gil_utils import setup_gil_iterator
 
 class diversity_driver:
     preds = {("clause", 4), ("constant", 1)}
@@ -92,13 +94,14 @@ def on_model_make_minibn(model):
 
 class solve_diverse:
     def __init__(self, control, driver, skip_supersets=False, limit=0,
-                    on_model=on_model_make_minibn):
+                    on_model=on_model_make_minibn, settings={}):
         self.control = control
         self.skip_supersets = skip_supersets
         self.driver = driver
         self.driver.initialize(self.control)
         self.limit = limit
         self.on_model = on_model
+        self.settings = settings
         self.__counter = 0
 
     def inject_solution(self, atoms):
@@ -137,38 +140,26 @@ class solve_diverse:
             print()
             raise StopIteration
 
-        ret = []
-        at = []
-        def handle_model(model):
-            self.__counter += 1
-            now = time.time()
-            if self.first_time is None:
-                self.first_time = now
-            elapsed = now-self.start_time
-            print("\rFound {} solutions in {:.1f}s (first in {:.1f}s; rate {:.1f}s)".format(
+        sh = setup_clingo_solve_handler(self.settings, self.control)
+        with sh:
+            it = setup_gil_iterator(self.settings, iter(sh), sh, self.control)
+            model = next(it, None)
+            if model is None:
+                if self.__counter:
+                    print()
+                raise StopIteration
+            atoms = model.symbols(atoms=True)
+            ret = self.on_model(model)
+
+        self.__counter += 1
+        now = time.time()
+        if self.first_time is None:
+            self.first_time = now
+        elapsed = now-self.start_time
+        print("\rFound {} solutions in {:.1f}s (first in {:.1f}s; rate {:.1f}s)".format(
                     self.__counter, elapsed,
                     self.first_time-self.start_time,
                     elapsed/self.__counter), end="", flush=True)
-            atoms = model.symbols(atoms=True)
-            ret.append(self.on_model(model))
-            at.append(atoms)
-            self.driver.on_solution(atoms)
-
-        q = Queue(1)
-        def proxy():
-            sr = self.control.solve(on_model=handle_model)
-            q.put(sr)
-        t = Thread(target=proxy)
-        t.start()
-        try:
-            t.join()
-        except KeyboardInterrupt:
-            self.control.interrupt()
-            t.join()
-        sr = q.get()
-        if sr.satisfiable:
-            self.prepare_next(at[0])
-            return ret[0]
-        if self.__counter:
-            print()
-        raise StopIteration
+        self.driver.on_solution(atoms)
+        self.prepare_next(atoms)
+        return ret

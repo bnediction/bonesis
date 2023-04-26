@@ -352,7 +352,8 @@ class DiverseBooleanNetworksView(BooleanNetworksView):
         self.driver = self.driver_cls(**self.driver_kwargs)
         self.diverse = diversity.solve_diverse(self.control.control, self.driver,
                 limit=self.limit, on_model=super().parse_model,
-                skip_supersets=self.skip_supersets)
+                skip_supersets=self.skip_supersets,
+                settings=self.settings)
 
     def parse_model(self, model):
         return model
