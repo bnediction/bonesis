@@ -52,6 +52,7 @@ settings = {
     "solutions": "all",
     "quiet": False,
     "timeout": 0,
+    "soft_interrupt": False, # if True, silently end solving
     "fail_if_timeout": True, # if timeout raise TimeoutError
     "clingo_gil_workaround": 1,
         # 0/None: no GIL wrapper for clingo
