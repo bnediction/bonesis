@@ -154,35 +154,6 @@ class ASPModel_DNF(object):
             return self.encode_domain_InfluenceGraph(domain)
         raise TypeError(f"I don't know what to do with {type(domain)}")
 
-    def encode_BooleanFunction(self, n, f, ensure_dnf=True):
-        def clauses_of_dnf(f):
-            if f == self.ba.FALSE:
-                return [False]
-            if f == self.ba.TRUE:
-                return [True]
-            if isinstance(f, boolean.OR):
-                return f.args
-            else:
-                return [f]
-        def literals_of_clause(c):
-            def make_literal(l):
-                if isinstance(l, boolean.NOT):
-                    return (l.args[0].obj, -1)
-                else:
-                    return (l.obj, 1)
-            lits = c.args if isinstance(c, boolean.AND) else [c]
-            return map(make_literal, lits)
-        facts = []
-        if ensure_dnf:
-            f = self.ba.dnf(f).simplify()
-        for cid, c in enumerate(clauses_of_dnf(f)):
-            if isinstance(c, bool):
-                facts.append(clingo.Function("constant", symbols(n, s2v(c))))
-            else:
-                for m, v in literals_of_clause(c):
-                    facts.append(clingo.Function("clause", symbols(n, cid+1, m, v)))
-        return facts
-
     def encode_domain_BooleanNetworksEnsemble(self, bns):
         preds = set()
         facts = []
@@ -199,12 +170,8 @@ class ASPModel_DNF(object):
 
     def encode_domain_BooleanNetwork(self, bn):
         self.ba = bn.ba
-        facts = []
-        facts.append(asp.Function("nbnode", symbols(len(bn))))
-        for n, f in bn.items():
-            facts.append(clingo.Function("node", symbols(n)))
-            facts += self.encode_BooleanFunction(n, f, ensure_dnf=False)
-        return facts
+        return [bn.asp_of_bn() + "\n" +
+                str(asp.Function("nbnode", symbols(len(bn))))]
 
     def encode_domain_InfluenceGraph(self, pkn):
         self.load_template_domain()
@@ -273,6 +240,13 @@ class ASPModel_DNF(object):
             "eval(X,N,-1) :- eval(X,N,C,-1): clause(N,C,_,_); clause(N,_,_,_), mcfg(X,_,_)",
             "eval(X,N,V) :- clamped(X,N,V)",
             "eval(X,N,V) :- constant(N,V), mcfg(X,_,_), not clamped(X,N,_)",
+
+            "eval(X,N,V) :- evalbdd(X,N,V), node(N), not clamped(X,N,_)",
+            "evalbdd(X,V,V) :- mcfg(X,_,_), V=(-1;1)",
+            "evalbdd(X,B,V) :- bdd(B,N,_,HI), mcfg(X,N,1), evalbdd(X,HI,V)",
+            "evalbdd(X,B,V) :- bdd(B,N,LO,_), mcfg(X,N,-1), evalbdd(X,LO,V)",
+            "evalbdd(X,B,V) :- mcfg(X,_,_), bdd(B,V)",
+
             "mcfg(X,N,V) :- ext(X,N,V)",
         ]
         self.push(rules)

@@ -44,44 +44,6 @@ import pandas as pd
 class BonesisDomain(object):
     pass
 
-def formula_well_formed(ba, f):
-    pos_lits = set()
-    neg_lits = set()
-    def is_lit(f):
-        if isinstance(f, ba.Symbol):
-            pos_lits.add(f.obj)
-            return True
-        if isinstance(f, ba.NOT) \
-                and isinstance(f.args[0], ba.Symbol):
-            neg_lits.add(f.args[0].obj)
-            return True
-        return False
-
-    def is_clause(f):
-        if is_lit(f):
-            return True
-        if isinstance(f, ba.AND):
-            for g in f.args:
-                if not is_lit(g):
-                    return False
-            return True
-        return False
-
-    def test_monotonicity():
-        both = pos_lits.intersection(neg_lits)
-        return not both
-
-    if f in [ba.TRUE, ba.FALSE]:
-        return True
-    if is_clause(f):
-        return test_monotonicity()
-    if isinstance(f, ba.OR):
-        for g in f.args:
-            if not is_clause(g):
-                return False
-        return test_monotonicity()
-    return False
-
 class BooleanNetwork(mpbn.MPBooleanNetwork, BonesisDomain):
     pass
 
