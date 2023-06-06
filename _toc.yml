@@ -3,7 +3,13 @@
 
 format: jb-book
 root: intro
-chapters:
-- file: markdown
-- file: notebooks
-- file: markdown-notebooks
+parts:
+- caption: Tutorials
+  chapters:
+  - file: markdown
+- caption: MPBN Reference
+  chapters:
+  - file: notebooks
+- caption: BoNesis Reference
+  chapters:
+  - file: markdown-notebooks
