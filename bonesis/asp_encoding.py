@@ -170,7 +170,7 @@ class ASPModel_DNF(object):
 
     def encode_domain_BooleanNetwork(self, bn):
         self.ba = bn.ba
-        return [bn.asp_of_bn() + "\n" +
+        return [bn.asp_of_bn(encoding="dnf-bdd") + "\n" +
                 str(asp.Function("nbnode", symbols(len(bn))))]
 
     def encode_domain_InfluenceGraph(self, pkn):
