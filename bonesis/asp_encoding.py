@@ -546,7 +546,7 @@ class ASPModel_DNF(object):
         else:
             rules += [f"reach_steps({Z},{bounded})"]
         if mutant is not None:
-            rules += [f"clamped(({Z},1..K),N,V) :- mutant({mutant},N,V)"]
+            rules += [f"clamped(({Z},1..K),N,V) :- mutant({mutant},N,V), reach_steps({Z},K)"]
         return rules
 
     def encode_final_nonreach(self, cfg1, cfg2, mutant=None):
