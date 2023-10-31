@@ -178,7 +178,10 @@ class ASPModel_DNF(object):
         if pkn.canonic:
             self.load_template_canonic()
         facts = pkn_to_facts(pkn, pkn.maxclause, pkn.allow_skipping_nodes)
-        if pkn.exact:
+        if pkn.exact == "unsigned":
+            self.load_template_edge()
+            facts.append(":- in(L,N,_), not edge(L,N,_)")
+        elif pkn.exact:
             self.load_template_edge()
             facts.append(":- in(L,N,S), not edge(L,N,S)")
         return facts
