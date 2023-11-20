@@ -133,6 +133,8 @@ def main_reprogramming():
             help="Perturbation blacklist - JSON format")
     ap.add_argument("--limit", type=int,
             help="Maximum number of solutions")
+    ap.add_argument("--algorithm", default=None,
+            help="Algorithm to use (e.g., cegar, complementary)")
     ap.add_argument("--verbose", action="store_true")
     ap.add_argument("--parallel", "-t", default=1, help="Parallel solving")
     args = ap.parse_args()
@@ -157,6 +159,8 @@ def main_reprogramming():
     if args.fixpoints:
         meth_suffix = "_fixpoints"
         meth_kwargs["at_least_one"] = not args.allow_no_fixpoint
+    if args.algorithm:
+        meth_kwargs["algorithm"] = args.algorithm
 
     from bonesis import reprogramming
     meth = f"{meth_prefix}marker_reprogramming{meth_suffix}"
