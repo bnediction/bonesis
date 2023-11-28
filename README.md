@@ -39,4 +39,4 @@ conda install -c potassco -c colomoto bonesis
 ### Command line tools
 
 * `bonesis-reprogramming`: marker reprogramming of minimal trap spaces (attractors of most permissive dynamics)
-* `bonesis-attractors`: listing of minimal trap spaces (MP attractors) from ensembles of BNs
+* `bonesis-attractors`: listing of minimal trap spaces (MP attractors) from ensembles of BNs
