@@ -29,7 +29,22 @@
 # knowledge of the CeCILL license and that you accept its terms.
 #
 
+
+from colomoto import minibn
+
+import networkx as nx
+from functools import reduce
+
 import bonesis
+
+def prune_domain_for_marker(f, M):
+    def get_doi(g):
+        return reduce(set.union, (nx.ancestors(g, m) for m in M), set(M))
+    if isinstance(f, minibn.BooleanNetwork):
+        keep = get_doi(f.influence_graph())
+        return f.__class__({i: f[i] for i in keep})
+    else:
+        return f.subgraph(get_doi(f))
 
 def marker_reprogramming_fixpoints(f, M, k, at_least_one=True, **some_opts):
     bo = bonesis.BoNesis(f)
@@ -57,6 +72,7 @@ def trapspace_reprogramming(f, M, k, algorithm="cegar", **some_opts):
     Returns mutations which ensure that all the minimal trap spaces match with
     the given marker `M`.
     """
+    f = prune_domain_for_marker(f, M)
     if algorithm == "cegar":
         meth = _trapspace_reprogramming_cegar
     else:
@@ -75,6 +91,7 @@ def _trapspace_reprogramming_complementary(f, M, k, **some_opts):
     return bad_control.complementary_assignments()
 
 def source_marker_reprogramming(f, z, M, k, **some_opts):
+    f = prune_domain_for_marker(f, M)
     bo = bonesis.BoNesis(f)
     bad_control = bo.Some(max_size=k, **some_opts)
     with bo.mutant(bad_control):
