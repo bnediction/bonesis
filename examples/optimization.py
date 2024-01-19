@@ -22,8 +22,11 @@ for nodes in view:
 
 bo.maximize_strong_constants()
 
+def interm(nodes):
+    print("Intermediate model", nodes)
+
 print("-"*10)
-view = bonesis.NonStrongConstantNodesView(bo)
+view = bonesis.NonStrongConstantNodesView(bo, intermediate_model_cb=interm)
 
 print(view.standalone())
 for nodes in view:

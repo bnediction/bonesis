@@ -57,7 +57,9 @@ from bonesis0 import diversity
 
 class BonesisView(object):
     single_shot = True
-    def __init__(self, bo, limit=0, mode="auto", extra=None, progress=False, **settings):
+    def __init__(self, bo, limit=0, mode="auto", extra=None, progress=False,
+                    intermediate_model_cb=None,
+                    **settings):
         self.bo = bo
         self.aspmodel = bo.aspmodel
         self.limit = limit
@@ -69,6 +71,7 @@ class BonesisView(object):
         for k,v in settings.items():
             self.settings[k] = v
         self.filters = []
+        self.callback_intermediate_model = intermediate_model_cb
 
         def parse_extra(extra):
             if isinstance(extra, str):
@@ -99,13 +102,16 @@ class BonesisView(object):
         if self.mode == "optN":
             opt_strategy = self.settings.get("clingo_opt_strategy", "usc")
             args += ["--opt-mode=optN", f"--opt-strategy={opt_strategy}"]
+        elif self.mode == "solve" and self.bo.has_optimizations():
+            args += ["--opt-mode=ignore"]
 
         settings = OverlayedDict(self.settings)
-        if self.settings["solutions"] == "subset-minimal":
+        if self.settings["solutions"] in ["subset-minimal", "subset-maximal"]:
             if parse_nb_threads(settings.get("parallel")) > 1:
                 args += ["--configuration", portfolio_path('subset_portfolio')]
             args += ["--heuristic", "Domain",
-                    "--enum-mode", "domRec", "--dom-mod", "5,16"]
+                    "--enum-mode", "domRec",
+                     "--dom-mod", "5,16" if self.settings["solutions"] == "subset-minimal" else "3,16"]
 
         if not self.settings["quiet"] and ground:
             print("Grounding...", end="", flush=True)
@@ -154,6 +160,11 @@ class BonesisView(object):
         self._progressbar.update()
         self._progressbar.refresh()
 
+    def _intermediate_model_found(self, model):
+        if self.callback_intermediate_model:
+            pmodel = self.parse_model(model)
+            self.callback_intermediate_model(pmodel)
+
     def __next__(self):
         if self.limit and self._counter >= self.limit:
             raise StopIteration
@@ -164,6 +175,7 @@ class BonesisView(object):
         if self.mode == "opt":
             try:
                 while True:
+                    self._intermediate_model_found(self.cur_model)
                     self.cur_model = next(self._iterator)
                     self._progress_tick()
             except StopIteration:
@@ -171,6 +183,7 @@ class BonesisView(object):
                     self._progressbar.close()
         elif self.mode == "optN":
             while not self.cur_model.optimality_proven:
+                self._intermediate_model_found(self.cur_model)
                 self.cur_model = next(self._iterator)
                 self._progress_tick()
 
