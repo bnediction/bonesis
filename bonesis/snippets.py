@@ -45,3 +45,7 @@ def matching_configurations(obs):
 
 def bn_nocyclic_attractors(bn):
     return not bn.has_cyclic_attractor()
+
+def all_different(cfgs):
+    for a, b in itertools.combinations(cfgs, 2):
+        a != b
