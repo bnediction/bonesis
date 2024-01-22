@@ -118,6 +118,13 @@ def pkn_to_facts(pkn, maxclause=None, allow_skipping_nodes=False):
 def obs_to_facts(pstate, obsid):
     return [asp.Function("obs", [obsid, n, 2*v-1]) for (n,v) in pstate.items()]
 
+def sanitize_identifier(nodeid):
+    if isinstance(nodeid, str):
+        nodeid = nodeid.replace("-","_")
+    else:
+        nodeid = f"x{nodeid}"
+    return nodeid
+
 def dnfs_of_facts(fs, ns=""):
     bn = {}
     clause_func = f"{ns}clause"
@@ -125,6 +132,8 @@ def dnfs_of_facts(fs, ns=""):
     for d in fs:
         if d.name == clause_func:
             (i,cid,lit,sign) = list(map(py_of_symbol, d.arguments))
+            i = sanitize_identifier(i)
+            lit = sanitize_identifier(lit)
             if i not in bn:
                 bn[i] = []
             if cid > len(bn[i]):
@@ -132,6 +141,7 @@ def dnfs_of_facts(fs, ns=""):
             bn[i][cid-1].add((sign,lit))
         elif d.name == constant_func and len(d.arguments) == 2:
             (i,v) = list(map(py_of_symbol, d.arguments))
+            i = sanitize_identifier(i)
             bn[i] = v == 1
     return bn
 
