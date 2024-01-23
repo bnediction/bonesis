@@ -167,7 +167,8 @@ class BonesisView(object):
 
     def __next__(self):
         if self.limit and self._counter >= self.limit:
-            self._solve_handler.cancel()
+            if hasattr(self, "_solve_handler"):
+                self._solve_handler.cancel()
             raise StopIteration
 
         self.cur_model = next(self._iterator)
