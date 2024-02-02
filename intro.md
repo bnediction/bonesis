@@ -1,4 +1,4 @@
-# BoNesis Documentation
+# BoNesis: Synthesis and reprogramming of Boolean networks
 
 This is a small sample book to give you a feel for how book content is
 structured.

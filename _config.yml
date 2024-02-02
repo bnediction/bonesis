@@ -1,13 +1,8 @@
 # ref: https://jupyterbook.org/en/stable/customize/config.html
-title: BoNesis documentation
+title: "BoNesis: Synthesis and reprogramming of Boolean networks"
 author: Loïc Paulevé
-copyright: "2023"
+copyright: "2024"
 logo: logo.png
-
-# Define the name of the latex output file for PDF builds
-latex:
-  latex_documents:
-    targetname: bonesis-doc.tex
 
 # Add a bibtex file so that we can create citations
 bibtex_bibfiles:
@@ -24,3 +19,10 @@ repository:
 html:
   use_issues_button: true
   use_repository_button: true
+
+
+sphinx:
+  config:
+    language: en
+      #    html_additional_pages:
+      #test: custom.html

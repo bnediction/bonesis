@@ -1,15 +1,13 @@
 # Table of contents
 # Learn more at https://jupyterbook.org/customize/toc.html
-
 format: jb-book
 root: intro
 parts:
-- caption: Tutorials
+- caption: Theory
   chapters:
-  - file: markdown
-- caption: MPBN Reference
+  - file: theory/boolean-networks.md
+- caption: BoNesis
   chapters:
-  - file: notebooks
-- caption: BoNesis Reference
-  chapters:
-  - file: markdown-notebooks
+  - file: bonesis-doc/intro.md
+  - file: bonesis-doc/synthesis.md
+  - file: bonesis-doc/reprogramming.md
