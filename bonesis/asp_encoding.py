@@ -535,24 +535,36 @@ class ASPModel_DNF(object):
             ]
         return rules
 
-    def encode_nonreach(self, cfg1, cfg2, mutant=None, bounded="auto"):
+    def encode_nonreach(self, cfg1, right, mutant=None, bounded="auto"):
         self.load_template_eval()
         Z = self.fresh_atom("nonreach")
         X = clingo_encode(cfg1.name)
-        Y = clingo_encode(cfg2.name)
+        Y = clingo_encode(right.name)
+        if isinstance(right, ConfigurationVar):
+            pred = "cfg"
+        elif isinstance(right, ObservationVar):
+            pred = "obs"
+        else:
+            raise NotImplementedError
         rules = [
             f"mcfg(({Z},1..K),N,V) :- reach_steps({Z},K), cfg({X},N,V)",
             f"ext(({Z},I),N,V) :- eval(({Z},I),N,V), not locked(({Z},I),N)",
-            f"reach_bad({Z},I,N) :- cfg({X},N,V), cfg({Y},N,V), ext(({Z},I),N,-V), not ext(({Z},I),N,V)",
-            f"locked(({Z},I+1..K),N) :- reach_bad({Z},I,N), reach_steps({Z},K), I < K",
-            f"nr_ok({Z}) :- reach_steps({Z},K), cfg({Y},N,V), not mcfg(({Z},K),N,V)",
+
+            f"reach_bad({Z},I,N) :- cfg({X},N,V), {pred}({Y},N,V), ext(({Z},I),N,-V), not ext(({Z},I),N,V)",
+            f"locked(({Z},I+1),N) :- reach_bad({Z},I,N), reach_steps({Z},K), I < K",
+            f"locked(({Z},I+1),N) :- locked(({Z},I),N), reach_steps({Z},K), I < K",
+
+            f"nr_ok({Z}) :- reach_steps({Z},K), {pred}({Y},N,V), not mcfg(({Z},K),N,V)",
             f":- not nr_ok({Z})",
         ]
         if bounded == "auto":
-            rules += [
+            if pred == "obs":
+                rules += [
+                f"reach_steps({Z},K+1) :- K = #count{{ N: {pred}({Y},N,V),cfg({X},N,V) }}"]
+            else:
+                rules += [
                 f"reach_steps({Z},K) :- nbnode(K), bounded_nonreach <= 0",
-                f"reach_steps({Z},bounded_nonreach) :- bounded_nonreach > 0",
-            ]
+                f"reach_steps({Z},bounded_nonreach) :- bounded_nonreach > 0"]
         else:
             rules += [f"reach_steps({Z},{bounded})"]
         if mutant is not None:

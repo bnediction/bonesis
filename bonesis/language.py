@@ -477,11 +477,6 @@ class nonreach(reach):
         if isinstance(right, fixed):
             self.predicate_name = "final_nonreach"
         super().__init__(left, right)
-    @classmethod
-    def right_arg(celf, arg):
-        if isinstance(arg, ObservationVar):
-            celf.type_error() # universal constraint
-        return super().right_arg(arg)
 
 @language_api
 class final_nonreach(nonreach):
