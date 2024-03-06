@@ -525,8 +525,9 @@ class ASPModel_DNF(object):
             f":- {pred}({Y},N,V), ext({Z},N,-V), not ext({Z},N,V)",
         ] + self.apply_mutant_to_mcfg(mutant, Z)
         if not monotone:
+            compl = f"cfg({Y},N,-V)" if pred == "cfg" else f"not obs({Y},N,V)"
             rules += [
-            f"{{ext({Z},N,V)}} :- eval({Z},N,V), {pred}({Y},N,-V)"
+                f"{{ext({Z},N,V)}} :- eval({Z},N,V), {compl}"
             ]
         if isinstance(max_changes, int) and max_changes > 0:
             rules += [
