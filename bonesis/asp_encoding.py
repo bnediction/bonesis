@@ -502,25 +502,31 @@ class ASPModel_DNF(object):
           + self.apply_mutant_to_mcfg(mutant, T)
         return rules
 
-    def encode_reach(self, cfg1, cfg2, mutant=None,
+    def encode_reach(self, cfg1, right, mutant=None,
                      monotone=False,
                      max_changes=None):
         self.load_template_eval()
         Z = self.fresh_atom("reach")
         X = clingo_encode(cfg1.name)
-        Y = clingo_encode(cfg2.name)
+        Y = clingo_encode(right.name)
+        if isinstance(right, ConfigurationVar):
+            pred = "cfg"
+        elif isinstance(right, ObservationVar):
+            pred = "obs"
+        else:
+            raise NotImplementedError
         rules = [
             # init mcfg
             f"mcfg({Z},N,V) :- cfg({X},N,V)",
             # extensions
-            f"ext({Z},N,V) :- eval({Z},N,V), cfg({Y},N,V)",
+            f"ext({Z},N,V) :- eval({Z},N,V), {pred}({Y},N,V)",
             # constraints
-            f":- cfg({Y},N,V), not mcfg({Z},N,V)",
-            f":- cfg({Y},N,V), ext({Z},N,-V), not ext({Z},N,V)",
+            f":- {pred}({Y},N,V), not mcfg({Z},N,V)",
+            f":- {pred}({Y},N,V), ext({Z},N,-V), not ext({Z},N,V)",
         ] + self.apply_mutant_to_mcfg(mutant, Z)
         if not monotone:
             rules += [
-            f"{{ext({Z},N,V)}} :- eval({Z},N,V), cfg({Y},N,-V)"
+            f"{{ext({Z},N,V)}} :- eval({Z},N,V), {pred}({Y},N,-V)"
             ]
         if isinstance(max_changes, int) and max_changes > 0:
             rules += [

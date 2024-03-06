@@ -464,10 +464,8 @@ class reach(BonesisPredicate):
         celf.type_error()
     @classmethod
     def right_arg(celf, arg):
-        if isinstance(arg, ConfigurationVar):
+        if isinstance(arg, (ConfigurationVar, ObservationVar)):
             return arg
-        if isinstance(arg, ObservationVar):
-            return celf.right_arg(+arg)
         if isinstance(arg, (fixed, in_attractor, reach)):
             return celf.right_arg(arg.left())
         celf.type_error()
