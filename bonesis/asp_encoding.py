@@ -79,7 +79,7 @@ class ASPModel_DNF(object):
         self.constants.update(constants)
         self.ba = boolean.BooleanAlgebra()
         self._silenced = {}
-        self.__fresh_id = -1
+        self.__fresh_id = {}
 
     def solver(self, *args, ground=True, settings={}, **kwargs):
         arguments = []
@@ -140,8 +140,8 @@ class ASPModel_DNF(object):
             self.prefix += fp.read()
 
     def fresh_atom(self, qualifier=""):
-        self.__fresh_id += 1
-        return clingo.Function(f"__bo{qualifier}{self.__fresh_id}")
+        i = self.__fresh_id[qualifier] = self.__fresh_id.get(qualifier,-1) + 1
+        return clingo.Function(f"__bo{qualifier}{i}")
 
     def encode_domain(self, domain):
         if hasattr(domain, "bonesis_encoder"):
