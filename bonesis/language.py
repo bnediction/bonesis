@@ -222,6 +222,7 @@ class BonesisVar(BonesisTerm):
         return hash((self.__class__.__name__,self.name))
 
 @allreach_operator
+@nonreach_operator
 class ObservationVar(BonesisVar):
     def __init__(self, arg):
         if isinstance(arg, dict):
@@ -477,6 +478,11 @@ class nonreach(reach):
         if isinstance(right, fixed):
             self.predicate_name = "final_nonreach"
         super().__init__(left, right)
+    @classmethod
+    def left_arg(celf, arg):
+        if isinstance(arg, ObservationVar):
+            return arg
+        return super().left_arg(arg)
 
 @language_api
 class final_nonreach(nonreach):

@@ -535,10 +535,10 @@ class ASPModel_DNF(object):
             ]
         return rules
 
-    def encode_nonreach(self, cfg1, right, mutant=None, bounded="auto"):
+    def encode_nonreach(self, left, right, mutant=None, bounded="auto"):
         self.load_template_eval()
         Z = self.fresh_atom("nonreach")
-        X = clingo_encode(cfg1.name)
+        X = clingo_encode(left.name)
         Y = clingo_encode(right.name)
         if isinstance(right, ConfigurationVar):
             pred = "cfg"
@@ -546,7 +546,17 @@ class ASPModel_DNF(object):
             pred = "obs"
         else:
             raise NotImplementedError
-        rules = [
+
+        rules = []
+
+        if isinstance(left, ObservationVar):
+            satcfg = self.saturating_configuration(free=f"not obs({X},N,_)",
+                                                   fixed=f"obs({X},N,V)")
+            condition = self.make_saturation_condition(satcfg)
+            rules.append(f"{condition} :- nr_ok({Z})")
+            X = satcfg
+
+        rules += [
             f"mcfg(({Z},1..K),N,V) :- reach_steps({Z},K), cfg({X},N,V)",
             f"ext(({Z},I),N,V) :- eval(({Z},I),N,V), not locked(({Z},I),N)",
 
