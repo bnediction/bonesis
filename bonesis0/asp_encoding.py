@@ -185,7 +185,7 @@ def configurations_of_facts(fs, pred="cfg", keys="auto"):
         if arity != 3:
             continue
         cid, n, v = a.arguments
-        n = n.string
+        n = py_of_symbol(n)
         v = v.number
         cid = py_of_symbol(cid)
         if cid not in cfgs:
