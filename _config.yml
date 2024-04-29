@@ -30,6 +30,7 @@ sphinx:
 
 # see https://jupyterbook.org/en/stable/content/execute.html
 execute:
+  stderr_output: remove
   # see https://jupyterbook.org/en/stable/content/execute.html#execute-cache
   execute_notebooks: cache
   #exclude_patterns:
