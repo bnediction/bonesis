@@ -1,3 +1,0 @@
-# Reprogramming of Boolean networks
-
-...

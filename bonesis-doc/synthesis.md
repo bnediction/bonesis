@@ -1,3 +1,0 @@
-# Synthesis of Boolean networks
-
-..

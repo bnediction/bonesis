@@ -3,11 +3,23 @@
 format: jb-book
 root: intro
 parts:
-- caption: Theory
+- caption: Setup
+  chapters:
+  - file: bonesis-doc/installation.md
+  - url: https://github.com/bnediction/bonesis
+    title: Source code
+- caption: Tutorials
+  chapters:
+  - file: tutorials/tutorial-overview.md
+- caption: Theoretical concepts
   chapters:
   - file: theory/boolean-networks.md
-- caption: BoNesis
+  - file: theory/most-permissive.md
+- caption: BoNesis concepts
   chapters:
-  - file: bonesis-doc/intro.md
-  - file: bonesis-doc/synthesis.md
-  - file: bonesis-doc/reprogramming.md
+  - file: bonesis-doc/overview.md
+  - file: bonesis-doc/language.md
+  - file: bonesis-doc/views.md
+- caption: BoNesis internals
+  chapters:
+  - file: internals/asp-encodings.md

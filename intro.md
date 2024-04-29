@@ -1,11 +1,8 @@
 # BoNesis: Synthesis and reprogramming of Boolean networks
 
-This is a small sample book to give you a feel for how book content is
-structured.
-It shows off a few of the major file types, as well as some sample content.
-It does not go in-depth into any particular topic - check out [the Jupyter Book documentation](https://jupyterbook.org) for more information.
+BoNesis is a Python library which offers a declarative framework for the synthesis of Boolean networks from advanced dynamical properties, such as reachability, bifurcation, minimal trap spaces, stable states, and mutations. It combines recent theoretical advances on Boolean networks with the Most Permissive update mode and the logic programming framework of Answer-Set Programming. Its main application domain is the inference of Boolean models from bulk and single-cell gene expression data of cellular differentiation and reprogramming processes.
 
-Check out the content pages bundled with this sample book to see more.
+BoNesis is distributed under the GPLv3-compatible Free Software license CeCILL and available at https://github.com/bnediction/bonesis.
 
 ```{tableofcontents}
 ```
