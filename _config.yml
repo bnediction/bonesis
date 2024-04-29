@@ -19,6 +19,7 @@ repository:
 html:
   use_issues_button: true
   use_repository_button: true
+  use_edit_page_button: true
 
 
 sphinx:
@@ -26,3 +27,10 @@ sphinx:
     language: en
       #    html_additional_pages:
       #test: custom.html
+
+# see https://jupyterbook.org/en/stable/content/execute.html
+execute:
+  # see https://jupyterbook.org/en/stable/content/execute.html#execute-cache
+  execute_notebooks: cache
+  #exclude_patterns:
+    #    - 'tutorials/*'

@@ -3,7 +3,7 @@
 format: jb-book
 root: index
 parts:
-- caption: Setup
+- caption: Basic information
   chapters:
   - file: bonesis-doc/installation.md
   - url: https://github.com/bnediction/bonesis
