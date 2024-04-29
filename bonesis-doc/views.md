@@ -1,3 +1,0 @@
-# BoNesis Views
-
-TODO

@@ -1,3 +1,0 @@
-# BoNesis declarative language
-
-TODO
