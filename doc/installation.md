@@ -48,7 +48,7 @@ Alongside the Python API, the following command-line tools are provided. Use `--
     See `bonesis-reprogramming --help` for complete documentation.
 
 `bonesis-attractors`
-: Listing of fixed points and minimal trap spaces from ensembles of Boolean networks.
+: Listing of fixed points and minimal trap spaces from ensembles of Boolean networks: a configuration or subspace is outputted if there exists at least one Boolean network in the ensemble for which it is a minimal trap space.
 
     *Example*
     ```shell
