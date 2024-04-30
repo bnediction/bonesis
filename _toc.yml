@@ -13,6 +13,7 @@ parts:
 - caption: Tutorials
   chapters:
   - file: tutorials/tour.md
+  - file: tutorials/reprogramming.md
 - caption: Theoretical concepts
   chapters:
   - file: theory/boolean-networks.md
