@@ -4,15 +4,14 @@ author: Loïc Paulevé
 copyright: "2024"
 logo: logo.png
 
-# Add a bibtex file so that we can create citations
 bibtex_bibfiles:
   - references.bib
 
 # Information about where the book exists on the web
 repository:
   url: https://github.com/bnediction/bonesis  # Online location of your book
-    #  path_to_book: docs  # Optional path to your book, relative to the repository root
-  branch: book  # Which branch of the repository should be used when creating links (optional)
+  #path_to_book: docs  # Optional path to your book, relative to the repository root
+  branch: book
 
 # Add GitHub buttons to your book
 # See https://jupyterbook.org/customize/config.html#add-a-link-to-your-repository
@@ -20,7 +19,7 @@ html:
   use_issues_button: true
   use_repository_button: true
   use_edit_page_button: true
-
+  baseurl: "https://bnediction.github.io/bonesis/"
 
 sphinx:
   config:
