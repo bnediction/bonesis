@@ -10,7 +10,7 @@ parts:
     title: Source code
 - caption: Tutorials
   chapters:
-  - file: tutorials/tutorial-overview.md
+  - file: tutorials/tour.md
 - caption: Theoretical concepts
   chapters:
   - file: theory/boolean-networks.md
