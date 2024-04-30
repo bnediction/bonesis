@@ -1,7 +1,6 @@
 # ref: https://jupyterbook.org/en/stable/customize/config.html
 title: "BoNesis: Synthesis and reprogramming of Boolean networks"
-author: Loïc Paulevé
-copyright: "2024"
+author: ""
 logo: logo.png
 
 bibtex_bibfiles:
@@ -13,19 +12,27 @@ repository:
   #path_to_book: docs  # Optional path to your book, relative to the repository root
   branch: book
 
-# Add GitHub buttons to your book
-# See https://jupyterbook.org/customize/config.html#add-a-link-to-your-repository
 html:
   use_issues_button: true
   use_repository_button: true
   use_edit_page_button: true
   baseurl: "https://bnediction.github.io/bonesis/"
+  extra_footer: |
+    <p xmlns:cc="http://creativecommons.org/ns#" >This documentation is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">CC BY-NC-SA 4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1" alt=""></a></p>
+    <p class="footer">
+      Contact: <a href="https://loicpauleve.name">Loïc Paulevé</a>
+      <br>
+      <a href="https://www.labri.fr"><img class="logo logo-labri" src="https://bnediction.github.io/bonesis/_static/logo-labri.png" alt="LaBRI"></a>
+      <img class="logo" src="https://bnediction.github.io/bonesis/_static/logo-cnrs.png" alt="CNRS">
+      <img class="logo" src="https://bnediction.github.io/img/Logo-ANR-bleu-RVB.png" alt="ANR">
+    </p>
 
 sphinx:
   config:
     language: en
       #    html_additional_pages:
       #test: custom.html
+    html_show_copyright: false
 
 parse:
   myst_enable_extensions:

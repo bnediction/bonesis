@@ -1,0 +1,7 @@
+p.footer img.logo {
+    height: 4em;
+    background-color: rgba(255,255,255,0.5);
+}
+p.footer img.logo-labri {
+    padding: 1%;
+}
