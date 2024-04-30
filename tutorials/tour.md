@@ -204,6 +204,14 @@ pd.DataFrame(solutions[0].attractors())
 pd.DataFrame(solutions[0].attractors(reachable_from=data["init"]))
 ```
 
+#### Exportation of models
+
+The returned Boolean networks can be saved in standard textual [BoolNet format](http://colomoto.org/biolqm/doc/format-bnet.html) for further analysis with other tools:
+
+```{code-cell}
+solutions[0].save("bn-solution-0.bnet")
+```
+
 ### Universal constraints
 
 We can also enforce universal constraints on fixed points and reachable fixed points.
