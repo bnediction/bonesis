@@ -119,32 +119,20 @@ By default, the `marker_reprogramming_fixpoints` function ensures that the pertu
 
 ```{code-cell} ipython3
 ---
-editable: true
-slideshow:
-  slide_type: ''
 tags: [remove-stdout]
 ---
 list(marker_reprogramming_fixpoints(f, {"C": 1}, 2, ensure_exists=False))
 ```
-
-+++ {"editable": true, "slideshow": {"slide_type": ""}}
 
 ## Source-marker reprogramming of fixed points (P2)
 
 Given an initial configuration $z$, we identify the perturbations $P$ of at most $k$ components so that all the fixed points of $f/P$ that are reachable from $z$ in $f/P$ match with the given marker $M$.
 With the *BoNesis* Python interface, this reprogramming property is implemented by `source_marker_reprogramming_fixpoints(f,z,M,k)` function, where `f` is a BN, `z` the initial configuration (Python dictionary), `M` the marker, and `k` the maximum number of components that can be perturbed (at most $n$).
 
-+++ {"editable": true, "slideshow": {"slide_type": ""}}
-
 Let us consider the following toy BN with two positive feedback cycles:
 
 ```{code-cell} ipython3
 ---
-editable: true
-nbconvert_latex:
-  nbconvert.figure.caption: Influence graph of the example BN for P2
-slideshow:
-  slide_type: ''
 tags: [remove-stdout]
 ---
 f = BooleanNetwork({
@@ -155,8 +143,6 @@ f = BooleanNetwork({
 })
 f.influence_graph()
 ```
-
-+++ {"editable": true, "slideshow": {"slide_type": ""}}
 
 This BN has 3 fixed points, 2 of which are reachable from the configuration where `A` and `B` are active, and `C` and `D` inactive:
 
@@ -169,24 +155,12 @@ f.dynamics("asynchronous", init=z)
 ```
 
 ```{code-cell} ipython3
----
-editable: true
-slideshow:
-  slide_type: ''
----
 list(mpbn.MPBooleanNetwork(f).fixedpoints())
 ```
 
 ```{code-cell} ipython3
----
-editable: true
-slideshow:
-  slide_type: ''
----
 list(mpbn.MPBooleanNetwork(f).fixedpoints(reachable_from=z))
 ```
-
-+++ {"editable": true, "slideshow": {"slide_type": ""}}
 
 Let us compare the results of the global marker-reprogramming of fixed points (P1) with the source-marker reprogramming of fixed points (P2), the objective being to have fixed points having `C` active.
 In the first case, putting aside the perturbation of `C`, this necessitates to act on either `A` or `B` to prevent the existence of the fixed points where `A`, `B` and `C` are inactive:
@@ -197,8 +171,6 @@ tags: [remove-stdout]
 ---
 list(marker_reprogramming_fixpoints(f, {"C": 1}, 2))
 ```
-
-+++ {"editable": true, "slideshow": {"slide_type": ""}}
 
 Considering only the fixed points reachable from the configuration `z`, there is no need to act on `A` or `B`:
 
