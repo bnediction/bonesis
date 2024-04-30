@@ -247,14 +247,15 @@ projs = bo.local_functions()
 The `projs` object as `as_dict` method which offers a diret access to all the projected solutions. By default, it will enumerate the Boolean functions for each node. The method "count" instead returns the number of solutions per node. There is also a `keys` parameter to specify a subset of nodes for the computation.
 
 ```{code-cell}
-projs.as_dict(method="count")
+counts = projs.as_dict(method="count")
+counts
 ```
 
 Note that the projected solutions gives an over-approximation of the full set of solutions: the full set of solutions is, in general, a strict subset of the cartesian product:
 
 ```{code-cell}
 from functools import reduce
-reduce(int.__mul__, _.values())
+reduce(int.__mul__, counts.values())
 ```
 
 Access to the solutions of a specific node can be done as follows, where `view` is an object similar to the one returned by `bo.boolean_network()` (iterator over solutions).
