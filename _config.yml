@@ -27,6 +27,12 @@ sphinx:
       #    html_additional_pages:
       #test: custom.html
 
+parse:
+  myst_enable_extensions:
+    # don't forget to list any other extensions you want enabled,
+    # including those that are enabled by default!
+    - deflist
+
 # see https://jupyterbook.org/en/stable/content/execute.html
 execute:
   stderr_output: remove

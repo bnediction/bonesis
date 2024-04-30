@@ -25,7 +25,7 @@ Note that the computing resources are limited and the storage is not persistent.
 
 ## Main usage
 
-BoNesis is primarily a Python module, named [`bonesis`], intended to be used in scripts and
+BoNesis is primarily a Python module, named `bonesis`, intended to be used in scripts and
 notebooks.
 
 For a first glance at BoNesis features, see [](../tutorials/tour.md) and [](overview.md).
@@ -35,9 +35,29 @@ For a first glance at BoNesis features, see [](../tutorials/tour.md) and [](over
 
 Alongside the Python API, the following command-line tools are provided. Use `--help` option for usage detail.
 
-* `bonesis-reprogramming`: marker reprogramming of minimal trap spaces (attractors of most permissive dynamics).
+`bonesis-reprogramming`
+: Marker reprogramming of minimal trap spaces (attractors of most permissive dynamics).
 
-* `bonesis-attractors`: listing of fixed points and minimal trap spaces from ensembles of BNs.
+    *Example.* identifying permanent reprogramming strategies involving at most 3
+    combined mutations to enforce that all attractors (minimal trap spaces) have
+    components `PhA` fixed to 1 and `PhB` fixed to 0.
+    ```shell
+    $ bonesis-reprogramming model.bnet '{"PhA": 1, "PhB": 0}' 3
+    ```
 
+    See `bonesis-reprogramming --help` for complete documentation.
 
+`bonesis-attractors`
+: Listing of fixed points and minimal trap spaces from ensembles of Boolean networks.
 
+    *Example*
+    ```shell
+    $ bonesis-attractors partial_bn.aeon
+    ```
+
+    See `bonesis-attractors --help` for complete documentation.
+
+    ```{note}
+    For enumerating fixed points or minimal trap spaces of a *single* Boolean
+    network, it is much more efficient to use [`mpbn`](https://mpbn.readthedocs.io/).
+    ```
