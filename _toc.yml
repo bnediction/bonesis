@@ -8,6 +8,8 @@ parts:
   - file: doc/installation.md
   - url: https://github.com/bnediction/bonesis
     title: Source code
+  - file: doc/cite.md
+  - file: doc/related-publications.md
 - caption: Tutorials
   chapters:
   - file: tutorials/tour.md
