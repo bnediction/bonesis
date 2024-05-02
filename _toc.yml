@@ -14,6 +14,7 @@ parts:
   chapters:
   - file: tutorials/tour.md
   - file: tutorials/reprogramming.md
+  - file: gallery/index.md
 - caption: Theoretical concepts
   chapters:
   - file: theory/boolean-networks.md
