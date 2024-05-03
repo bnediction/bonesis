@@ -5,11 +5,11 @@ root: index
 parts:
 - caption: Basic information
   chapters:
-  - file: doc/installation.md
+  - file: installation.md
   - url: https://github.com/bnediction/bonesis
     title: Source code
-  - file: doc/cite.md
-  - file: doc/related-publications.md
+  - file: cite.md
+  - file: related-publications.md
 - caption: Tutorials
   chapters:
   - file: tutorials/tour.md
@@ -21,9 +21,9 @@ parts:
   - file: theory/most-permissive.md
 - caption: BoNesis concepts
   chapters:
-  - file: doc/overview.md
-  - file: doc/language.md
-  - file: doc/views.md
+  - file: overview.md
+  - file: language.md
+  - file: views.md
 - caption: BoNesis internals
   chapters:
   - file: internals/asp-encodings.md
