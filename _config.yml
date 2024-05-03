@@ -15,6 +15,7 @@ repository:
 exclude_patterns : ['gallery/_notebooks', README]
 
 html:
+  baseurl: "https://bnediction.github.io/bonesis"
   use_issues_button: true
   use_repository_button: true
   use_edit_page_button: true
@@ -31,6 +32,7 @@ html:
 
 sphinx:
   config:
+    html_extra_path: ['_raw']
     language: en
       #    html_additional_pages:
       #test: custom.html
