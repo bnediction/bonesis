@@ -5,6 +5,6 @@ Snippets and recipes showing more advanced usage of BoNesis.
 **Simple examples**
 - [](simple_example1.md)
 
-**Dynamical properties**
+**Specific dynamical properties**
 - [](fasync-transitions.md)
 
