@@ -12,6 +12,8 @@ repository:
   #path_to_book: docs  # Optional path to your book, relative to the repository root
   branch: book
 
+exclude_patterns : ['gallery/_notebooks', README]
+
 html:
   use_issues_button: true
   use_repository_button: true
