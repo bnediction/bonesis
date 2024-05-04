@@ -28,7 +28,7 @@ Note that the computing resources are limited and the storage is not persistent.
 BoNesis is primarily a Python module, named `bonesis`, intended to be used in scripts and
 notebooks.
 
-For a first glance at BoNesis features, see [](../tutorials/tour.md) and [](overview.md).
+For a first glance at BoNesis features, see [](tutorials/tour.md) and [](overview.md).
 
 
 ## Command-line tools
