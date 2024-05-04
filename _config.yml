@@ -12,7 +12,7 @@ repository:
   #path_to_book: docs  # Optional path to your book, relative to the repository root
   branch: book
 
-exclude_patterns : ['gallery/_notebooks', README]
+exclude_patterns : ['gallery/_notebooks', 'README.md']
 
 html:
   baseurl: "https://bnediction.github.io/bonesis"
