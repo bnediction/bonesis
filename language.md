@@ -2,7 +2,7 @@
 
 ## Summary
 
-In the scope of a `BoNesis(dom, data)` object, the following methods are
+In the scope of a `BoNesis(dom, data)`{l=python} object, the following methods are
 defined.
 
 <table class="table">
@@ -19,19 +19,19 @@ Objects
 </tr>
 <tr><td>
 
-`O = obs({a: 1, b: 1, ...})`
+`O = obs({a: 1, b: 1, ...})`{l=python}
 
 </td><td>
 
-Observation from partial mapping of components to `0` or `1` (`dict`-like object)
+Observation from partial mapping of components to `0`{l=python} or `1`{l=python} (`dict`-like object)
 
 </td></tr><tr><td>
 
-`O = obs("name")`
+`O = obs("name")`{l=python}
 
 </td><td>
 
-Named observation defined in the `data` dictionnary
+Named observation defined in the `data`{l=py} dictionnary
 
 </td></tr>
 
@@ -47,27 +47,27 @@ Properties
 </td></tr>
 <tr><td>
 
-`fixed(C)`
+`fixed(C)`{l=python}
 
 </td><td>
 
-Configuration `C` is a fixed point
+Configuration `C`{l=python} is a fixed point
 
 </td></tr><tr><td>
 
-`fixed(O)`
+`fixed(O)`{l=python}
 
 </td><td>
 
-There exists a trap space where observation `O` is fixed
+There exists a trap space where observation `O`{l=python} is fixed
 
 </td></tr><tr><td>
 
-`in_attractor(C)`
+`in_attractor(C)`{l=python}
 
 </td><td>
 
-Configuration `C` belongs to an attractor
+Configuration `C`{l=python} belongs to an attractor
 
 </table>
 
