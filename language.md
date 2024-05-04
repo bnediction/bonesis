@@ -19,7 +19,7 @@ Objects
 </tr>
 <tr><td>
 
-`O = obs({a: 1, b: 1, ...})`{l=python}
+`O = obs({a: 1, b: 0, ...})`{l=python}
 
 </td><td>
 
