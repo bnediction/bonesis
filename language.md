@@ -1,4 +1,4 @@
-# Declarative language
+# Declarative language for dynamical properties
 
 ## Summary
 

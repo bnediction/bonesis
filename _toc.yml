@@ -19,11 +19,7 @@ parts:
   chapters:
   - file: theory/boolean-networks.md
   - file: theory/most-permissive.md
-- caption: BoNesis concepts
+- caption: BoNesis usage
   chapters:
   - file: overview.md
   - file: language.md
-  - file: views.md
-- caption: BoNesis internals
-  chapters:
-  - file: internals/asp-encodings.md
