@@ -5,71 +5,33 @@
 In the scope of a `BoNesis(dom, data)`{l=python} object, the following methods are
 defined.
 
-<table class="table">
-<tr><th colspan="2">
+``````{list-table}
+:header-rows: 1
+:widths: 15 40
 
-Objects
+* - Objects
+  -
 
-</th>
-</tr><td colspan="2">
+* - *Observations*
+  - Mapping a subset of components to a Boolean value
+* - `O = obs({a: 1, b: 0, ...})`{l=python}
+  - Observation from partial mapping of components to `0`{l=python} or `1`{l=python} (`dict`-like object)
+* - `O = obs("name")`{l=python}
+  - Named observation defined in the `data`{l=py} dictionnary
 
-*Observations*
+* - **Properties**
+  -
 
-</td>
-</tr>
-<tr><td>
+* - *Attractors*
+  - (recall that MP attractors are minimal trap spaces of the BN)
+* - `fixed(C)`{l=python}
+  - Configuration `C`{l=python} is a fixed point
+* - `fixed(O)`{l=python}
+  - There exists a trap space where observation `O`{l=python} is fixed
+* - `in_attractor(C)`{l=python}
+  - Configuration `C`{l=python} belongs to an attractor
 
-`O = obs({a: 1, b: 0, ...})`{l=python}
-
-</td><td>
-
-Observation from partial mapping of components to `0`{l=python} or `1`{l=python} (`dict`-like object)
-
-</td></tr><tr><td>
-
-`O = obs("name")`{l=python}
-
-</td><td>
-
-Named observation defined in the `data`{l=py} dictionnary
-
-</td></tr>
-
-<tr><th colspan="2">
-
-Properties
-
-</th>
-</tr><td colspan="2">
-
-*Attractors*
-
-</td></tr>
-<tr><td>
-
-`fixed(C)`{l=python}
-
-</td><td>
-
-Configuration `C`{l=python} is a fixed point
-
-</td></tr><tr><td>
-
-`fixed(O)`{l=python}
-
-</td><td>
-
-There exists a trap space where observation `O`{l=python} is fixed
-
-</td></tr><tr><td>
-
-`in_attractor(C)`{l=python}
-
-</td><td>
-
-Configuration `C`{l=python} belongs to an attractor
-
-</table>
+``````
 
 
 ## Objects
