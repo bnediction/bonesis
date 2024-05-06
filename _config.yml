@@ -37,6 +37,7 @@ sphinx:
       #    html_additional_pages:
       #test: custom.html
     html_show_copyright: false
+    bibtex_reference_style: author_year
 
 parse:
   myst_enable_extensions:

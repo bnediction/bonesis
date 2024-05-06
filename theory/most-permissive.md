@@ -13,7 +13,7 @@ The main idea behind the MP update mode is to systematically consider a potentia
 
 A **subcube** specifies for each dimension of the BN if it is either fixed to a Boolean value, or free: it can be characterized by a vector $h\in \{0,1,*\}^n$. Its *vertices* are denoted by $c(h) = \{ x\in \mathbb B^n\mid h_i\neq *\implies x_i=h_i\}$. For instance, $h=0**$ is a subcube of dimension 3, with $c(h) = \{000, 001, 010, 011\}$.
 
-A subcube $h$ is a **trap space** whenever for each of its vertices $x\in c(h)$, $f(x)$ is also one of its vertices ($h$ is closed by $f$). In particular, the (sub-)hypercube $\mathbf *_n$ is always a trap space.
+A subcube $h$ is a **trap space** whenever for each of its vertices $x\in c(h)$, $f(x)$ is also one of its vertices ($h$ is closed by $f$). In particular, the (sub)cube $\mathbf *_n$ is always a trap space.
 
 A subcube $h$ is *smaller* than a subcube $h'$, denoted by $h \preceq h'$ whenever $c(h)\subseteq c(h')$. Equivalently, this means that each non-free component of $h'$ is fixed to the same value in $h$: $h \preceq h' \iff \forall i\in \{1,\ldots,n\}, h'_i\neq *\implies h_i=h'_i$.
 
@@ -21,11 +21,9 @@ A subcube $h$ is *smaller* than a subcube $h'$, denoted by $h \preceq h'$ whenev
 
 Given a set of components $K\subseteq \{1,\cdots,n\}$, a subcube $h$ is **$K$-closed** by $f$ whenever,
 for each component $i\in K$, either $i$ is free in $h$, i.e., $h_i=*$, or $f_i$ applied on any vertices of $h$
-results in the fixed value $h_i$. In other words, for all configurations in the $K$-closed sub-hypercube $h$,
+results in the fixed value $h_i$. In other words, for all configurations in the $K$-closed subcube $h$,
 the next states of the components $i \in K$ are in $h$:
-$$
-    \forall x\in c(h),\, \forall i\in K,\, h_i\neq *\Rightarrow f_i(x)=h_i.
-$$
+$\forall x\in c(h),\, \forall i\in K,\, h_i\neq *\Rightarrow f_i(x)=h_i$.
 
 We denote by $T_K(x)$ the *smallest* subcube of dimension $n$ that contains $x$ and that is $K$-closed by $f$.
 
@@ -101,3 +99,9 @@ $$
 
 Finally, given a set of perturbations $P$, we write $\operatorname{TS}_P(x)$ for the small trap space of perturbed BN $(f/P)$ containing $x$, and $\operatorname{IN-ATTRACTOR}_P(x)$ the property of $x$ belonging to an attractor of the perturbed BN $(f/P)$.
 
+
+## Bibliography
+
+```{bibliography}
+:filter: docname in docnames
+```

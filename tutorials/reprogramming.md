@@ -341,7 +341,8 @@ tags: [remove-stdout]
 list(universal_marker_reprogramming_fixpoints(dom, {"D": 1}, 2))
 ```
 
-## References
+## Bibliography
 
 ```{bibliography}
+:filter: docname in docnames
 ```
