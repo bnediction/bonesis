@@ -20,8 +20,8 @@ A subcube $h$ is *smaller* than a subcube $h'$, denoted by $h \preceq h'$ whenev
 ### Most permissive dynamics
 
 Given a set of components $K\subseteq \{1,\cdots,n\}$, a subcube $h$ is **$K$-closed** by $f$ whenever,
-for each component $i\in K$, either $i$ is free in $h$, i.e., $h_i=*$, or $f_i$ applied on any vertices of $h$
-results in the fixed value $h_i$. In other words, for all configurations in the $K$-closed subcube $h$,
+for each component $i\in K$, either $i$ is free in $h$, i.e., $h_i=*$, or $f_i$ applied to any vertices of $h$
+results in $h_i$. In other words, for all configurations in the $K$-closed subcube $h$,
 the next states of the components $i \in K$ are in $h$:
 $\forall x\in c(h),\, \forall i\in K,\, h_i\neq *\Rightarrow f_i(x)=h_i$.
 
@@ -29,19 +29,10 @@ We denote by $T_K(x)$ the *smallest* subcube of dimension $n$ that contains $x$ 
 
 ```{admonition} Definition of Most permissive (MP) update mode
 Given a BN $f$ of dimension $n$ and two distinct configurations $x$, $y$,
-there is an MP transition from $x$ to $y$ whenever:
-- $y$ is a vertex of subcube $T_K(x)$, and
-- the state of all the components in $K$ in $y$ can be computed from $T_K(x)$.
-
-In other words,
-
-$$
-    \begin{split}
-        \forall x,y\in\mathbb B^n,\quad x\to_{\sf MP} y \Longleftrightarrow \exists& K \subseteq \{1,\cdots, n\}: y\in c(T_K(x)) \\
-                                                             &\wedge \forall i\in K, \exists z\in c(T_K(x)): y_i=f_i(z)\enspace.
-    \end{split}
-$$
-
+there is an MP transition from $x$ to $y$ whenever there exists a subset of
+components $K\subseteq \{1,\cdots,n\}$ such that:
+- $y$ is a vertex of the subcube $T_K(x)$, and
+- for each each component $i\in K$, there exists a vertex $z$ of $T_K(x)$ such that $f_i(z)=y_i$.
 ```
 
 ## Elementary dynamical properties and their complexity
