@@ -36,7 +36,7 @@ data = {
 ```
 
 We declare that, in the wild-type, there is a configuration matching with the
-final observervation (`"marker"`) which is a fixed point reachable from the
+final observation (`"marker"`) which is a fixed point reachable from the
 initial configuration.
 Moreover, in the mutant where `C` is KO, the final configuration is no longer
 reachable.
@@ -75,7 +75,7 @@ import pandas as pd
 pd.DataFrame(solutions[0].attractors())
 ```
 
-The Boolean network can be experted to standard BoolNet textual format, that is
+The Boolean network can be exported to the standard BoolNet textual format, which is
 supported by many tools for analyzing Boolean networks.
 
 ```{code-cell} ipython3
