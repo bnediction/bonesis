@@ -35,29 +35,25 @@ For a first glance at BoNesis features, see [](tutorials/tour.md) and [](overvie
 
 Alongside the Python API, the following command-line tools are provided. Use `--help` option for usage detail.
 
-`bonesis-reprogramming`
-: Marker reprogramming of minimal trap spaces (attractors of most permissive dynamics).
+### • `bonesis-reprogramming`
+**Marker reprogramming of minimal trap spaces (attractors of most permissive dynamics).**
 
-    *Example.* identifying permanent reprogramming strategies involving at most 3
-    combined mutations to enforce that all attractors (minimal trap spaces) have
-    components `PhA` fixed to 1 and `PhB` fixed to 0.
-    ```shell
-    $ bonesis-reprogramming model.bnet '{"PhA": 1, "PhB": 0}' 3
-    ```
+*Example:*  
+Identifying permanent reprogramming strategies involving at most 3 combined mutations to enforce that all attractors (minimal trap spaces) have components `PhA` fixed to 1 and `PhB` fixed to 0:
+```shell
+$ bonesis-reprogramming model.bnet '{"PhA": 1, "PhB": 0}' 3
+```
+See `bonesis-reprogramming --help` for complete documentation.
 
-    See `bonesis-reprogramming --help` for complete documentation.
+### • `bonesis-attractors`
+**Listing of fixed points and minimal trap spaces from ensembles of Boolean networks:** a configuration or subspace is outputted if it is a minimal trap space for at least one Boolean network in the ensemble.
 
-`bonesis-attractors`
-: Listing of fixed points and minimal trap spaces from ensembles of Boolean networks: a configuration or subspace is outputted if there exists at least one Boolean network in the ensemble for which it is a minimal trap space.
+*Example:*
+```shell
+$ bonesis-attractors partial_bn.aeon
+```
 
-    *Example*
-    ```shell
-    $ bonesis-attractors partial_bn.aeon
-    ```
+See `bonesis-attractors --help` for complete documentation.
 
-    See `bonesis-attractors --help` for complete documentation.
-
-    ```{note}
-    For enumerating fixed points or minimal trap spaces of a *single* Boolean
-    network, it is much more efficient to use [`mpbn`](https://mpbn.readthedocs.io/).
-    ```
+**Note:**  
+For enumerating fixed points or minimal trap spaces of a *single* Boolean network, it is much more efficient to use [`mpbn`](https://mpbn.readthedocs.io/).
