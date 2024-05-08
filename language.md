@@ -6,8 +6,10 @@ In the scope of a `BoNesis(dom, data)`{l=python} object, the following methods a
 
 ### Objects
 
-**<span style="color:magenta">Observation</span>**: maps a subset of components to a Boolean value.
+#### <span style="color:magenta">Observation</span>: 
+maps a subset of components to a Boolean value
 
+:::{table}
 <table>
   <tr>
     <td><code><span style="color:magenta">O</span> = obs({<span style="color:olive">a</span>:0, <span style="color:olive">b</span>:1,..})</code></td>
@@ -18,9 +20,12 @@ In the scope of a `BoNesis(dom, data)`{l=python} object, the following methods a
     <td>Named observation defined in the <code>data</code>dictionary</td>
   </tr>
 </table>
+:::
 
-**<span style="color:blue">Configuration</span>**: maps each component to a Boolean value.
+#### <span style="color:blue">Configuration</span>: 
+maps each component to a Boolean value
 
+:::{table}
 <table>
   <tr>
     <td><code><span style="color:blue">C</span> = cfg()</code></td>
@@ -40,11 +45,13 @@ In the scope of a `BoNesis(dom, data)`{l=python} object, the following methods a
       Use <code><span style="color:green">S</span>.assignments()</code> to get satisfying valuations.</td>
   </tr>
 </table>
+:::
 
 ### Properties
 
-**Constraints on configurations**
+#### Constraints on configurations
 
+:::{table}
 <table>
   <tr>
     <td><code><span style="color:blue">C</span> != <span style="color:blue">C'</span></code></td>
@@ -60,9 +67,11 @@ In the scope of a `BoNesis(dom, data)`{l=python} object, the following methods a
     <td>The configuration <code><span style="color:blue">C</span></code> does not match with the observation <code><span style="color:magenta">O</span></code></td>
   </tr>
 </table>
+:::
 
-**Attractor properties**
+#### Attractor properties
 
+:::{table}
 <table>
   <tr>
     <td><code>fixed(<span style="color:blue">C</span>)</code></td>
@@ -77,9 +86,11 @@ In the scope of a `BoNesis(dom, data)`{l=python} object, the following methods a
     <td>The configuration <code><span style="color:blue">C</span></code> belongs to an attractor</td>
   </tr>
 </table>
+:::
 
-**Reachability**
+#### Reachability
 
+:::{table}
 <table>
   <tr>
     <td><code><span style="color:blue">C</span> >= <span style="color:blue">C'</span></code> or <code>reach(<span style="color:blue">C</span>,<span style="color:blue">C'</span>)</code></td>
@@ -101,9 +112,11 @@ In the scope of a `BoNesis(dom, data)`{l=python} object, the following methods a
     <td>Absence of MP trajectory from the configuration <code><span style="color:blue">C</span></code> to ... (same as reach)</td>
   </tr>
 </table>
+:::
 
-**Universal properties**
+#### Universal properties
 
+:::{table}
 <table>
   <tr>
     <td><code>all_fixpoints({<span style="color:magenta">O</span>,<span style="color:magenta">O'</span>,..})</code></td>
@@ -114,9 +127,11 @@ In the scope of a `BoNesis(dom, data)`{l=python} object, the following methods a
     <td>All the fixed points reachable from the configuration <code>C</code> ...</td>
   </tr>
 </table>
+:::
 
 ### Contexts
 
+:::{table}
 <table>
   <tr>
     <td>
@@ -126,3 +141,4 @@ In the scope of a `BoNesis(dom, data)`{l=python} object, the following methods a
     <td>The properties within the <code>with</code> block are subject to mutation specified by <code>{<span style="color:olive">a</span>:0,..}</code> (resp. <code><span style="color:green">S</span></code>)</td>
   </tr>
 </table>
+:::
