@@ -6,7 +6,7 @@ In the scope of a `BoNesis(dom, data)`{l=python} object, the following methods a
 
 ### Objects
 
-#### <span class="obs">Observation</span>:
+#### <span class="obs">Observation</span>
 maps a subset of components to a Boolean value
 
 <table class="language">
@@ -21,7 +21,7 @@ maps a subset of components to a Boolean value
 </table>
 
 
-#### <span class="cfg">Configuration</span>:
+#### <span class="cfg">Configuration</span>
 maps each component to a Boolean value
 
 <table class="language">
@@ -37,6 +37,11 @@ maps each component to a Boolean value
     <td><code><span class="cfg">C</span> = ~<span class="obs">O</span></code></td>
     <td>Default configuration matching with the observation <code><span class="obs">O</span></code></td>
   </tr>
+</table>
+
+#### <span class="some">Variable</span>
+
+<table class="language">
   <tr>
     <td><code><span class="some">S</span> = Some(max_size=k)</code></td>
     <td>Represents a mutation of at most <code>k</code> components.<br/>
