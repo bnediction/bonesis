@@ -5,3 +5,30 @@ p.footer img.logo {
 p.footer img.logo-labri {
     padding: 1%;
 }
+
+table.language {
+    margin-left: 0 !important;
+    margin-right: auto !important;
+}
+table.language td {
+    padding: 0px 8px;
+}
+table.language > tbody > tr > td:first-of-type {
+    border-right: 1px solid;
+}
+table.language > tbody > tr:nth-of-type(even) {
+    background-color: var(--pst-color-surface);
+}
+
+.obs {
+    color: var(--pst-color-accent);
+}
+.cfg {
+    color: var(--pst-color-primary);
+}
+.some {
+    color: var(--pst-color-secondary);
+}
+.bokey {
+    color: var(--pst-color-primary-highlight);
+}

@@ -20,7 +20,7 @@ A subcube $h$ is *smaller* than a subcube $h'$, denoted by $h \preceq h'$ whenev
 ### Most permissive dynamics
 
 Given a set of components $K\subseteq \{1,\cdots,n\}$, a subcube $h$ is **$K$-closed** by $f$ whenever,
-for each component $i\in K$, either $i$ is free in $h$, i.e., $h_i=*$, or $f_i$ applied to any vertices of $h$
+for each component $i\in K$ that is fixed in $h$, $f_i$ applied to any vertices of $h$
 results in $h_i$. In other words, for all configurations in the $K$-closed subcube $h$,
 the next states of the components $i \in K$ are in $h$:
 $\forall x\in c(h),\, \forall i\in K,\, h_i\neq *\Rightarrow f_i(x)=h_i$.
