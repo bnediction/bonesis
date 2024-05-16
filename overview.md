@@ -36,7 +36,7 @@ Single Boolean network
 
 
 Explicit ensemble of Boolean networks:
-: Instantatied with `bonesis.BooleanNetworkEnsemble` with a list of
+: Instantiated with `bonesis.BooleanNetworkEnsemble` with a list of
 `bonesis.BooleanNetwork` or `mpbn.MPBooleanNetwork` objects.
     ```py
     dom = bonesis.BooleanNetworkEnsemble([bn1, bn2, bn3])
@@ -77,7 +77,7 @@ Influence graph (GRN)
       statements on the number of nodes.
     - `canonic` (default `True`): Ensures that an enumeration of *distinct*
       Boolean networks. This adds some complexity in the encoding. Setting to
-      `False` can help addressing large instances when enumeration of Boolean
+      `False` can help to addresslarge instances when enumeration of Boolean
       functions is not needed.
     - `maxclause` (default `None`): Maximum number of clauses to consider for
       each Boolean function to synthesize in disjunctive normal form. When
