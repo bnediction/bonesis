@@ -1,4 +1,4 @@
-# Inputs / outputs
+# Overview
 
 BoNesis takes two inputs:
 1. a *domain* of Boolean networks (BNs),
