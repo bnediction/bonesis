@@ -15,11 +15,11 @@ parts:
   - file: tutorials/tour.md
   - file: tutorials/reprogramming.md
   - file: gallery/index.md
-- caption: Theoretical concepts
-  chapters:
-  - file: theory/boolean-networks.md
-  - file: theory/most-permissive.md
 - caption: BoNesis usage
   chapters:
   - file: overview.md
   - file: language.md
+- caption: Theoretical concepts
+  chapters:
+  - file: theory/boolean-networks.md
+  - file: theory/most-permissive.md
