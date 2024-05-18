@@ -134,3 +134,224 @@ Partially-specified Boolean network (AEON)
 
     *Current limitation: functions specified in AEON can be non-monotone, but
     unspecified functions will be assumed to be monotone.*
+
+
+### Named observations [optional]
+
+In addition to the mandatory domain, the `BoNesis` constructor accepts a second optional
+`dict`-like object associating names to *Boolean* observations over network components,
+also represented with a `dict`-like object.
+The name can then be used as argument to the [`obs`](language.md#obs-from-name)
+object.
+
+An observation can be partial (it does not have to assocate a Boolean value for
+each component), and it can refer to components that are not referenced in the
+domain (in that case, they will be ignored).
+
+```py
+data = {
+   "init": {"a": 1, "b": 0, "c": 1},
+   "phenotype1": {"b": 1}
+}
+bo = bonesis.BoNesis(dom, data)
+~bo.obs("init") >= ~bo.obs("phenotype1")
+```
+
+### Dynamical properties
+
+The properties that the Boolean network must satisfes are specified using
+predicates that can be declared using the language and methods of the `BoNesis`
+object. See [](language.md).
+
+### Optimization statements
+
+It is possible to restrict the solutions to optimal ones, according to an
+ordered list of objectives.
+See implemented [](language.md#optimizations).
+
+```py
+# build a domain while allowing to ignore any number of node
+dom = bonesis.InfluenceGraph(..., allow_skipping_nodes=True)
+bo = bonesis.BoNesis(dom, data)
+...
+# consider only solutions accounting for the maximum possible number of nodes
+bo.maximize_nodes()
+```
+
+
+## Outputs
+
+The inputs defined above delineate a set of constraints that must hold
+alltogether.
+Generally, the constraints involve *choices* (free variables), such as the
+choice of Boolean functions in the defined *domain*, whenever it is not a single
+Boolean network, and the choice of state of components in configurations
+tied with partial observations.
+
+BoNeis gives access to the solutions with *views*. A view specifies which
+objects are to be enumarated from the solution space, and returns an iterator
+other them.
+Views support a number of options, including:
+- `solutions` with value either `"all"`{l=py} (default), `"subset-minimal"`{l=py}, or `"subset-maximal"`{l=py}: enable to focus only on most sparse/dense solutions. Precise meaning depend on the object being enumerated.
+- `limit` (default `0`{l=py}): maximum number of solutions to extract; `0`{l=py} means all.
+- `progress`: a [`tqdm`](https://tqdm.github.io)-like object which will be
+  notified after each iteration.
+- [`extra`](#extra)
+
+View classes are defined in the module
+[`bonesis.views`](https://github.com/bnediction/bonesis/blob/main/bonesis/views.py). They take a BoNesis object as first argument.
+For convenience, most usual views are provided as methods of the BoNesis object.
+
+### Boolean networks
+
+#### `boolean_networks()`: basic enumeration
+
+The view `bo.boolean_networks()` returns an iterator over the Boolean networks
+of the given domaine that verify the specified properties.
+Boolean networks are returned as [`mpbn.MPBooleanNetwork`](https://mpbn.readthedocs.io) objects, which are `dict`-like objects associating nodes to a Boolean function in disjunctive normal form.
+
+*Examples of usage*:
+- tabular view of the results, using `pandas`:
+    ```py
+    view = bo.boolean_networks()
+    import pandas as pd
+    solutions = pd.DataFrame(view)
+    ```
+- export to individual model files:
+    ```py
+    for i, f in enumerate(bo.boolean_networks(limit=5)):
+        f.save(f"solution{i}.bnet")
+    ```
+
+#### `diverse_boolean_networks()`: sampling with diversity
+
+When facing numerous solutions, one often observe that the basic
+enumeration of a limited number of Boolean networks results in very lookalike
+networks.
+One can circumvent this issue by employing the `bo.diverse_boolean_networks()`
+view which, after each solution, will attempt to force the solver to browse
+distant solutions.
+Note that the enumeration speed can be largely reduced by this process.
+
+#### Projections
+
+To better understand the composition of the different solutions, one can project the solutions on each node: given a node A, it enumerates all the Boolean functions for A that are used in at least one full solution.
+
+The projected solutions can be accessed from the following object:
+```py
+projs = bo.local_functions()
+```
+
+The `projs` object as `as_dict` method which offers direct access to all the projected solutions. By default, it will enumerate the Boolean functions for each node. The method "count" instead returns the number of solutions per node. There is also a `keys` parameter to specify a subset of nodes for the computation.
+
+```py
+counts = projs.as_dict(method="count")
+counts
+```
+
+Note that the projected solutions gives an over-approximation of the full set of solutions: the full set of solutions is, in general, a strict subset of the cartesian product (see [](tutorials/tour.md#projection) for a concrete example).
+
+Access to the solutions of a specific node can be done as follows:
+```py
+with projs.view("Tuj1") as view:
+    Tuj1_functions = [f for f in view]
+```
+
+Finally, `projs` has a `as_dataframe` method for pretty display of the projected solutions using `pandas`. The option `keys` enables to specify a subset of nodes to consider.
+
+```py
+table = projs.as_dataframe()
+```
+
+### Influence graphs
+
+The view `bo.influence_graphs()` returns an iterator over the distinct influence
+graphs of satisfying Boolean networks.
+This is an efficient approach to capture the space of solutions whenever there
+are too many possible Boolean network.
+
+Influence graphs are returned as [`networkx.DiGraph`](https://networkx.org/documentation/stable/reference/classes/digraph.html) objects, with sign and label stored as `"sign"`{l=py} and `"label"`{l=py} attributes, respectively.
+
+The option `solution="subset-minimal"`{l=py} will return all the influence graphs which are minimal by signed-edge inclusion. Thus, any satisfying Boolean network employs necessarily all the influences of at least one of the returned graphs.
+
+### Nodes
+
+`bonesis.NonConstantNodesView(bo)`{l=py}
+: View over the nodes that jointly received a non-constant Boolean function.
+A typical usage is with option `solutions="subset-minimal"`{l=py} or with
+[`bo.maximize_constants()`](language.md#maximize-constants).
+
+`bonesis.NonStrongConstantNodesView(bo)`{l=py}
+: View over the nodes that jointly received a non-constant Boolean function or
+differ of state in at least two configurations.
+A typical usage is with option `solutions="subset-minimal"`{l=py}.
+[`bo.maximize_strong_constants()`](language.md#maximize-strong-constants).
+
+`bonesis.NodesView(bo)`py
+: Iterator over the sets of nodes involved in the solutions. Think of it as the
+influence graph view, but with edges ignored. This is useful in conjunction with domains having option `allow_skipping_nodes=True`{l=py}.
+
+### Assignments
+
+BoNesis [](language.md) enables to define objects with only a partial
+specification.
+This is the case of *configurations* ([`cfg` objects](language.md#cfg)), which
+can be either free or bound to a partial assignment of the state of components
+(observations) and *variables* ([`Some` objects](language.md#some)).
+
+Each of these object have an `assignment()` method, which is a view other their
+satisfying complete value assignment.
+In the case of `Some` object, the option `solution` defaults to
+`"subset-minimal"`{l=py}.
+
+This is mostly used with a single Boolean network as the domain. Otherwsie, keep
+in my that an assignment is returned if there exists at least one Boolean
+network of the domain with which it is a satisfying assignment.
+
+*Examples*
+- ```py
+  x = bo.fixed(~bo.obs("final"))
+  for val in x.assignments():
+     ...
+  ```
+- ```py
+  x = ~bo.obs("init")
+  y = bo.fixed(~bo.obs("final"))
+  bo.fixed(x)
+  freeze = bo.Some(max_k=3)
+  with bo.mutant(freeze):
+    x >= y
+
+  for val in freeze.assignment():
+    ...
+  ```
+
+### The `extra` option
+
+The views provide an efficient iteration over specified object types by the
+means of projection techniques implemeted in the *clingo* solver, and
+each iteration will return a distinct object.
+
+The `extra` option of views enables to extract, for each solution, *a*
+corresponding satisfying assignment of other objects of specified types.
+The option supports values among `"configurations"`{l=py}, `"boolean-network"`{l=py}, `"somes"`{l=py}, or a tuple of them.
+
+*Examples*
+- Extract a possible complete assignment of configurations for each returned
+  Boolean network:
+  ```py
+  # Get up to 5 distinct Boolean networks together with an instance of
+  # satisfying assignment of configurations.
+  for f, cfgs in f.boolean_networks(limit=5, extra="configurations"):
+    ...
+  ```
+
+- Extract a Boolean network and configuration assignments alongside distinct
+  influence graphs:
+  ```py
+  # Get all distinct subset-minimal influence graphs, and for each of them one
+  # instance of Boolean networks and configuration assignements
+  for ig, f, cfgs in f.influence_graphs(solutions="subset-minimal",
+                            extra=("boolean-network", "configurations")):
+    ...
+  ```

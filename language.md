@@ -14,7 +14,7 @@ maps a subset of components to a Boolean value
     <td><code><span class="obs">O</span> = obs({<span class="bokey">a</span>:0, <span class="bokey">b</span>:1,..})</code></td>
     <td>Observation from partial mapping of components to <code>0</code> or <code>1</code> (<code>dict</code>-like object)</td>
   </tr>
-  <tr>
+  <tr id="obs-from-name">
     <td><code><span class="obs">O</span> = obs("name")</code></td>
     <td><code>data</code> dictionary</td>
   </tr>
@@ -142,4 +142,22 @@ maps each component to a Boolean value
     </td>
     <td>The properties within the <code>with</code> block are subject to mutation specified by <code>{<span class="bokey">a</span>:0,..}</code> (resp. <code><span class="some">S</span></code>)</td>
   </tr>
+</table>
+
+### Optimizations
+
+<table class="language">
+<tr>
+    <td><code>maximize_nodes()</code></td>
+    <td>Maximize the number of nodes in the Boolean network (to be used in
+    conjunction with option `allow_skipping_nodes=True` of `InfluenceGraph`)</td>
+</tr>
+<tr id="maximize-constants">
+    <td><code>maximize_constants()</code></td>
+    <td>Maximize the number of nodes having a constant Boolean function</td>
+</tr>
+<tr id="maximize-strong-constants">
+    <td><code>maximize_strong_constants()</code></td>
+    <td>Maximize the number of nodes having a constant Boolean function and being assigned to this constant in all defined configurations.</td>
+</tr>
 </table>

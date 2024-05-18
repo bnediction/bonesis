@@ -239,6 +239,7 @@ tags: [remove-stdout]
 bo.boolean_networks().count()
 ```
 
+(projection)=
 ## Project solutions per nodes
 
 To better understand the composition of the different solutions, one can project the solutions on each node: given a node A, it enumerates all the Boolean functions for A that are used in at least one full solution.
@@ -252,7 +253,7 @@ tags: [remove-stdout]
 projs = bo.local_functions()
 ```
 
-The `projs` object as `as_dict` method which offers a diret access to all the projected solutions. By default, it will enumerate the Boolean functions for each node. The method "count" instead returns the number of solutions per node. There is also a `keys` parameter to specify a subset of nodes for the computation.
+The `projs` object as `as_dict` method which offers a direct access to all the projected solutions. By default, it will enumerate the Boolean functions for each node. The method "count" instead returns the number of solutions per node. There is also a `keys` parameter to specify a subset of nodes for the computation.
 
 ```{code-cell}
 counts = projs.as_dict(method="count")
