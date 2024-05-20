@@ -249,7 +249,7 @@ counts = projs.as_dict(method="count")
 counts
 ```
 
-Note that the projected solutions gives an over-approximation of the full set of solutions: the full set of solutions is, in general, a strict subset of the cartesian product (see [](tutorials/tour.md#projection) for a concrete example).
+Note that the projected solutions gives an over-approximation of the full set of solutions: the full set of solutions is, in general, a strict subset of the cartesian product (see [Feature tour](tutorials/tour.md#projection) for a concrete example).
 
 Access to the solutions of a specific node can be done as follows:
 ```py
@@ -276,18 +276,18 @@ The option `solution="subset-minimal"`{l=py} will return all the influence graph
 
 ### Nodes
 
-`bonesis.NonConstantNodesView(bo)`{l=py}
+`bonesis.NonConstantNodesView(bo)`
 : View over the nodes that jointly received a non-constant Boolean function.
 A typical usage is with option `solutions="subset-minimal"`{l=py} or with
 [`bo.maximize_constants()`](language.md#maximize-constants).
 
-`bonesis.NonStrongConstantNodesView(bo)`{l=py}
+`bonesis.NonStrongConstantNodesView(bo)`
 : View over the nodes that jointly received a non-constant Boolean function or
 differ of state in at least two configurations.
-A typical usage is with option `solutions="subset-minimal"`{l=py}.
-[`bo.maximize_strong_constants()`](language.md#maximize-strong-constants).
+A typical usage is with option `solutions="subset-minimal"`{l=py}
+or with [`bo.maximize_strong_constants()`{l=py}](language.md#maximize-strong-constants).
 
-`bonesis.NodesView(bo)`py
+`bonesis.NodesView(bo)`
 : Iterator over the sets of nodes involved in the solutions. Think of it as the
 influence graph view, but with edges ignored. This is useful in conjunction with domains having option `allow_skipping_nodes=True`{l=py}.
 
