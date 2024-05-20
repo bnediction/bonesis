@@ -279,7 +279,7 @@ The option `solution="subset-minimal"`{l=py} will return all the influence graph
 `bonesis.NonConstantNodesView(bo)`
 : View over the nodes that jointly received a non-constant Boolean function.
 A typical usage is with option `solutions="subset-minimal"`{l=py} or with
-[`bo.maximize_constants()`](language.md#maximize-constants).
+[`bo.maximize_constants()`{l=py}](language.md#maximize-constants).
 
 `bonesis.NonStrongConstantNodesView(bo)`
 : View over the nodes that jointly received a non-constant Boolean function or
@@ -309,21 +309,27 @@ in my that an assignment is returned if there exists at least one Boolean
 network of the domain with which it is a satisfying assignment.
 
 *Examples*
-- ```py
-  x = bo.fixed(~bo.obs("final"))
-  for val in x.assignments():
-     ...
-  ```
-- ```py
+- Satisfying assignments of a configuration:
+    ```py
+    # fixed point matching with a partial observation
+    x = bo.fixed(~bo.obs("final"))
+    for val in x.assignments():
+       ...
+    ```
+- Satisfying assignments of a mutant:
+  ```py
   x = ~bo.obs("init")
   y = bo.fixed(~bo.obs("final"))
+  # x is a fixed point in the wild type...
   bo.fixed(x)
-  freeze = bo.Some(max_k=3)
-  with bo.mutant(freeze):
-    x >= y
 
-  for val in freeze.assignment():
-    ...
+  M = bo.Some(max_k=3)
+  with bo.mutant(M):
+     # x can reach y in the mutant M
+     x >= y
+
+  for val in M.assignment():
+     ...
   ```
 
 ### The `extra` option
