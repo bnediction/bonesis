@@ -18,7 +18,7 @@ conda install -c potassco -c colomoto bonesis
 
 ## Docker and online versions
 
-BoNesis is shipped with the [CoLoMoTo Docker distribution](https://colomoto.org/notebook), which provides a pre-installed Jupyter notebook environment together with many tools related to modeling, simulation, and analysis of Boolean networks. See prior link for usage instructions.
+BoNesis is shipped with the [CoLoMoTo Docker distribution](https://colomoto.github.io/colomoto-docker), which provides a pre-installed Jupyter notebook environment together with many tools related to modeling, simulation, and analysis of Boolean networks. See prior link for usage instructions.
 
 You can try BoNesis without any installation on https://mybinder.org/v2/gh/colomoto/colomoto-docker/mybinder/latest, thanks to myBinder services.
 Note that the computing resources are limited and the storage is not persistent.
