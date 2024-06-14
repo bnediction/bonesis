@@ -31,6 +31,8 @@
 
 import copy
 
+import os
+
 from colomoto import minibn
 import networkx as nx
 
@@ -47,7 +49,7 @@ __language_api__ = ["obs", "cfg"]
 
 settings = {
     "parallel": 1,
-    "clingo_options": (),
+    "clingo_options": tuple(os.environ["CLINGO_OPTS"].split()) if "CLINGO_OPTS" in os.environ else (),
     "clingo_opt_strategy": "bb",
     "solutions": "all",
     "quiet": False,
