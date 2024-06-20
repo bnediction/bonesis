@@ -135,9 +135,7 @@ class InfluenceGraph(BonesisDomain, nx.MultiDiGraph):
 
     def subgraph(self, *args, **kwargs):
         g = super().subgraph(*args, **kwargs)
-        for opt in self._options:
-            setattr(g, opt, getattr(self, opt))
-        return g
+        return self.__class__(g, **self.options)
 
     @classmethod
     def from_csv(celf, filename, column_source=0, column_target=1, column_sign=2,

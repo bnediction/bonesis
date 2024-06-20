@@ -36,6 +36,7 @@ import networkx as nx
 from functools import reduce
 
 import bonesis
+from bonesis0.asp_encoding import symbol_of_py
 
 def prune_domain_for_marker(f, M):
     def get_doi(g):
@@ -111,6 +112,7 @@ def _trapspace_reprogramming_cegar(dom, M, k, **some_opts):
 
     bo = bonesis.BoNesis(dom, data)
     P = bo.Some(max_size=k, **some_opts)
+    P_id = symbol_of_py(P.name)
     with bo.mutant(P):
         # there exists at least one minimal trap spaces matching M
         bo.fixed(bo.obs("M"))
@@ -130,6 +132,7 @@ def _trapspace_reprogramming_cegar(dom, M, k, **some_opts):
                     for candidate in candidates:
                         found_P = True
                         P = self.parse_model(candidate)
+                        p = candidate.symbols(shown=True)
 
                         ## check candidate
                         boc = bonesis.BoNesis(dom, data)
@@ -143,8 +146,6 @@ def _trapspace_reprogramming_cegar(dom, M, k, **some_opts):
                             self.ice += 1
                             x = [a for a in ce.symbols(shown=True)
                                     if a.name == "cfg" and a.arguments[0].string == "__cfg0"]
-                        else:
-                            p = candidate.symbols(shown=True)
                         break
 
                     if not found_P:
@@ -159,6 +160,9 @@ def _trapspace_reprogramming_cegar(dom, M, k, **some_opts):
                 cets = f"{ns}ts"
                 fixts = f"{ns}fix"
                 inject = [f"mcfg({cets},{a.arguments[1]},{a.arguments[2]})." for a in x]
+                if not isinstance(dom, minibn.BooleanNetwork):
+                    conds = list(map(str,p)) + [f"#count {{ N : some_freeze({P_id},N,_) }} {len(p)}"]
+                    inject.append(f":- {','.join(conds)}.")
                 inject += [
                         # compute trap space of counter example
                         f"mcfg({cets},N,V) :- {ns}eval({cets},N,V).",
