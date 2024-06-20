@@ -308,13 +308,13 @@ tags: [remove-stdout]
 list(marker_reprogramming_fixpoints(dom, {"D": 1}, 2))
 ```
 
-On the other hand, the reprogramming of attractors returns solutions that work on every BN:
+On the other hand, the reprogramming of attractors returns solutions that work on **every BN** of the domain:
 
 ```{code-cell} ipython3
 ---
 tags: [remove-stdout]
 ---
-list(marker_reprogramming(dom, {"D": 1}, 2, algorithm="complementary"))
+list(marker_reprogramming(dom, {"D": 1}, 2))
 ```
 
 Indeed, fixed `C` to 1, ensures  in each case that `D` is fixed to 1.
