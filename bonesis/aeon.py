@@ -201,6 +201,7 @@ class AEONDomain(BonesisDomain, dict):
                 else:
                     assert self.params[name] == args
                 return name
+            func = func.to_string(self.am) if not isinstance(func, str) else func
             f = self.ba.parse(RE_PARAMETER.sub(register_parameter, func))
             self._f[node] = f
             f = self._f[node]
