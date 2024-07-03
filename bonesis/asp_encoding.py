@@ -401,7 +401,7 @@ class ASPModel_DNF(object):
             assert isinstance(ex, str), "invalid exclude specification"
             ex = clingo_encode(ex)
             rules.append(f":- some_freeze({name},{ex},_)")
-        if max_size > 1:
+        if max_size != 1:
             rules += [
                 f":- some_freeze({name},N,V), some_freeze({name},N,-V)"
             ]
