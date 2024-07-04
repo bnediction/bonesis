@@ -1,7 +1,7 @@
 import clingo
 
 def setup_clingo_solve_handler(settings, ctrl):
-    if settings.get("timeout"):
+    if True: #settings.get("timeout"):
         sh = BoSolveHandle(ctrl, timeout=settings.get("timeout"),
                     fail_if_timeout=settings.get("fail_if_timeout"))
     else:
