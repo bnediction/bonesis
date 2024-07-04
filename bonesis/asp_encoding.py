@@ -368,12 +368,33 @@ class ASPModel_DNF(object):
         opts = SomeFreeze.default_opts | opts
         min_size = opts["min_size"]
         max_size = opts["max_size"]
-        #TODO: user-specified domain
         exclude = opts["exclude"] or ()
+        domain = opts["domain"] or ()
         name = clingo_encode(name)
-        rules = [
+
+        rules = []
+        if domain:
+            pred = "domain_some_freeze"
+            if isinstance(domain, dict):
+                domain = domain.items()
+            _dom = []
+            for d in domain:
+                if isinstance(d, tuple):
+                    n, v = d
+                    if v == 0 or v is False:
+                        v = -1
+                    _dom.append((n,v))
+                else:
+                    _dom.append((n,1))
+                    _dom.append((n,-1))
+            rules += [str(clingo.Function(pred, symbols(name, n, v))) for n, v in _dom]
+            r_domain = f"{pred}({name},N,V)"
+        else:
+            r_domain = f"node(N),V=(1;-1)"
+
+        rules += [
             f"{min_size}"
-                f" {{ some_freeze({name},N,(1;-1)) : node(N) }}"
+                f" {{ some_freeze({name},N,V) : {r_domain} }}"
                 f" {max_size}",
         ]
         for ex in exclude:

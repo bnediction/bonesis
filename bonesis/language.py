@@ -120,6 +120,7 @@ class SomeFreeze(Some):
         "min_size": 0,
         "max_size": 1,
         "exclude": (),
+        "domain": (),
     }
 
 class BoContext(object):
