@@ -66,7 +66,7 @@ class AEONPartialFunction(object):
 
 
 def asp_of_AEONReg(dom, boenc, n, acting_n=None, regs=None, ns=""):
-    regs = dom.rg.regulators(n) if regs is None else regs
+    regs = dom.am.predecessors(n) if regs is None else regs
     acting_n = n if acting_n is None else acting_n
     d = len(regs)
     boenc.load_template_domain(ns=ns, allow_externals=ns)
@@ -76,24 +76,27 @@ def asp_of_AEONReg(dom, boenc, n, acting_n=None, regs=None, ns=""):
     nbc = dom.get_maxclause(d)
     rules.append(clingo.Function(f"{ns}maxC", symbols(n, nbc)))
     for m in regs:
-        reg = dom.rg.find_regulation(m, acting_n)
-        m = dom.rg.get_variable_name(m)
+        reg = dom.am.find_regulation(m, acting_n)
+        m = dom.am.get_variable_name(m)
         args = symbols(m, n)
-        monotonicity = reg.get("monotonicity")
-        if monotonicity == "activation":
+        monotonicity = reg.get("sign")
+        if monotonicity in [True, "positive", "+"]:
             sign = 1
-        elif monotonicity == "inhibition":
+        elif monotonicity in [False, "negative", "-"]:
             sign = -1
         else:
             sign = "(-1;1)"
         rules.append("{}in({},{},{})".format(ns, *args, sign))
-        if reg["observable"]:
+        if reg.get("essential"):
             boenc.load_template_edge(ns=ns)
             rules.append(":- not {}edge({},{},_)".format(ns, *args))
     return rules
 
 def asp_of_AEONFunction(dom, n, func):
     rules = []
+    if isinstance(func.struct, bool):
+        rules.append(clingo.Function("constant", symbols(n, s2v(func.struct))))
+        return rules
     for cid, c in enumerate(func.struct):
         if isinstance(c, bool):
             rules.append(clingo.Function("constant", symbols(n, s2v(c))))
@@ -167,7 +170,6 @@ class AEONDomain(BonesisDomain, dict):
     def __init__(self, aeon_model, maxclause=None, canonic=True):
         super().__init__()
         self.am = aeon_model
-        self.rg = self.am.graph()
         self.ba = boolean.BooleanAlgebra(NOT_class=NOT)
         self.maxclause = maxclause
         self.canonic = canonic # canonicty is ensured only for parameters and free functions
@@ -176,7 +178,7 @@ class AEONDomain(BonesisDomain, dict):
         self._f = bonesis.BooleanNetwork({})
 
         for i in self.am.variables():
-            name = self.rg.get_variable_name(i)
+            name = self.am.get_variable_name(i)
             func = self.am.get_update_function(i)
             self[name] = func
 
@@ -201,7 +203,7 @@ class AEONDomain(BonesisDomain, dict):
                 else:
                     assert self.params[name] == args
                 return name
-            func = func.to_string(self.am) if not isinstance(func, str) else func
+            func = str(func) if not isinstance(func, str) else func
             f = self.ba.parse(RE_PARAMETER.sub(register_parameter, func))
             self._f[node] = f
             f = self._f[node]
