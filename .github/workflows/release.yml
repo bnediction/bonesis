@@ -31,7 +31,9 @@ jobs:
     - run: sed -i "s:9999:${VERSION//*v/}:" setup.py conda/meta.yaml
       env:
           VERSION: ${{ github.ref }}
-    - uses: s-weigand/setup-conda@v1
+    - uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniconda-version: "latest"
     - name: prepare
       run: |
         conda install -y anaconda-client conda-build conda-verify
