@@ -66,6 +66,8 @@ class BonesisView(object):
         if mode == "auto":
             mode = "optN" if self.bo.has_optimizations() else "solve"
         self.mode = mode
+        if mode.startswith("opt"):
+            self.project = False
         self.progress = progress if mode.startswith("opt") else False
         self.settings = OverlayedDict(bo.settings)
         for k,v in settings.items():
