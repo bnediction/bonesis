@@ -67,6 +67,7 @@ class AEONPartialFunction(object):
 
 def asp_of_AEONReg(dom, boenc, n, acting_n=None, regs=None, ns=""):
     regs = dom.am.predecessors(n) if regs is None else regs
+    regs = [ dom.am.get_variable_name(x) for x in regs ]
     acting_n = n if acting_n is None else acting_n
     d = len(regs)
     boenc.load_template_domain(ns=ns, allow_externals=ns)
@@ -77,7 +78,6 @@ def asp_of_AEONReg(dom, boenc, n, acting_n=None, regs=None, ns=""):
     rules.append(clingo.Function(f"{ns}maxC", symbols(n, nbc)))
     for m in regs:
         reg = dom.am.find_regulation(m, acting_n)
-        m = dom.am.get_variable_name(m)
         args = symbols(m, n)
         monotonicity = reg.get("sign")
         if monotonicity in [True, "positive", "+"]:
@@ -108,10 +108,7 @@ def asp_of_AEONFunction(dom, n, func):
 def asp_of_AEONParameters(dom, boenc):
     ns = "p_"
     rules = []
-    for param_name, param_args in dom.params.items():
-        # TODO: we make the assumption that the regulations are the same accross
-        # nodes using the parameter; this should be either explicitely checked,
-        # or this assumption should be removed
+    for param_name, param_args in dom.params.items():        
         rules.append(clingo.Function(f"{ns}node", symbols(param_name)))
         n = next(iter(dom.param_nodes[param_name]))
         rules += asp_of_AEONReg(dom, boenc, n=param_name, acting_n=n, regs=param_args, ns=ns)
@@ -177,9 +174,9 @@ class AEONDomain(BonesisDomain, dict):
         self.param_nodes = {}
         self._f = bonesis.BooleanNetwork({})
 
-        for i in self.am.variables():
-            name = self.am.get_variable_name(i)
-            func = self.am.get_update_function(i)
+        # Call `setitem` on each function to compute the necessary internal representations.
+        for name in self.am.variable_names():
+            func = self.am.get_update_function(name)
             self[name] = func
 
     def get_maxclause(self, d):
@@ -191,33 +188,83 @@ class AEONDomain(BonesisDomain, dict):
         return nbc
 
     def __setitem__(self, node, func):
+            # Let AEON parse the function expression to check that it's valid. 
+            self.am.set_update_function(node, func)            
+            func = self.am.get_update_function(node)
+
             if func is None:
                 return super().__setitem__(node, func)
-            func_params = set()
-            def register_parameter(g):
-                name = g.group(1)
-                args = tuple(g.group(2).replace(" ","").split(","))
-                if name not in self.params:
-                    self.params[name] = args
-                    func_params.add(name)
+            
+            # Remove unsupported logical operators.
+            func = func.to_and_or_normal_form()
+
+            # Transform the function into the format understood by bonesis. At the same time,
+            # ensure that only variables are used as function arguments.
+            def convert_to_ba(ba, bn, update):
+                if update.is_const():
+                    if update.as_const():
+                        return ba.TRUE
+                    else:
+                        return ba.FALSE
+                elif update.is_var():
+                    return ba.Symbol(bn.get_variable_name(update.as_var()))
+                elif update.is_not():
+                    inner = convert_to_ba(ba, bn, update.as_not())
+                    return ba.NOT(inner)
+                elif update.is_and():
+                    a, b = update.as_and()
+                    a = convert_to_ba(ba, bn, a)
+                    b = convert_to_ba(ba, bn, b)
+                    return ba.AND(a, b)
+                elif update.is_or():
+                    a, b = update.as_and()
+                    a = convert_to_ba(ba, bn, a)
+                    b = convert_to_ba(ba, bn, b)
+                    return ba.OR(a, b)
+                elif update.is_param():
+                    p_id, args = update.as_param()
+                    p_name = self.am.get_explicit_parameter_name(p_id)
+                    complex_args = [ arg for arg in args if not arg.is_var() ]                    
+                    if len(complex_args):
+                        # "Complex arguments", i.e. non-trivial expressions as function arguments, are not supported.
+                        raise NotImplementedError(f"Function {p_name} uses unsupported complex arguments ({complex_args}).")
+                    arg_names = [ bn.get_variable_name(arg.as_var()) for arg in args ]                    
+                    if p_name not in self.params:
+                        self.params[p_name] = arg_names
+                    elif self.params[p_name] != arg_names:
+                        # Using the same parameter multiple times with different arguments is also not supported.
+                        # In theory, there is also a corner case when the parameter is used multiple times with the same
+                        # arguments but different regulation monotonicity, which also does not work, but that hopefully 
+                        # isn't something that people would normally try to do...
+                        raise NotImplementedError(f"Function {p_name} is used multiple times with different arguments.")
+                    return ba.Symbol(p_name)
                 else:
-                    assert self.params[name] == args
-                return name
-            func = str(func) if not isinstance(func, str) else func
-            f = self.ba.parse(RE_PARAMETER.sub(register_parameter, func))
+                    # If everything is ok, we should never get here.
+                    raise RuntimeError(f"Unexpected function expression {update}.")
+
+            # Names of parameters used in the update function together with their arity.
+            used_parameters = { }
+            for p_id in func.support_parameters():
+                p_name = self.am.get_explicit_parameter_name(p_id)
+                p_arity = self.am.get_explicit_parameter_arity(p_id)
+                used_parameters[p_name] = p_arity
+
+            f = convert_to_ba(self.ba, self.am, func)
             self._f[node] = f
             f = self._f[node]
             s = struct_of_dnf(self.ba, f, list, sort=True)
-            if func_params:
-                func = AEONPartialFunction(f, s,
-                        {p: self.params[p] for p in func_params})
-                for name in func_params:
+            if len(used_parameters) > 0:
+                func = AEONPartialFunction(f, s, used_parameters)
+                # Update a map which assigns each parameter the set of network
+                # variables that actually use said parameter.
+                for name in used_parameters:
                     if name in self.param_nodes:
                         self.param_nodes[name].add(node)
                     else:
                         self.param_nodes[name] = {node}
             else:
                 func = AEONFunction(f, s)
+
             return super().__setitem__(node, func)
 
     @classmethod
