@@ -1,4 +1,4 @@
-# Overview
+# Inputs / Outputs
 
 BoNesis takes two inputs:
 1. a *domain* of Boolean networks (BNs),
@@ -20,7 +20,7 @@ partial) mappings from network components to Boolean values.
 Dynamical properties are then specified using a specific [declarative language](language.md), whose predicate are available as `BoNesis` methods.
 
 
-## Input
+## Inputs
 
 (bn-domain)=
 ### Domain of Boolean networks
@@ -190,7 +190,7 @@ tied with partial observations.
 
 BoNeis gives access to the solutions with *views*. A view specifies which
 objects are to be enumarated from the solution space, and returns an iterator
-other them.
+over them.
 Views support a number of options, including:
 - `solutions` with value either `"all"`{l=py} (default), `"subset-minimal"`{l=py}, or `"subset-maximal"`{l=py}: enable to focus only on most sparse/dense solutions. Precise meaning depend on the object being enumerated.
 - `limit` (default `0`{l=py}): maximum number of solutions to extract; `0`{l=py} means all.
@@ -242,7 +242,7 @@ The projected solutions can be accessed from the following object:
 projs = bo.local_functions()
 ```
 
-The `projs` object as `as_dict` method which offers direct access to all the projected solutions. By default, it will enumerate the Boolean functions for each node. The method "count" instead returns the number of solutions per node. There is also a `keys` parameter to specify a subset of nodes for the computation.
+The `projs` object has an `as_dict` method which offers direct access to all the projected solutions. By default, it will enumerate the Boolean functions for each node. The method "count" instead returns the number of solutions per node. There is also a `keys` parameter to specify a subset of nodes for the computation.
 
 ```py
 counts = projs.as_dict(method="count")

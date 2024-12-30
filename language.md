@@ -43,9 +43,11 @@ maps each component to a Boolean value
 
 <table class="language">
   <tr>
-    <td><code><span class="some">S</span> = Some(max_size=k)</code></td>
-    <td>Represents a mutation of at most <code>k</code> components.<br/>
-      Use <code><span class="some">S</span>.assignments()</code> to get satisfying valuations.</td>
+    <td><code><span class="some">S</span> = Some(max_size=k, exclude=(), domain=())</code></td>
+    <td>Represents a mutation of at most <code>k</code> (default: <code>1</code>) components.<br>
+      Use <code><span class="some">S</span>.assignments()</code> to get satisfying valuations.<br>
+      Options <code>exclude</code> and <code>domain</code> can be used to restrict the components to consider.
+      </td>
   </tr>
 </table>
 
