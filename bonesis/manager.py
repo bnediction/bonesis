@@ -107,9 +107,15 @@ class BonesisManager(object):
             self.register_predicate("bind_hypercube", name, h.obs.name)
 
     def register_predicate(self, name, *args, **kwargs):
+        def validate_mgr(mgr):
+            while hasattr(mgr, "parent"):
+                if mgr is self:
+                    return
+                mgr = mgr.parent
+            assert mgr is self, "mixed managers"
         for obj in args:
             if isinstance(obj, BonesisTerm):
-                assert obj.mgr is self, "mixed managers"
+                validate_mgr(obj.mgr)
         self.push_term(name, *args, **kwargs)
 
     def register_some(self, some):
@@ -153,7 +159,7 @@ class _MutantManager(BonesisManager):
         return m
 
     def register_predicate(self, name, *args, **kwargs):
-        super().register_predicate(name, *args, **kwargs,
+        self.parent.register_predicate(name, *args, **kwargs,
                 mutant=self.mutant_name)
 
 class _ReachabilityScopeManager(BonesisManager):
@@ -162,6 +168,7 @@ class _ReachabilityScopeManager(BonesisManager):
                 "observations", "anon_observations",
                 "configurations", "some"]:
             setattr(self, prop, getattr(parent, prop))
+        self.parent = parent
         self.__options = options
     def register_predicate(self, name, *args, **kwargs):
         if name in ["bind_cfg",
@@ -170,4 +177,4 @@ class _ReachabilityScopeManager(BonesisManager):
             return super().register_predicate(name, *args, **kwargs)
         if name not in ["reach"]:
             raise TypeError(f"Unsupported predicate {name} in scoped reachability")
-        super().register_predicate(name, *args, **self.__options, **kwargs)
+        self.parent.register_predicate(name, *args, **self.__options, **kwargs)
