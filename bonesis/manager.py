@@ -177,4 +177,5 @@ class _ReachabilityScopeManager(BonesisManager):
             return super().register_predicate(name, *args, **kwargs)
         if name not in ["reach"]:
             raise TypeError(f"Unsupported predicate {name} in scoped reachability")
-        self.parent.register_predicate(name, *args, **self.__options, **kwargs)
+        kwargs = self.__options | kwargs
+        self.parent.register_predicate(name, *args, **kwargs)
