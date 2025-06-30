@@ -291,6 +291,7 @@ class ASPModel_DNF(object):
     def load_template_strong_constant(self):
         rules = [
             "weak_constant(N) :- cfg(X), node(N), constant(N,V), cfg(X,N,-V)",
+            "weak_constant(N) :- cfg(X), node(N), constant(N,V), mutant(_,N,-V)",
             "strong_constant(N) :- node(N), constant(N), not weak_constant(N)",
         ]
         self.push(rules)
