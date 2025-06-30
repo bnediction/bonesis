@@ -433,7 +433,7 @@ class ASPModel_DNF(object):
     def apply_mutant_to_mcfg(self, mutant, mcfg):
         if mutant is None:
             return []
-        return [f"clamped({mcfg},N,V) :- mutant({mutant},N,V)"]
+        return [f"clamped({mcfg},N,V) :- mutant({mutant},N,V), node(N)"]
 
     def encode_fixpoint(self, cfg, mutant=None):
         self.load_template_eval()
@@ -542,8 +542,8 @@ class ASPModel_DNF(object):
             # extensions
             f"ext({Z},N,V) :- eval({Z},N,V), {pred}({Y},N,V)",
             # constraints
-            f":- {pred}({Y},N,V), not mcfg({Z},N,V)",
-            f":- {pred}({Y},N,V), ext({Z},N,-V), not ext({Z},N,V)",
+            f":- node(N), {pred}({Y},N,V), not mcfg({Z},N,V)",
+            f":- node(N), {pred}({Y},N,V), ext({Z},N,-V), not ext({Z},N,V)",
         ] + self.apply_mutant_to_mcfg(mutant, Z)
         if not monotone:
             compl = f"cfg({Y},N,-V)" if pred == "cfg" else f"not obs({Y},N,V)"
