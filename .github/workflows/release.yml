@@ -33,7 +33,7 @@ jobs:
           VERSION: ${{ github.ref }}
     - uses: conda-incubator/setup-miniconda@v3
       with:
-          miniconda-version: "latest"
+          python-version: "3.12"
     - name: prepare
       run: |
         conda install -y anaconda-client conda-build conda-verify
