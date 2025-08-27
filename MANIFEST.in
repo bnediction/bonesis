@@ -2,3 +2,4 @@ prune .github
 prune examples
 prune tests
 prune build
+prune conda

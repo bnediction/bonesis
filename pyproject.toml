@@ -21,7 +21,7 @@ authors = [
 ]
 description = "Synthesis of Most Permissive Boolean Networks"
 readme = "README.md"
-license = " CECILL-2.0"
+license = "CECILL-2.0"
 license-files = ['LICENSE.txt', 'Licence_CeCILL_V2.1-fr.txt']
 keywords = ["computational systems biology", "boolean networks", "model synthesis"]
 classifiers= [
@@ -37,6 +37,9 @@ bonesis-utils = "bonesis.cli:main_utils"
 [project.urls]
 Homepage = "https://bnediction.github.io/bonesis/"
 Repository = "https://github.com/bnediction/bonesis"
+
+[tool.setuptools.packages.find]
+exclude = ["conda*"]
 
 [tool.setuptool.package-data]
 bonesis0 = ['*.cfg']
