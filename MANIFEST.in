@@ -1,1 +1,4 @@
 prune .github
+prune examples
+prune tests
+prune build

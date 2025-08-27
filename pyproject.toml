@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=60"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bonesis"
+version = "9999"
+dependencies = [
+        "boolean.py",
+        "clingo>=5.5",
+        "colomoto_jupyter",
+        "mpbn>=3.3",
+        "networkx",
+        "numpy",
+        "pandas",
+        "scipy",
+    ]
+requires-python = ">=3.9"
+authors = [
+    {name = "Loïc Paulevé", email = "loic.pauleve@cnrs.fr"},
+]
+description = "Synthesis of Most Permissive Boolean Networks"
+readme = "README.md"
+license = " CECILL-2.0"
+license-files = ['LICENSE.txt', 'Licence_CeCILL_V2.1-fr.txt']
+keywords = ["computational systems biology", "boolean networks", "model synthesis"]
+classifiers= [
+        "Intended Audience :: Science/Research",
+        "Topic :: Scientific/Engineering :: Bio-Informatics",
+    ]
+
+[project.scripts]
+bonesis-attractors = "bonesis.cli:main_attractors"
+bonesis-reprogramming = "bonesis.cli:main_reprogramming"
+bonesis-utils = "bonesis.cli:main_utils"
+
+[project.urls]
+Homepage = "https://bnediction.github.io/bonesis/"
+Repository = "https://github.com/bnediction/bonesis"
+
+[tool.setuptool.package-data]
+bonesis0 = ['*.cfg']
