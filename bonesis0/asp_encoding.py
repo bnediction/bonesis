@@ -90,8 +90,7 @@ def print_facts(facts):
 
 
 def nb_clauses(d):
-    return int(binom(d, d // 2))
-
+    return int(binom(d, d//2)) if d > 0 else 0
 
 def pkn_to_facts(pkn, maxclause=None, allow_skipping_nodes=False):
     facts = []
