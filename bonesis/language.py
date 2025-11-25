@@ -277,6 +277,7 @@ __language_api__["hypercube"] = HypercubeVar
 class ConfigurationVar(BonesisVar):
     def __init__(self, name=None, obs=None):
         self.obs = obs
+        self.dynamic = False
         super().__init__(name)
     def publish(self):
         self.mgr.register_configuration(self)
@@ -300,6 +301,12 @@ class ConfigurationVar(BonesisVar):
         from .views import ConfigurationView
         return ConfigurationView(self, self.mgr.bo, **kwargs)
 __language_api__["cfg"] = ConfigurationVar
+
+@language_api
+class dyncfg(ConfigurationVar):
+    def __init__(self, obs=None, name=None):
+        super().__init__(obs=obs, name=name)
+        self.dynamic = True
 
 class ConfigurationVarState(object):
     def __init__(self, parent, node):

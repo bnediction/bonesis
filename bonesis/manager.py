@@ -98,7 +98,7 @@ class BonesisManager(object):
                 cfg.name = f"__cfg{len(self.configurations)}"
         if cfg.name not in self.configurations:
             self.configurations.add(cfg.name)
-            self.push_term("cfg", cfg.name)
+            self.push_term("cfg" if not cfg.dynamic else "dyncfg", cfg.name)
             if cfg.obs:
                 self.register_predicate("bind_cfg", cfg.name, cfg.obs.name)
 

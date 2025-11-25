@@ -267,10 +267,19 @@ class ASPModel_DNF(object):
         ]
         self.push(rules)
 
+
+    @unique_usage
+    def load_template_dyncfg(self):
+        rules = [
+            "1 {cfg(X,N,(-1;1))} :- dyncfg(X), node(N)",
+        ]
+        self.push(rules)
+
     @unique_usage
     def load_template_bind_cfg(self):
         rules = [
-            "cfg(X,N,V) :- bind_cfg(X,O), obs(O,N,V), node(N)"
+            "cfg(X,N,V) :- bind_cfg(X,O), obs(O,N,V), node(N)",
+            ":- bind_cfg(X,O), obs(O,N,V), cfg(X,N,-V), node(N)",
         ]
         self.push(rules)
 
@@ -278,9 +287,12 @@ class ASPModel_DNF(object):
     def load_template_bind_cfg_mutant(self):
         rules = [
             "cfg(X,N,V) :- bind_cfg(X,O,mutant(M)), obs(O,N,V), node(N), not mutant(M,N,_)",
+            ":- cfg(X,N,-V), bind_cfg(X,O,mutant(M)), obs(O,N,V), node(N), not mutant(M,N,_)",
             "cfg(X,N,V) :- bind_cfg(X,O,mutant(M)), obs(O,_,_), node(N), mutant(M,N,V), not weak_mutant(M,N,V)",
+            ":- cfg(X,N,-V), bind_cfg(X,O,mutant(M)), obs(O,_,_), node(N), mutant(M,N,V), not weak_mutant(M,N,V)",
             # TODO: next rule should account for non-weak mutant on same node
-            "cfg(X,N,V) :- bind_cfg(X,O,mutant(M)), obs(O,N,V), node(N), mutant(M,N,W), weak_mutant(M,N,W)"
+            "cfg(X,N,V) :- bind_cfg(X,O,mutant(M)), obs(O,N,V), node(N), mutant(M,N,W), weak_mutant(M,N,W)",
+            ":- cfg(X,N,-V), bind_cfg(X,O,mutant(M)), obs(O,N,V), node(N), mutant(M,N,W), weak_mutant(M,N,W)",
         ]
         self.push(rules)
 
@@ -296,8 +308,8 @@ class ASPModel_DNF(object):
     @unique_usage
     def load_template_strong_constant(self):
         rules = [
-            "weak_constant(N) :- cfg(X), node(N), constant(N,V), cfg(X,N,-V)",
-            "weak_constant(N) :- cfg(X), node(N), constant(N,V), mutant(_,N,-V)",
+            "weak_constant(N) :- node(N), constant(N,V), cfg(X,N,-V)",
+            "weak_constant(N) :- node(N), constant(N,V), mutant(_,N,-V)",
             "strong_constant(N) :- node(N), constant(N), not weak_constant(N)",
         ]
         self.push(rules)
