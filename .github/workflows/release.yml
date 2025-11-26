@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - run: sed -i "s:9999:${VERSION//*v/}:" setup.py conda/meta.yaml
+    - run: sed -i "s:9999:${VERSION//*v/}:" pyproject.toml conda/meta.yaml
       env:
           VERSION: ${{ github.ref }}
     - uses: actions/setup-python@v1
