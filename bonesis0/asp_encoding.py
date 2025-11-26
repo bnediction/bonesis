@@ -147,7 +147,7 @@ def dnfs_of_facts(fs, ns=""):
 
 def minibn_of_facts(fs, ns=""):
     dnfs = dnfs_of_facts(fs, ns=ns)
-    bn = MPBooleanNetwork()
+    bn = MPBooleanNetwork(auto_dnf=False)
     def make_lit(l):
         s,v=l
         v = bn.v(v)
