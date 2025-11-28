@@ -218,7 +218,10 @@ class BonesisVar(BonesisTerm):
     def __init__(self, name):
         super().__init__()
         self.name = name
+        self._configure()
         self.publish()
+    def _configure(self):
+        pass
     def publish(self):
         pass
     def __hash__(self):
@@ -306,6 +309,8 @@ __language_api__["cfg"] = ConfigurationVar
 class dyncfg(ConfigurationVar):
     def __init__(self, obs=None, name=None):
         super().__init__(obs=obs, name=name)
+
+    def _configure(self):
         self.dynamic = True
 
 class ConfigurationVarState(object):

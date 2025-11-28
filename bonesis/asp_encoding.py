@@ -567,7 +567,9 @@ class ASPModel_DNF(object):
             f"ext({Z},N,V) :- eval({Z},N,V), {pred}({Y},N,V)",
             # constraints
             f":- node(N), {pred}({Y},N,V), not mcfg({Z},N,V)",
-            f":- node(N), {pred}({Y},N,V), ext({Z},N,-V), not ext({Z},N,V)",
+            (f":- node(N), {pred}({Y},N,V), ext({Z},N,-V), not ext({Z},N,V)"
+                if pred != "cfg" or not right.dynamic else
+              f":- node(N), {pred}({Y},N,V), not {pred}({Y},N,-V), ext({Z},N,-V), not ext({Z},N,V)")
         ] + self.apply_mutant_to_mcfg(mutant, Z)
         if not monotone:
             compl = f"cfg({Y},N,-V)" if pred == "cfg" else f"not obs({Y},N,V)"
