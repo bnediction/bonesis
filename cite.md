@@ -2,19 +2,19 @@
 
 If you are using BoNesis, please use at least the following citation:
 
-> Chevalier, S., Froidevaux, C., Paulevé, L., & Zinovyev, A. (2019). **Synthesis of Boolean Networks from Biological Dynamical Constraints using Answer-Set Programming**. In *2019 IEEE 31st International Conference on Tools with Artificial Intelligence (ICTAI)* (p. 34-41). Portland, Oregon, United States. IEEE.
-> [doi:10.1109/ICTAI.2019.00014](https://doi.org/10.1109/ICTAI.2019.00014)
+> Chevalier, S., Boyenval, D., Magaña-López, G., Roncalli, T., Vaginay, A., Paulevé, L. (2024). **BoNesis: a Python-Based Declarative Environment for the Verification, Reprogramming, and Synthesis of Most Permissive Boolean Networks**. In: *Computational Methods in Systems Biology. CMSB 2024*. Lecture Notes in Computer Science, vol 14971. Springer, Cham.
+> [doi:10.1007/978-3-031-71671-3_6](https://doi.org/10.1007/978-3-031-71671-3_6)
 
 ```bibtex
-@InProceedings{bonesis-ICTAI19,
-  author      = {Chevalier, St{\'e}phanie and Froidevaux, Christine and Paulev{\'e}, Lo{\"i}c and Zinovyev, Andrei},
-  title       = {{Synthesis of Boolean Networks from Biological Dynamical Constraints using Answer-Set Programming}},
-  booktitle   = {{2019 IEEE 31st International Conference on Tools with Artificial Intelligence (ICTAI)}},
-  year        = {2019},
-  pages       = {34-41},
-  address     = {Portland, Oregon, United States},
-  publisher   = {{IEEE}},
-  doi         = {10.1109/ICTAI.2019.00014}
+@InProceedings{bonesis-CMSB24,
+    author = {Chevalier, St{\'e}phanie and Boyenval, D{\'e}borah and Maga{\\textasciitilde n}a L{\'o}pez, Gustavo and Roncalli, Th{\'e}o and Vaginay, Ath{\'e}na{\"i}s and Paulev{\'e}, Lo{\"i}c},
+    title = "{BoNesis: a Python-based declarative environment for the verification, reprogramming, and synthesis of Most Permissive Boolean networks}",
+    booktitle = "{22th International Conference on Computational Methods in Systems Biology (CMSB 2024)}",
+    address = "Pisa, Italy",
+    publisher = "{Springer}",
+    series = "LNCS",
+    year = "2024",
+    doi = "10.1007/978-3-031-71671-3\_6"
 }
 ```
 
