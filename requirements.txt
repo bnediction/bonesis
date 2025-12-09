@@ -1,5 +1,6 @@
+bonesis
 jupyter-book<2.0
 jupyter-cache
 matplotlib
 numpy
-bonesis
+pyeda
