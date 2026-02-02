@@ -425,6 +425,12 @@ class ASPModel_DNF(object):
             name = clingo_encode(name)
             some = clingo_encode(mutations.name)
             return [f"{pred}({name},N,V) :- some_freeze({some},N,V)"]
+        elif isinstance(mutations, ConfigurationVarState):
+            name = clingo_encode(name)
+            X = clingo_encode(mutations.parent.name)
+            nodes = (mutations.node,) if hasattr(mutations, "node") else mutations.nodes
+            return [f"{pred}({name},N,V) :- cfg({X},N,V), N={clingo_encode(n)}"
+                        for n in nodes]
         return [clingo.Function(pred, symbols(name, node, s2v(b)))
             for node, b in mutations.items()]
 

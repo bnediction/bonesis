@@ -135,6 +135,8 @@ class mutant(BoContext):
     def __init__(self, mutations):
         if isinstance(mutations, Some):
             mutations._decl_dtype("Freeze")
+        elif isinstance(mutations, ConfigurationVarState):
+            pass
         else:
             for node in mutations:
                 self.mgr.assert_node_exists(node)
@@ -299,7 +301,15 @@ __language_api__["cfg"] = ConfigurationVar
 class ConfigurationVarState(object):
     def __init__(self, parent, node):
         self.parent = parent
-        self.node = node
+        if isinstance(node, tuple):
+            self.nodes = node
+            for node in self.nodes:
+                self.parent.mgr.assert_node_exists(node)
+        else:
+            self.node = node
+            self.parent.mgr.assert_node_exists(node)
+    def copy(self):
+        return self
     def __eq__(self, b):
         self.parent[self.node] = b
     def __ne__(self, right):
