@@ -187,7 +187,13 @@ class ASPModel_DNF(object):
         return facts
 
     def encode_obs_data(self, name, data):
-        return [clingo.Function("obs", symbols(name, i, s2v(b)))
+        if isinstance(data, ConfigurationVarState):
+            name = clingo_encode(name)
+            X = clingo_encode(data.parent.name)
+            return [f"obs({name},N,V) :- cfg({X},N,V), N={clingo_encode(N)}"
+                for N in data.get_nodes()]
+        else:
+            return [clingo.Function("obs", symbols(name, i, s2v(b)))
                 for (i, b) in data.items() if b in (0,1,True,False)]
 
     def encode_data(self, data):
@@ -428,9 +434,8 @@ class ASPModel_DNF(object):
         elif isinstance(mutations, ConfigurationVarState):
             name = clingo_encode(name)
             X = clingo_encode(mutations.parent.name)
-            nodes = (mutations.node,) if hasattr(mutations, "node") else mutations.nodes
             return [f"{pred}({name},N,V) :- cfg({X},N,V), N={clingo_encode(n)}"
-                        for n in nodes]
+                        for n in mutations.get_nodes()]
         return [clingo.Function(pred, symbols(name, node, s2v(b)))
             for node, b in mutations.items()]
 

@@ -68,11 +68,14 @@ class BonesisManager(object):
 
     def register_observation(self, obs):
         if obs.name is None and hasattr(obs, "data"):
-            key = tuple(sorted(obs.data.items()))
-            name = self.anon_observations.get(key, None)
-            if name is None:
-                name = f"_obs{len(self.anon_observations)}"
+            if isinstance(obs, dict):
+                key = tuple(sorted(obs.data.items()))
+                name = self.anon_observations.get(key, None)
+                if name is None:
+                    name = f"_obs{len(self.anon_observations)}"
                 self.anon_observations[key] = name
+            else:
+                name = f"__obs{len(self.observations)}"
             obs.name = name
         elif not obs.name in self.bo.data:
             raise ValueError(f"No data registered at key {repr(obs.name)}")

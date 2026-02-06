@@ -231,6 +231,9 @@ class ObservationVar(BonesisVar):
         if isinstance(arg, dict):
             name = None
             self.data = arg.copy()
+        elif isinstance(arg, ConfigurationVarState):
+            name = None
+            self.data = arg
         else:
             name = arg
         super().__init__(name)
@@ -301,13 +304,17 @@ __language_api__["cfg"] = ConfigurationVar
 class ConfigurationVarState(object):
     def __init__(self, parent, node):
         self.parent = parent
-        if isinstance(node, tuple):
+        if isinstance(node, (tuple, list)):
             self.nodes = node
             for node in self.nodes:
                 self.parent.mgr.assert_node_exists(node)
         else:
             self.node = node
             self.parent.mgr.assert_node_exists(node)
+    def get_nodes(self):
+        return (self.node,) if hasattr(self, "node") else tuple(self.nodes)
+    def __pos__(self):
+        return +self.parent.iface.obs(self)
     def copy(self):
         return self
     def __eq__(self, b):
@@ -362,7 +369,7 @@ class fixed(BonesisPredicate):
     def __init__(self, arg):
         if isinstance(arg, ConfigurationVar):
             self.predicate_name = "fixpoint"
-        elif isinstance(arg, ObservationVar):
+        elif isinstance(arg, (ObservationVar, ConfigurationVarState)):
             self.predicate_name = "trapspace"
             arg = +arg
         elif isinstance(arg, HypercubeVar):
