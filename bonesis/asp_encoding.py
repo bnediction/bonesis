@@ -189,6 +189,8 @@ class ASPModel_DNF(object):
     def encode_obs_data(self, name, data):
         if isinstance(data, ConfigurationVarState):
             name = clingo_encode(name)
+            if data.parent.dynamic:
+                raise NotImplementedError("dyncfg to obs")
             X = clingo_encode(data.parent.name)
             return [f"obs({name},N,V) :- cfg({X},N,V), N={clingo_encode(N)}"
                 for N in data.get_nodes()]
@@ -266,7 +268,6 @@ class ASPModel_DNF(object):
             "1 {cfg(X,N,(-1;1))} 1 :- cfg(X), node(N)",
         ]
         self.push(rules)
-
 
     @unique_usage
     def load_template_dyncfg(self):
@@ -712,7 +713,11 @@ class ASPModel_DNF(object):
         return rules
 
     def encode_cfg_assign(self, cfg, node, b, mutant=None):
-        return [clingo.Function("cfg", symbols(cfg.name, node, s2v(b)))]
+        r = [clingo.Function("cfg", symbols(cfg.name, node, s2v(b)))]
+        if cfg.dynamic:
+            opp = clingo.Function("cfg", symbols(cfg.name, node, s2v(not b)))
+            r.append(f":- {opp}")
+        return r
 
     def encode_constant(self, node, b, mutant=None):
         return [clingo.Function("constant", symbols(node, s2v(b)))]
@@ -721,17 +726,23 @@ class ASPModel_DNF(object):
         c1 = clingo_encode(cfg1.name)
         c2 = clingo_encode(cfg2.name)
         n = clingo_encode(node)
-        return [
-            f":- node({n}), cfg({c1},{n},V), cfg({c2},{n},-V)"
-        ]
+        if cfg1.dynamic or cfg2.dynamic:
+            r = [f":- node({n}), cfg({c1},{n},V), not cfg({c2},{n},V)",
+                 f":- node({n}), cfg({c2},{n},V), not cfg({c1},{n},V)"]
+        else:
+            r = [f":- node({n}), cfg({c1},{n},V), cfg({c2},{n},-V)"]
+        return r
 
     def encode_cfg_node_ne(self, cfg1, cfg2, node, mutant=None):
         c1 = clingo_encode(cfg1.name)
         c2 = clingo_encode(cfg2.name)
         n = clingo_encode(node)
-        return [
-            f":- node({n}), cfg({c1},{n},V), cfg({c2},{n},V)"
-        ]
+        if cfg1.dynamic or cfg2.dynamic:
+            r = [f":- node({n}); cfg({c1},{n},V):cfg({c2},{n},V); "\
+                     "cfg({c2},{n},V):cfg({c1},{n},V)"]
+        else:
+            r = [f":- node({n}), cfg({c1},{n},V), cfg({c2},{n},V)"]
+        return r
 
     def encode_different(self, cfg1, right, mutant=None):
         if isinstance(right, ConfigurationVar):
@@ -744,10 +755,12 @@ class ASPModel_DNF(object):
         diff = clingo.Function("diff", symbols(cfg1.name, right_name))
         c1 = clingo_encode(cfg1.name)
         c2 = clingo_encode(right.name)
-        return [
-            f"{diff} :- node(N), cfg({c1},N,V), {pred}({c2},N,-V)",
-            f":- not {diff}"
-        ]
+        r = [f":- not {diff}"]
+        if cfg1.dynamic:
+            r += [f"{diff} :- node(N), cfg({c1},N,V), {pred}({c2},N,-V), not {pred}({c2},N,V)"]
+        else:
+            r += [f"{diff} :- node(N), cfg({c1},N,V), {pred}({c2},N,-V)"]
+        return r
 
     def encode_custom(self, code):
         return [code.strip().rstrip(".")]

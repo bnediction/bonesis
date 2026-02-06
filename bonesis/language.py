@@ -235,6 +235,8 @@ class ObservationVar(BonesisVar):
             name = None
             self.data = arg.copy()
         elif isinstance(arg, ConfigurationVarState):
+            if arg.parent.dynamic:
+                raise TypeError("cannot convert dyncfg to obs")
             name = None
             self.data = arg
         else:
