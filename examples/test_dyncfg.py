@@ -23,7 +23,7 @@ print(bo.is_satisfiable())
 
 bo = bonesis.BoNesis(dom, data)
 x1 = ~bo.obs("O1")
-x2 = bo.dyncfg(bo.obs("O2"))
+x2 = bo.dyncfg("O2")
 x3 = ~bo.obs("O3")
 all_different({x1,x2,x3})
 x1 >= x2 >= x3

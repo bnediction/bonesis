@@ -310,6 +310,8 @@ __language_api__["cfg"] = ConfigurationVar
 @language_api
 class dyncfg(ConfigurationVar):
     def __init__(self, obs=None, name=None):
+        if not isinstance(obs, ObservationVar):
+            obs = self.iface.obs(obs)
         super().__init__(obs=obs, name=name)
 
     def _configure(self):
