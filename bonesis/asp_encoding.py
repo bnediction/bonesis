@@ -485,6 +485,30 @@ class ASPModel_DNF(object):
         ] + self.apply_mutant_to_mcfg(mutant, myts)
         return rules
 
+    def encode_mintrap(self, t, arg, mutant=None):
+        self.load_template_eval()
+        T = clingo_encode(t.name)
+        rules = [f"mcfg({T},N,V) :- eval({T},N,V)"]
+        rules += self.apply_mutant_to_mcfg(mutant, T)
+        if hasattr(arg, "name"):
+            i = clingo_encode(arg.name)
+        match arg:
+            case Some():
+                assert arg.dtype == "Freeze"
+                p = "some_freeze"
+            case ObservationVar():
+                p = "obs"
+            case ConfigurationVar():
+                p = "cfg"
+            case _:
+                raise TypeError(f"mintap({repr(t.arg)})")
+        rules += [
+            f"mcfg({T},N,V) :- {p}({i},N,V)",
+            f"mcfg({T},N,1) :- node(N), not {p}({i},N,_)",
+            f"mcfg({T},N,-1) :- node(N), not {p}({i},N,_)",
+        ]
+        return rules
+
     def encode_hypercube(self, h):
         self.load_template_hypercube()
         H = clingo_encode(h.name)
@@ -744,7 +768,7 @@ class ASPModel_DNF(object):
             r = [f":- node({n}), cfg({c1},{n},V), cfg({c2},{n},V)"]
         return r
 
-    def encode_different(self, cfg1, right, mutant=None):
+    def encode_different(self, left, right, mutant=None):
         if isinstance(right, ConfigurationVar):
             pred = "cfg"
         elif isinstance(right, ObservationVar):
@@ -752,15 +776,17 @@ class ASPModel_DNF(object):
         else:
             raise NotImplementedError
         right_name = f"{pred}{right.name}"
-        diff = clingo.Function("diff", symbols(cfg1.name, right_name))
-        c1 = clingo_encode(cfg1.name)
+        diff = clingo.Function("diff", symbols(left.name, right_name))
+        c1 = clingo_encode(left.name)
         c2 = clingo_encode(right.name)
-        r = [f":- not {diff}"]
-        if cfg1.dynamic:
-            r += [f"{diff} :- node(N), cfg({c1},N,V), {pred}({c2},N,-V), not {pred}({c2},N,V)"]
-        else:
-            r += [f"{diff} :- node(N), cfg({c1},N,V), {pred}({c2},N,-V)"]
-        return r
+        if isinstance(left, ConfigurationVar):
+            if cfg1.dynamic:
+                r += [f"{diff} :- node(N), cfg({c1},N,V), {pred}({c2},N,-V), not {pred}({c2},N,V)"]
+            else:
+                r += [f"{diff} :- node(N), cfg({c1},N,V), {pred}({c2},N,-V)"]
+        elif isinstance(left, mintrap):
+            r = f"{diff} :- node(N), not mcfg({c1},N,V), {pred}({c2},N,V)"
+        return [r, f":- not {diff}"]
 
     def encode_custom(self, code):
         return [code.strip().rstrip(".")]

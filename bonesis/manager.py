@@ -45,6 +45,7 @@ class BonesisManager(object):
         self.hypercubes = set()
         self.some = {}
         self.optimizations = []
+        self.counters = {}
 
     def reset_from(self, m2):
         for attr in ["properties",
@@ -53,6 +54,7 @@ class BonesisManager(object):
                         "configurations",
                         "hypercubes",
                         "some",
+                        "counters",
                         "optimizations"]:
             setattr(self, attr, copy.copy(getattr(m2, attr)))
 
@@ -109,6 +111,11 @@ class BonesisManager(object):
         if h.obs:
             self.register_predicate("bind_hypercube", name, h.obs.name)
 
+    def fresh_name(self, qual):
+        num = self.counters.get(qual, 0) + 1
+        self.counters[qual] = num
+        return f"_{qual}{num}"
+
     def register_predicate(self, name, *args, **kwargs):
         def validate_mgr(mgr):
             while hasattr(mgr, "parent"):
@@ -142,7 +149,7 @@ class _MutantManager(BonesisManager):
     _mutant_id = 0
     def __init__(self, parent, mutations, weak=False):
         for prop in ["bo", "properties",
-                "observations", "anon_observations",
+                "observations", "anon_observations", "counters",
                 "configurations", "some"]:
             setattr(self, prop, getattr(parent, prop))
         self.parent = parent
@@ -168,7 +175,7 @@ class _MutantManager(BonesisManager):
 class _ReachabilityScopeManager(BonesisManager):
     def __init__(self, parent, options):
         for prop in ["bo", "properties",
-                "observations", "anon_observations",
+                "observations", "anon_observations", "counters",
                 "configurations", "some"]:
             setattr(self, prop, getattr(parent, prop))
         self.parent = parent

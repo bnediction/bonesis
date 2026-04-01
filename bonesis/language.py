@@ -373,6 +373,11 @@ class BonesisPredicate(BonesisTerm):
     def __repr__(self):
         return f"{self.__class__.__name__}{tuple(map(repr,self.args))}"
 
+class BonesisNamedPredicate(BonesisPredicate):
+    def publish(self):
+        self.name = self.mgr.fresh_name(self.__class__.__name__)
+        super().publish()
+
 @language_api
 class constant(BonesisPredicate):
     def __init__(self, node, value):
@@ -393,6 +398,21 @@ class fixed(BonesisPredicate):
         else:
             self.type_error()
         super().__init__(arg)
+
+@language_api
+@different_operator
+class mintrap(BonesisNamedPredicate):
+    """
+    Minimal trap space enclosing given object
+    """
+    def __init__(self, arg):
+        if isinstance(arg, Some):
+            arg._decl_dtype("Freeze")
+        elif isinstance(arg, (ObservationVar, ConfigurationVar)):
+            pass
+        else:
+            self.type_error()
+        super().__init__(self, arg)
 
 @language_api
 @different_operator
@@ -528,7 +548,7 @@ class final_nonreach(nonreach):
 @language_api
 class different(BonesisPredicate):
     """
-    left: cfg, fixed(), in_attractor()
+    left: cfg, fixed(), in_attractor(), mintrap
     right: cfg, fixed(), in_attractor(), obs
     """
     def __init__(self, left, right):
@@ -544,7 +564,7 @@ class different(BonesisPredicate):
             right = right.right()
         elif isinstance(right, in_attractor):
             right = right.right()
-        if not isinstance(left, ConfigurationVar) or \
+        if not isinstance(left, (ConfigurationVar,mintrap)) or \
                 not isinstance(right, (ConfigurationVar,ObservationVar)):
             self.type_error()
         super().__init__(left, right)
