@@ -780,7 +780,7 @@ class ASPModel_DNF(object):
         c1 = clingo_encode(left.name)
         c2 = clingo_encode(right.name)
         if isinstance(left, ConfigurationVar):
-            if cfg1.dynamic:
+            if left.dynamic:
                 r += [f"{diff} :- node(N), cfg({c1},N,V), {pred}({c2},N,-V), not {pred}({c2},N,V)"]
             else:
                 r += [f"{diff} :- node(N), cfg({c1},N,V), {pred}({c2},N,-V)"]
