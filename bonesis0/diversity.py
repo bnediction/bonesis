@@ -94,7 +94,8 @@ def on_model_make_minibn(model):
 
 class solve_diverse:
     def __init__(self, control, driver, skip_supersets=False, limit=0,
-                    on_model=on_model_make_minibn, settings={}):
+                    on_model=on_model_make_minibn, settings={},
+                    progress=None):
         self.control = control
         self.skip_supersets = skip_supersets
         self.driver = driver
@@ -102,6 +103,7 @@ class solve_diverse:
         self.limit = limit
         self.on_model = on_model
         self.settings = settings
+        self.progress = progress
         self.__counter = 0
 
     def inject_solution(self, atoms):
@@ -133,11 +135,17 @@ class solve_diverse:
     def __iter__(self):
         self.start_time = time.time()
         self.first_time = None
+        if self.progress:
+            self.progressbar = self.progress(
+                desc=self.progress_desc(),
+                total=None,
+                bar_format="{desc}"
+            )
         return self
 
     def __next__(self):
         if self.limit and self.__counter >= self.limit:
-            print()
+            self.close_progress()
             raise StopIteration
 
         sh = setup_clingo_solve_handler(self.settings, self.control)
@@ -145,8 +153,7 @@ class solve_diverse:
             it = setup_gil_iterator(self.settings, iter(sh), sh, self.control)
             model = next(it, None)
             if model is None:
-                if self.__counter:
-                    print()
+                self.close_progress()
                 raise StopIteration
             atoms = model.symbols(atoms=True)
             ret = self.on_model(model)
@@ -155,11 +162,38 @@ class solve_diverse:
         now = time.time()
         if self.first_time is None:
             self.first_time = now
-        elapsed = now-self.start_time
-        print("\rFound {} solutions in {:.1f}s (first in {:.1f}s; rate {:.1f}s)".format(
-                    self.__counter, elapsed,
-                    self.first_time-self.start_time,
-                    elapsed/self.__counter), end="", flush=True)
+        self.update_progress()
         self.driver.on_solution(atoms)
         self.prepare_next(atoms)
         return ret
+
+    def progress_desc(self):
+        total = f"/{self.limit}" if self.limit else ""
+        if self.__counter == 0:
+            return f"Found 0{total} solutions"
+        elapsed = time.time()-self.start_time
+        first = self.first_time-self.start_time
+        noun = "solution" if self.__counter == 1 else "solutions"
+        desc = (
+            f"Found {self.__counter}{total} {noun} in {elapsed:.1f}s "
+            f"(first in {first:.1f}s"
+        )
+        if self.__counter > 1:
+            rate = (elapsed - first) / (self.__counter - 1)
+            desc += f"; rate {rate:.1f}s"
+        return f"{desc})"
+
+    def update_progress(self):
+        desc = self.progress_desc()
+        if self.progress:
+            self.progressbar.set_description_str(desc, refresh=False)
+            self.progressbar.update()
+            self.progressbar.refresh()
+        else:
+            print(f"\r{desc}", end="", flush=True)
+
+    def close_progress(self):
+        if self.progress:
+            self.progressbar.close()
+        elif self.__counter:
+            print()

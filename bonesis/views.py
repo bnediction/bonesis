@@ -68,7 +68,7 @@ class BonesisView(object):
         self.mode = mode
         if mode.startswith("opt"):
             self.project = False
-        self.progress = progress if mode.startswith("opt") else False
+        self.progress = progress
         self.settings = OverlayedDict(bo.settings)
         for k,v in settings.items():
             self.settings[k] = v
@@ -148,12 +148,27 @@ class BonesisView(object):
                                 self._solve_handler, self.control)
         self._counter = 0
         if self.progress:
-            self._progressbar = self.progress(desc="Model optimization",
-                                          total=float("inf"))
+            if self.mode.startswith("opt"):
+                desc = "Model optimization"
+                total = float("inf")
+                kwargs = {}
+            elif self.limit:
+                self._progress_start_time = time.time()
+                self._progress_first_time = None
+                desc = self._progress_enumeration_desc(0)
+                total = None
+                kwargs = {"bar_format": "{desc}"}
+            else:
+                self._progress_start_time = time.time()
+                self._progress_first_time = None
+                desc = self._progress_enumeration_desc(0)
+                total = None
+                kwargs = {"bar_format": "{desc}"}
+            self._progressbar = self.progress(desc=desc, total=total, **kwargs)
         return self
 
     def _progress_tick(self):
-        if not self.progress:
+        if not hasattr(self, "_progressbar"):
             return
         if not self.mode.startswith("opt"):
             return
@@ -161,6 +176,38 @@ class BonesisView(object):
                                           refresh=False)
         self._progressbar.update()
         self._progressbar.refresh()
+
+    def _progress_solution_found(self):
+        if not hasattr(self, "_progressbar"):
+            return
+        if self.mode.startswith("opt"):
+            return
+        n = self._counter + 1
+        self._progressbar.set_description_str(
+            self._progress_enumeration_desc(n),
+            refresh=False
+        )
+        self._progressbar.update()
+        self._progressbar.refresh()
+
+    def _progress_enumeration_desc(self, n):
+        total = f"/{self.limit}" if self.limit else ""
+        noun = "solution" if n == 1 else "solutions"
+        if n == 0:
+            return f"Found 0{total} solutions"
+        now = time.time()
+        if self._progress_first_time is None:
+            self._progress_first_time = now
+        elapsed = now - self._progress_start_time
+        first = self._progress_first_time - self._progress_start_time
+        desc = (
+            f"Found {n}{total} {noun} in {elapsed:.1f}s "
+            f"(first in {first:.1f}s"
+        )
+        if n > 1:
+            rate = (elapsed - first) / (n - 1)
+            desc += f"; rate {rate:.1f}s"
+        return f"{desc})"
 
     def _intermediate_model_found(self, model):
         if self.callback_intermediate_model:
@@ -172,9 +219,16 @@ class BonesisView(object):
         if self.limit and self._counter >= self.limit:
             if hasattr(self, "_solve_handler"):
                 self._solve_handler.cancel()
+            if hasattr(self, "_progressbar"):
+                self._progressbar.close()
             raise StopIteration
 
-        self.cur_model = next(self._iterator)
+        try:
+            self.cur_model = next(self._iterator)
+        except StopIteration:
+            if hasattr(self, "_progressbar"):
+                self._progressbar.close()
+            raise
         self._progress_tick()
         pmodel = None
 
@@ -199,6 +253,7 @@ class BonesisView(object):
             if not func(pmodel):
                 print(f"Skipping solution not verifying {func.__name__}")
                 return next(self)
+        self._progress_solution_found()
         self._counter += 1
         return pmodel
 
@@ -373,7 +428,7 @@ class DiverseBooleanNetworksView(BooleanNetworksView):
         self.diverse = diversity.solve_diverse(self.control.control, self.driver,
                 limit=self.limit, on_model=super().parse_model,
                 skip_supersets=self.skip_supersets,
-                settings=self.settings)
+                settings=self.settings, progress=self.progress)
 
     def parse_model(self, model):
         return model
@@ -383,6 +438,18 @@ class DiverseBooleanNetworksView(BooleanNetworksView):
         self._iterator = iter(self.diverse)
         self._counter = 0
         return self
+
+    def __next__(self):
+        while True:
+            model = next(self._iterator)
+            pmodel = self.parse_model(model)
+            for func in self.filters:
+                if not func(pmodel):
+                    print(f"Skipping solution not verifying {func.__name__}")
+                    break
+            else:
+                self._counter += 1
+                return pmodel
 
 class ConfigurationView(BonesisView):
     project = True
