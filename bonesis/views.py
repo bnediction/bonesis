@@ -166,6 +166,7 @@ class BonesisView(object):
         if self.callback_intermediate_model:
             pmodel = self.parse_model(model)
             self.callback_intermediate_model(pmodel)
+            return pmodel
 
     def __next__(self):
         if self.limit and self._counter >= self.limit:
@@ -175,11 +176,12 @@ class BonesisView(object):
 
         self.cur_model = next(self._iterator)
         self._progress_tick()
+        pmodel = None
 
         if self.mode == "opt":
             try:
                 while True:
-                    self._intermediate_model_found(self.cur_model)
+                    pmodel = self._intermediate_model_found(self.cur_model)
                     self.cur_model = next(self._iterator)
                     self._progress_tick()
             except StopIteration:
@@ -191,7 +193,8 @@ class BonesisView(object):
                 self.cur_model = next(self._iterator)
                 self._progress_tick()
 
-        pmodel = self.parse_model(self.cur_model)
+        if pmodel is None:
+            pmodel = self.parse_model(self.cur_model)
         for func in self.filters:
             if not func(pmodel):
                 print(f"Skipping solution not verifying {func.__name__}")

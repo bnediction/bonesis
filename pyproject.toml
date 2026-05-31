@@ -41,5 +41,5 @@ Repository = "https://github.com/bnediction/bonesis"
 [tool.setuptools.packages.find]
 exclude = ["conda*"]
 
-[tool.setuptool.package-data]
-bonesis0 = ['*.cfg']
+[tool.setuptools.package-data]
+bonesis0 = ["*.cfg"]
