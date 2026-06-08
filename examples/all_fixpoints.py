@@ -12,7 +12,7 @@ bo.all_fixpoints(bo.obs("fp0"))
 bns = bo.boolean_networks(limit=10)
 print(bns.standalone())
 for bn in bns:
-    print("-"*20)
+    print("-" * 20)
     print(bn)
     print(list(bn.attractors()))
 
@@ -21,5 +21,5 @@ with bo.mutant({"a": 1, "b": 1}) as m1:
     m1.all_fixpoints(m1.obs("110"))
 print(bns.standalone())
 for bn in bns:
-    print("-"*20)
+    print("-" * 20)
     print(bn)

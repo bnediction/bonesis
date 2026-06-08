@@ -45,11 +45,14 @@ from .debug import dbg
 from .language import SomeFreeze
 from .snippets import bn_nocyclic_attractors
 from .utils import OverlayedDict, frozendict
-from bonesis0.asp_encoding import (minibn_of_facts,
-        configurations_of_facts,
-        parse_nb_threads,
-        portfolio_path,
-        py_of_symbol, symbol_of_py)
+from bonesis0.asp_encoding import (
+    minibn_of_facts,
+    configurations_of_facts,
+    parse_nb_threads,
+    portfolio_path,
+    py_of_symbol,
+    symbol_of_py,
+)
 from bonesis0.clingo_solving import setup_clingo_solve_handler
 from bonesis0.gil_utils import setup_gil_iterator
 from bonesis0 import diversity
@@ -57,9 +60,17 @@ from bonesis0 import diversity
 
 class BonesisView(object):
     single_shot = True
-    def __init__(self, bo, limit=0, mode="auto", extra=None, progress=False,
-                    intermediate_model_cb=None,
-                    **settings):
+
+    def __init__(
+        self,
+        bo,
+        limit=0,
+        mode="auto",
+        extra=None,
+        progress=False,
+        intermediate_model_cb=None,
+        **settings,
+    ):
         self.bo = bo
         self.aspmodel = bo.aspmodel
         self.limit = limit
@@ -70,7 +81,7 @@ class BonesisView(object):
             self.project = False
         self.progress = progress
         self.settings = OverlayedDict(bo.settings)
-        for k,v in settings.items():
+        for k, v in settings.items():
             self.settings[k] = v
         self.filters = []
         self.callback_intermediate_model = intermediate_model_cb
@@ -82,10 +93,10 @@ class BonesisView(object):
                 elif extra == "boolean-network":
                     return minibn_of_facts
                 elif extra == "somes":
-                    return partial(AllSomeView.allsomes_from_atoms,
-                                       self.bo.manager)
+                    return partial(AllSomeView.allsomes_from_atoms, self.bo.manager)
                 raise ValueError(f"Unknown extra '{extra}'")
             return extra
+
         if isinstance(extra, (tuple, list)):
             extra = tuple(map(parse_extra, extra))
         elif extra is not None:
@@ -97,7 +108,11 @@ class BonesisView(object):
 
     def configure(self, ground=True, **opts):
         args = [0]
-        if self.single_shot and hasattr(clingo, "version") and clingo.version() >= (5,5,0):
+        if (
+            self.single_shot
+            and hasattr(clingo, "version")
+            and clingo.version() >= (5, 5, 0)
+        ):
             args.append("--single-shot")
         if self.project:
             args.append("--project")
@@ -110,20 +125,24 @@ class BonesisView(object):
         settings = OverlayedDict(self.settings)
         if self.settings["solutions"] in ["subset-minimal", "subset-maximal"]:
             if parse_nb_threads(settings.get("parallel")) > 1:
-                args += ["--configuration", portfolio_path('subset_portfolio')]
-            args += ["--heuristic", "Domain",
-                    "--enum-mode", "domRec",
-                     "--dom-mod", "5,16" if self.settings["solutions"] == "subset-minimal" else "3,16"]
+                args += ["--configuration", portfolio_path("subset_portfolio")]
+            args += [
+                "--heuristic",
+                "Domain",
+                "--enum-mode",
+                "domRec",
+                "--dom-mod",
+                "5,16" if self.settings["solutions"] == "subset-minimal" else "3,16",
+            ]
 
         if not self.settings["quiet"] and ground:
             print("Grounding...", end="", flush=True)
             start = time.process_time()
-        self.control = self.bo.solver(*args, settings=settings,
-                ground=False, **opts)
+        self.control = self.bo.solver(*args, settings=settings, ground=False, **opts)
         self.interrupted = False
         self.configure_show()
         if ground:
-            self.control.ground([("base",())])
+            self.control.ground([("base", ())])
         if ground and not self.settings["quiet"]:
             end = time.process_time()
             print(f"done in {end-start:.1f}s")
@@ -138,14 +157,13 @@ class BonesisView(object):
         self.interrupted = True
         self.control.interrupt()
 
-
     def __iter__(self):
         self.configure()
-        self._solve_handler = setup_clingo_solve_handler(self.settings,
-                                                     self.control)
+        self._solve_handler = setup_clingo_solve_handler(self.settings, self.control)
         self._iterator = iter(self._solve_handler)
-        self._iterator = setup_gil_iterator(self.settings, self._iterator,
-                                self._solve_handler, self.control)
+        self._iterator = setup_gil_iterator(
+            self.settings, self._iterator, self._solve_handler, self.control
+        )
         self._counter = 0
         if self.progress:
             if self.mode.startswith("opt"):
@@ -172,8 +190,7 @@ class BonesisView(object):
             return
         if not self.mode.startswith("opt"):
             return
-        self._progressbar.set_postfix({"score": self.cur_model.cost},
-                                          refresh=False)
+        self._progressbar.set_postfix({"score": self.cur_model.cost}, refresh=False)
         self._progressbar.update()
         self._progressbar.refresh()
 
@@ -184,8 +201,7 @@ class BonesisView(object):
             return
         n = self._counter + 1
         self._progressbar.set_description_str(
-            self._progress_enumeration_desc(n),
-            refresh=False
+            self._progress_enumeration_desc(n), refresh=False
         )
         self._progressbar.update()
         self._progressbar.refresh()
@@ -200,10 +216,7 @@ class BonesisView(object):
             self._progress_first_time = now
         elapsed = now - self._progress_start_time
         first = self._progress_first_time - self._progress_start_time
-        desc = (
-            f"Found {n}{total} {noun} in {elapsed:.1f}s "
-            f"(first in {first:.1f}s"
-        )
+        desc = f"Found {n}{total} {noun} in {elapsed:.1f}s " f"(first in {first:.1f}s"
         if n > 1:
             rate = (elapsed - first) / (n - 1)
             desc += f"; rate {rate:.1f}s"
@@ -281,22 +294,25 @@ class BonesisView(object):
 class NodesView(BonesisView):
     project = True
     show_templates = ["node"]
+
     def format_model(self, model):
         atoms = model.symbols(shown=True)
-        return {py_of_symbol(a.arguments[0]) for a in atoms\
-                    if a.name == "node"}
+        return {py_of_symbol(a.arguments[0]) for a in atoms if a.name == "node"}
+
 
 class NonConstantNodesView(BonesisView):
     project = True
     constants = "constant"
     show_templates = ["node", "strong_constant"]
+
     def format_model(self, model):
         atoms = model.symbols(shown=True)
-        nodes = {py_of_symbol(a.arguments[0]) for a in atoms\
-                    if a.name == "node"}
-        constants = {py_of_symbol(a.arguments[0]) for a in atoms\
-                    if a.name == self.constants}
+        nodes = {py_of_symbol(a.arguments[0]) for a in atoms if a.name == "node"}
+        constants = {
+            py_of_symbol(a.arguments[0]) for a in atoms if a.name == self.constants
+        }
         return nodes.difference(constants)
+
 
 class NonStrongConstantNodesView(NonConstantNodesView):
     constants = "strong_constant"
@@ -305,11 +321,11 @@ class NonStrongConstantNodesView(NonConstantNodesView):
 
 class InfluenceGraphView(BonesisView):
     project = True
+
     def configure_show(self):
-        self.control.add("base", [], \
-            "#show."\
-            "#show node/1."\
-            "#show edge(A,B,S): clause(B,_,A,S).")
+        self.control.add(
+            "base", [], "#show." "#show node/1." "#show edge(A,B,S): clause(B,_,A,S)."
+        )
 
     def format_model(self, model):
         atoms = model.symbols(shown=True)
@@ -319,10 +335,12 @@ class InfluenceGraphView(BonesisView):
 class BooleanNetworksView(BonesisView):
     project = True
     show_templates = ["boolean_network"]
+
     def __init__(self, *args, no_cyclic_attractors=False, **kwargs):
         super().__init__(*args, **kwargs)
         if no_cyclic_attractors:
             self.add_filter(bn_nocyclic_attractors)
+
     def format_model(self, model):
         atoms = model.symbols(shown=True)
         return minibn_of_facts(atoms)
@@ -332,8 +350,9 @@ class ProjectedBooleanNetworksContext(object):
     def __init__(self, parent_view, nodes):
         self.parent = parent_view
         self.nodes = nodes
-        self.externals = [clingo.Function("myshow", [clingo.String(n)])\
-                for n in self.nodes]
+        self.externals = [
+            clingo.Function("myshow", [clingo.String(n)]) for n in self.nodes
+        ]
 
     def __enter__(self):
         self.parent.acquire()
@@ -349,6 +368,7 @@ class ProjectedBooleanNetworksContext(object):
 
 class ProjectedBooleanNetworksViews(BooleanNetworksView):
     single_shot = False
+
     def __init__(self, *args, skip_empty=False, ground=True, **kwargs):
         super().__init__(*args, **kwargs)
         self.skip_empty = skip_empty
@@ -357,6 +377,7 @@ class ProjectedBooleanNetworksViews(BooleanNetworksView):
 
     def acquire(self):
         return self.lock.acquire(False)
+
     def release(self):
         return self.lock.release()
 
@@ -364,11 +385,14 @@ class ProjectedBooleanNetworksViews(BooleanNetworksView):
         return
 
     def configure_show(self):
-        self.control.add("base", [], \
-            "#external myshow(N): node(N)."\
-            "#show."\
-            "#show clause(A,B,C,D): myshow(A), clause(A,B,C,D)."\
-            "#show constant(A,B): constant(A,B), myshow(A).")
+        self.control.add(
+            "base",
+            [],
+            "#external myshow(N): node(N)."
+            "#show."
+            "#show clause(A,B,C,D): myshow(A), clause(A,B,C,D)."
+            "#show constant(A,B): constant(A,B), myshow(A).",
+        )
         if self.skip_empty:
             self.control.add("base", [], "node(N) :- myshow(N).")
 
@@ -393,6 +417,7 @@ class LocalFunctionsViews(ProjectedBooleanNetworksViews):
         "list": list,
         "count": lambda v: v.count(),
     }
+
     def as_dict(self, method="list", keys=None):
         if method not in self.do:
             raise ValueError("unknown method")
@@ -412,23 +437,36 @@ class LocalFunctionsViews(ProjectedBooleanNetworksViews):
 class DiverseBooleanNetworksView(BooleanNetworksView):
     single_shot = False
     project = False
-    def __init__(self, bo, driver="fraction",
-            driver_kwargs=dict(pc_drive=50, pc_forget=50),
-            skip_supersets=False,
-            **kwargs):
+
+    def __init__(
+        self,
+        bo,
+        driver="fraction",
+        driver_kwargs=dict(pc_drive=50, pc_forget=50),
+        skip_supersets=False,
+        **kwargs,
+    ):
         super().__init__(bo, **kwargs)
-        self.driver_cls = driver if type(driver) is not str else \
-                            getattr(diversity, f"diversity_driver_{driver}")
+        self.driver_cls = (
+            driver
+            if type(driver) is not str
+            else getattr(diversity, f"diversity_driver_{driver}")
+        )
         self.driver_kwargs = driver_kwargs
         self.skip_supersets = skip_supersets
 
     def configure(self, **opts):
         super().configure(**opts)
         self.driver = self.driver_cls(**self.driver_kwargs)
-        self.diverse = diversity.solve_diverse(self.control.control, self.driver,
-                limit=self.limit, on_model=super().parse_model,
-                skip_supersets=self.skip_supersets,
-                settings=self.settings, progress=self.progress)
+        self.diverse = diversity.solve_diverse(
+            self.control.control,
+            self.driver,
+            limit=self.limit,
+            on_model=super().parse_model,
+            skip_supersets=self.skip_supersets,
+            settings=self.settings,
+            progress=self.progress,
+        )
 
     def parse_model(self, model):
         return model
@@ -451,43 +489,60 @@ class DiverseBooleanNetworksView(BooleanNetworksView):
                 self._counter += 1
                 return pmodel
 
+
 class ConfigurationView(BonesisView):
     project = True
     _pred_name = "cfg"
+
     def __init__(self, cfg, *args, scope=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.cfg = cfg
         self.scope = scope
+
     def configure_show(self):
         name = symbol_of_py(self.cfg.name)
         self.control.add("base", [], "#show.")
         if self.scope is not None:
             for n in self.scope:
                 n = symbol_of_py(n)
-                self.control.add("base", [], f"show_scope({self._pred_name}({name},{n})).")
-            self.control.add("base", [], f"#show {self._pred_name}(X,N,V) : "
-                             f"{self._pred_name}(X,N,V), X={name},"
-                             f"show_scope({self._pred_name}(X,N)).")
+                self.control.add(
+                    "base", [], f"show_scope({self._pred_name}({name},{n}))."
+                )
+            self.control.add(
+                "base",
+                [],
+                f"#show {self._pred_name}(X,N,V) : "
+                f"{self._pred_name}(X,N,V), X={name},"
+                f"show_scope({self._pred_name}(X,N)).",
+            )
         else:
-            self.control.add("base", [], f"#show {self._pred_name}(X,N,V) :"
-                            f"{self._pred_name}(X,N,V), X={name}.")
+            self.control.add(
+                "base",
+                [],
+                f"#show {self._pred_name}(X,N,V) :"
+                f"{self._pred_name}(X,N,V), X={name}.",
+            )
+
     def format_model(self, model):
         atoms = model.symbols(shown=True)
         x = self.cfg.name
         return configurations_of_facts(atoms, keys=[x])[x]
 
+
 class HypercubeView(ConfigurationView):
     _pred_name = "hypercube"
+
     def format_model(self, model):
         pairs = []
         for a in model.symbols(shown=True):
             _, n, v = py_of_symbol(a)
             if v == 2:
-                v = '*'
+                v = "*"
             elif v == -1:
                 v = 0
-            pairs.append((n,v))
+            pairs.append((n, v))
         return dict(sorted(pairs))
+
 
 class AllSomeView(BonesisView):
     project = True
@@ -499,93 +554,98 @@ class AllSomeView(BonesisView):
             if dtype == "Freeze":
                 return {}
             raise NotImplementedError
-        somes = {name: init_some(some.dtype)
-            for name, some in manager.some.items()}
+
+        somes = {name: init_some(some.dtype) for name, some in manager.some.items()}
 
         for a in atoms:
             if a.name == "some_freeze":
                 name, n, v = py_of_symbol(a)
-                somes[name][n] = max(v,0)
+                somes[name][n] = max(v, 0)
         return somes
 
     def format_model(self, model):
         atoms = model.symbols(shown=True)
         return self.allsomes_from_atoms(self.bo.manager, atoms)
 
+
 class SomeView(AllSomeView):
     def __init__(self, some, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.some = some
+
     def configure_show(self):
         if self.some.dtype == "Freeze":
             name = symbol_of_py(self.some.name)
-            self.control.add("base", [],
-                    "#show."
-                    f"#show some_freeze(M,N,V) : some_freeze(M,N,V), M={name}.")
+            self.control.add(
+                "base",
+                [],
+                "#show." f"#show some_freeze(M,N,V) : some_freeze(M,N,V), M={name}.",
+            )
         else:
             raise NotImplementedError
+
     def format_model(self, model):
         somes = super().format_model(model)
         return somes[self.some.name]
 
+
 def SomeFreezeComplementaryView(some, *args, **kwargs):
-        subset_min = kwargs["solutions"] == "subset-minimal"
+    subset_min = kwargs["solutions"] == "subset-minimal"
 
-        kwargs["solutions"] = "all"
-        coview = SomeView(some, *args, **kwargs)
-        opts = SomeFreeze.default_opts | some.opts
+    kwargs["solutions"] = "all"
+    coview = SomeView(some, *args, **kwargs)
+    opts = SomeFreeze.default_opts | some.opts
 
-        nodes = list(some.mgr.bo.domain)
-        if opts["exclude"]:
-            nodes = [n for n in nodes if n not in opts["exclude"]]
-        elements = [(n,0) for n in nodes] + [(n,1) for n in nodes]
+    nodes = list(some.mgr.bo.domain)
+    if opts["exclude"]:
+        nodes = [n for n in nodes if n not in opts["exclude"]]
+    elements = [(n, 0) for n in nodes] + [(n, 1) for n in nodes]
 
-        def freeze_add(fs, e):
-            coe = (e[0], 1-e[1])
-            if coe in fs:
-                return fs
-            return fs.union((e,))
+    def freeze_add(fs, e):
+        coe = (e[0], 1 - e[1])
+        if coe in fs:
+            return fs
+        return fs.union((e,))
 
-        def enlarge_candidates(candidates, elements):
-            return map(lambda y: freeze_add(*y),
-                    itertools.product(candidates, elements))
+    def enlarge_candidates(candidates, elements):
+        return map(lambda y: freeze_add(*y), itertools.product(candidates, elements))
 
-        candidates = [frozendict({})]
-        for _ in range(opts["min_size"]):
-            candidates = enlarge_candidates(candidates, elements)
+    candidates = [frozendict({})]
+    for _ in range(opts["min_size"]):
+        candidates = enlarge_candidates(candidates, elements)
 
-        min_size = opts["min_size"]
-        max_size = opts["max_size"]
-        good = set()
-        for size in range(min_size, max_size+1):
-            some.opts["min_size"] = size
-            some.opts["max_size"] = size
-            coassignments = set(map(frozendict, coview))
+    min_size = opts["min_size"]
+    max_size = opts["max_size"]
+    good = set()
+    for size in range(min_size, max_size + 1):
+        some.opts["min_size"] = size
+        some.opts["max_size"] = size
+        coassignments = set(map(frozendict, coview))
 
-            bad = set()
-            for candidate in candidates:
-                if len(candidate) != size:
-                    continue
-                if candidate not in coassignments:
-                    ignore = False
-                    for g in good:
-                        if g.issubset(candidate):
-                            ignore = True
-                            break
-                    if not ignore:
-                        yield dict(candidate)
-                        if subset_min and size > 1:
-                            good.add(candidate)
-                else:
-                    bad.add(candidate)
-            if size == 0 and not bad:
-                break
-            if size != opts["max_size"]:
-                if subset_min and size == 1:
-                    elements = [next(iter(c)) for c in bad]
-                    if not elements:
+        bad = set()
+        for candidate in candidates:
+            if len(candidate) != size:
+                continue
+            if candidate not in coassignments:
+                ignore = False
+                for g in good:
+                    if g.issubset(candidate):
+                        ignore = True
                         break
-                candidates = enlarge_candidates(bad, elements)
-        # restore
-        opts["min_size"] = min_size
-        opts["max_size"] = max_size
+                if not ignore:
+                    yield dict(candidate)
+                    if subset_min and size > 1:
+                        good.add(candidate)
+            else:
+                bad.add(candidate)
+        if size == 0 and not bad:
+            break
+        if size != opts["max_size"]:
+            if subset_min and size == 1:
+                elements = [next(iter(c)) for c in bad]
+                if not elements:
+                    break
+            candidates = enlarge_candidates(bad, elements)
+    # restore
+    opts["min_size"] = min_size
+    opts["max_size"] = max_size

@@ -32,6 +32,7 @@
 import os
 
 import clingo as asp
+
 clingo_Tuple = asp.Tuple_ if hasattr(asp, "Tuple_") else asp.Tuple
 
 from scipy.special import binom
@@ -39,6 +40,7 @@ from scipy.special import binom
 from functools import reduce
 
 from mpbn import MPBooleanNetwork
+
 
 def py_of_symbol(symb):
     if symb.type is asp.SymbolType.String:
@@ -49,6 +51,7 @@ def py_of_symbol(symb):
         return tuple(map(py_of_symbol, symb.arguments))
     raise ValueError
 
+
 def symbol_of_py(obj):
     if isinstance(obj, str):
         return asp.String(obj)
@@ -58,12 +61,14 @@ def symbol_of_py(obj):
         return clingo_Tuple([symbol_of_py(o) for o in obj])
     return obj
 
+
 def symbols(*objs):
     return [symbol_of_py(obj) for obj in objs]
 
+
 def portfolio_path(name):
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)),
-            f"{name}.cfg")
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), f"{name}.cfg")
+
 
 def parse_nb_threads(opt):
     if opt is None:
@@ -72,17 +77,21 @@ def parse_nb_threads(opt):
         opt = int(opt.split(",")[0])
     return opt
 
+
 def string_of_facts(facts):
     if not facts:
         return ""
-    return "{}.\n".format(".\n".join(map(str,facts)))
+    return "{}.\n".format(".\n".join(map(str, facts)))
+
 
 def print_facts(facts):
     if facts:
         print(string_of_facts(facts))
 
+
 def nb_clauses(d):
-    return int(binom(d, d//2))
+    return int(binom(d, d // 2))
+
 
 def pkn_to_facts(pkn, maxclause=None, allow_skipping_nodes=False):
     facts = []
@@ -94,36 +103,41 @@ def pkn_to_facts(pkn, maxclause=None, allow_skipping_nodes=False):
         facts.append("nbnode(NB) :- NB = #count{N: node(N)}")
         for n in pkn.nodes():
             facts.append("{{{}}}".format(asp.Function("node", symbols(n))))
-    for (orig, dest, data) in pkn.edges(data=True):
-        if data["sign"] in ["ukn","?","0",0]:
+    for orig, dest, data in pkn.edges(data=True):
+        if data["sign"] in ["ukn", "?", "0", 0]:
             args = symbols(orig, dest)
             f = "in({},{},(-1;1))".format(*args)
             facts.append(f)
         else:
             ds = data["sign"]
-            if ds in ["-","+"]:
+            if ds in ["-", "+"]:
                 ds += "1"
             s = int(ds)
             facts.append(asp.Function("in", symbols(orig, dest, s)))
+
     def bounded_nb_clauses(d):
         nbc = nb_clauses(d)
         if maxclause:
             nbc = min(maxclause, nbc)
         return nbc
+
     for n, i in pkn.in_degree(pkn.nodes()):
         facts.append(asp.Function("maxC", symbols(n, bounded_nb_clauses(i))))
     facts += pkn.rules
     return facts
 
+
 def obs_to_facts(pstate, obsid):
-    return [asp.Function("obs", [obsid, n, 2*v-1]) for (n,v) in pstate.items()]
+    return [asp.Function("obs", [obsid, n, 2 * v - 1]) for (n, v) in pstate.items()]
+
 
 def sanitize_identifier(nodeid):
     if isinstance(nodeid, str):
-        nodeid = nodeid.replace("-","_")
+        nodeid = nodeid.replace("-", "_")
     else:
         nodeid = f"x{nodeid}"
     return nodeid
+
 
 def dnfs_of_facts(fs, ns=""):
     bn = {}
@@ -131,34 +145,38 @@ def dnfs_of_facts(fs, ns=""):
     constant_func = f"{ns}constant"
     for d in fs:
         if d.name == clause_func:
-            (i,cid,lit,sign) = list(map(py_of_symbol, d.arguments))
+            i, cid, lit, sign = list(map(py_of_symbol, d.arguments))
             i = sanitize_identifier(i)
             lit = sanitize_identifier(lit)
             if i not in bn:
                 bn[i] = []
             if cid > len(bn[i]):
-                bn[i] += [set() for j in range(cid-len(bn[i]))]
-            bn[i][cid-1].add((sign,lit))
+                bn[i] += [set() for j in range(cid - len(bn[i]))]
+            bn[i][cid - 1].add((sign, lit))
         elif d.name == constant_func and len(d.arguments) == 2:
-            (i,v) = list(map(py_of_symbol, d.arguments))
+            i, v = list(map(py_of_symbol, d.arguments))
             i = sanitize_identifier(i)
             bn[i] = v == 1
     return bn
 
+
 def minibn_of_facts(fs, ns=""):
     dnfs = dnfs_of_facts(fs, ns=ns)
     bn = MPBooleanNetwork(auto_dnf=False)
+
     def make_lit(l):
-        s,v=l
+        s, v = l
         v = bn.v(v)
         if s < 0:
             v = ~v
         return v
+
     def make_clause(ls):
         ls = list(map(make_lit, ls))
         if len(ls) == 1:
             return ls[0]
         return bn.ba.AND(*ls)
+
     def make_dnf(cs):
         if isinstance(cs, bool):
             return cs
@@ -167,9 +185,11 @@ def minibn_of_facts(fs, ns=""):
         if len(cs) == 1:
             return cs[0]
         return bn.ba.OR(*cs)
-    for (node, cs) in sorted(dnfs.items()):
+
+    for node, cs in sorted(dnfs.items()):
         bn[node] = make_dnf(cs)
     return bn
+
 
 def configurations_of_facts(fs, pred="cfg", keys="auto"):
     cfgs = {}

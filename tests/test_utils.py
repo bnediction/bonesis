@@ -1,8 +1,10 @@
 import unittest
 
+
 class TestOverlayedDict(unittest.TestCase):
     def test(self):
         from bonesis.utils import OverlayedDict
+
         d = {"a": 1, "b": 2}
         od = OverlayedDict(d)
         self.assertEqual(set(od.keys()), {"a", "b"})

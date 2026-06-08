@@ -1,16 +1,16 @@
-
+import os
+import tempfile
 import unittest
 
 import bonesis
 import bonesis.language as bol
 
+
 class LanguageTest(unittest.TestCase):
     def setUp(self):
         self.dom = bonesis.InfluenceGraph.complete("abc", 0)
-        self.data = {
-            "x": {"a": 0},
-            "y": {"b": 0},
-            "z": {"a": 1, "b": 1, "c": 1}}
+        self.data = {"x": {"a": 0}, "y": {"b": 0}, "z": {"a": 1, "b": 1, "c": 1}}
+
     def _fresh_bo(self):
         return bonesis.BoNesis(self.dom, self.data)
 
@@ -42,3 +42,35 @@ class LanguageTest(unittest.TestCase):
         x = ~bo.obs("x")
         y = ~bo.obs("y")
         self.assertIsNone(x["c"] != y["c"])
+
+    def test_safe_load_code_installs_language(self):
+        bo = self._fresh_bo()
+        ret = bo.load_code(
+            """
+x = ~obs("x")
+y = dyncfg("y")
+x >= fixed(obs("y"))
+""",
+            safe=True,
+        )
+        self.assertIn("x", ret)
+        self.assertIn("y", ret)
+
+    def test_safe_load_code_rejects_unsafe_syntax(self):
+        bo = self._fresh_bo()
+        with self.assertRaises(bonesis.UnsafeBonesisCodeError):
+            bo.load_code("import os\n", safe=True)
+        with self.assertRaises(bonesis.UnsafeBonesisCodeError):
+            bo.load_code("open('x')\n", safe=True)
+
+    def test_safe_load_uses_dest_scope(self):
+        bo = self._fresh_bo()
+        dest = {}
+        with tempfile.NamedTemporaryFile("w", delete=False) as fp:
+            fp.write('x = obs("x")\n')
+            script = fp.name
+        try:
+            bo.load(script, dest_scope=dest, safe=True)
+        finally:
+            os.unlink(script)
+        self.assertIn("x", dest)

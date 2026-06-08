@@ -1,11 +1,8 @@
 import bonesis
 
-dom = bonesis.BooleanNetwork({
-    "a": "c",
-    "b": "a",
-    "c": "b"})
+dom = bonesis.BooleanNetwork({"a": "c", "b": "a", "c": "b"})
 
-M = {a:1 for a in dom}
+M = {a: 1 for a in dom}
 
 bo = bonesis.BoNesis(dom)
 with bo.mutant(bo.Some("Ensure111", max_size=2)) as m:

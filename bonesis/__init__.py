@@ -29,6 +29,7 @@
 # knowledge of the CeCILL license and that you accept its terms.
 #
 
+import ast
 import copy
 
 import os
@@ -49,18 +50,122 @@ __language_api__ = ["obs", "cfg"]
 
 settings = {
     "parallel": 1,
-    "clingo_options": tuple(os.environ["CLINGO_OPTS"].split()) if "CLINGO_OPTS" in os.environ else (),
+    "clingo_options": (
+        tuple(os.environ["CLINGO_OPTS"].split()) if "CLINGO_OPTS" in os.environ else ()
+    ),
     "clingo_opt_strategy": "bb",
     "solutions": "all",
     "quiet": False,
     "timeout": 0,
-    "soft_interrupt": False, # if True, silently end solving
-    "fail_if_timeout": True, # if timeout raise TimeoutError
+    "soft_interrupt": False,  # if True, silently end solving
+    "fail_if_timeout": True,  # if timeout raise TimeoutError
     "clingo_gil_workaround": 1,
-        # 0/None: no GIL wrapper for clingo
-        # 1: run clingo in a single background thread
-        # 2: separate thread for each solution
+    # 0/None: no GIL wrapper for clingo
+    # 1: run clingo in a single background thread
+    # 2: separate thread for each solution
 }
+
+_FORBIDDEN_LOAD_CODE_NODES = (
+    ast.Import,
+    ast.ImportFrom,
+    ast.FunctionDef,
+    ast.AsyncFunctionDef,
+    ast.ClassDef,
+    ast.Lambda,
+    ast.Delete,
+    ast.Global,
+    ast.Nonlocal,
+    ast.Try,
+    ast.Raise,
+    ast.Assert,
+    ast.If,
+    ast.For,
+    ast.AsyncFor,
+    ast.While,
+    ast.ListComp,
+    ast.SetComp,
+    ast.DictComp,
+    ast.GeneratorExp,
+    ast.Await,
+    ast.Yield,
+    ast.YieldFrom,
+    ast.NamedExpr,
+)
+
+_FORBIDDEN_LOAD_CODE_NAMES = {
+    "__builtins__",
+    "__import__",
+    "breakpoint",
+    "compile",
+    "eval",
+    "exec",
+    "globals",
+    "input",
+    "locals",
+    "open",
+}
+
+
+class UnsafeBonesisCodeError(ValueError):
+    pass
+
+
+class _LoadCodeValidator(ast.NodeVisitor):
+    def generic_visit(self, node):
+        if isinstance(node, _FORBIDDEN_LOAD_CODE_NODES):
+            self._error(node, f"unsupported syntax '{node.__class__.__name__}'")
+        super().generic_visit(node)
+
+    def visit_Name(self, node):
+        if node.id in _FORBIDDEN_LOAD_CODE_NAMES or node.id.startswith("__"):
+            self._error(node, f"forbidden name '{node.id}'")
+
+    def visit_Attribute(self, node):
+        if node.attr.startswith("_"):
+            self._error(node, f"forbidden attribute '{node.attr}'")
+        self.visit(node.value)
+
+    def visit_Call(self, node):
+        if not isinstance(node.func, (ast.Name, ast.Attribute)):
+            self._error(node, "unsupported call target")
+        self.generic_visit(node)
+
+    def visit_Assign(self, node):
+        for target in node.targets:
+            self._validate_assignment_target(target)
+        self.visit(node.value)
+
+    def visit_AnnAssign(self, node):
+        self._error(node, "annotated assignments are not supported")
+
+    def visit_AugAssign(self, node):
+        self._error(node, "augmented assignments are not supported")
+
+    def _validate_assignment_target(self, target):
+        if isinstance(target, ast.Name):
+            if target.id in _FORBIDDEN_LOAD_CODE_NAMES or target.id.startswith("__"):
+                self._error(target, f"forbidden assignment target '{target.id}'")
+            return
+        if isinstance(target, ast.Subscript):
+            self.visit(target)
+            return
+        if isinstance(target, (ast.Tuple, ast.List)):
+            for elt in target.elts:
+                self._validate_assignment_target(elt)
+            return
+        self._error(target, "unsupported assignment target")
+
+    def _error(self, node, message):
+        line = getattr(node, "lineno", "?")
+        raise UnsafeBonesisCodeError(f"unsafe BoNesis code at line {line}: {message}")
+
+
+def _compile_load_code(prog, filename, safe):
+    tree = ast.parse(prog, filename=filename, mode="exec")
+    if safe:
+        _LoadCodeValidator().visit(tree)
+    return compile(tree, filename, "exec")
+
 
 class BoNesis(object):
     def __init__(self, domain, data=None):
@@ -96,26 +201,40 @@ class BoNesis(object):
 
     def install_language(self, scope):
         self.iface.install(scope)
+
     def uninstall_language(self, scope):
         self.iface.uninstall(scope)
 
     def has_optimizations(self):
         return bool(self.manager.optimizations)
 
-    def load_code(self, prog, defs=None, dest_scope=None):
+    def load_code(
+        self, prog, defs=None, dest_scope=None, safe=False, filename="<bonesis>"
+    ):
         scope = {}
         self.install_language(scope)
-        exec(prog, scope, defs)
-        self.uninstall_language(scope)
-        del scope["__builtins__"]
+        if safe:
+            scope["__builtins__"] = {}
+        try:
+            compiled = _compile_load_code(prog, filename, safe)
+            exec(compiled, scope, defs)
+        finally:
+            self.uninstall_language(scope)
+            scope.pop("__builtins__", None)
         ret = defs if defs else scope
         if dest_scope is not None:
             dest_scope.update(ret)
         return ret
 
-    def load(self, script, defs=None, dest_scope=None):
+    def load(self, script, defs=None, dest_scope=None, safe=False):
         with open(script) as fp:
-            return self.load_code(fp.read(), defs=defs, dest_scope=None)
+            return self.load_code(
+                fp.read(),
+                defs=defs,
+                dest_scope=dest_scope,
+                safe=safe,
+                filename=str(script),
+            )
 
     def solver(self, *args, **kwargs):
         self.aspmodel.make()
@@ -129,11 +248,13 @@ class BoNesis(object):
 
     def boolean_networks(self, *args, **kwargs):
         return BooleanNetworksView(self, *args, **kwargs)
+
     def diverse_boolean_networks(self, *args, **kwargs):
         return DiverseBooleanNetworksView(self, *args, **kwargs)
 
     def projected_boolean_networks(self, **kwargs):
         return ProjectedBooleanNetworksViews(self, **kwargs)
+
     def local_functions(self, **kwargs):
         return LocalFunctionsViews(self, **kwargs)
 

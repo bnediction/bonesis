@@ -1,12 +1,17 @@
 import clingo
 
+
 def setup_clingo_solve_handler(settings, ctrl):
-    if True: #settings.get("timeout"):
-        sh = BoSolveHandle(ctrl, timeout=settings.get("timeout"),
-                    fail_if_timeout=settings.get("fail_if_timeout"))
+    if True:  # settings.get("timeout"):
+        sh = BoSolveHandle(
+            ctrl,
+            timeout=settings.get("timeout"),
+            fail_if_timeout=settings.get("fail_if_timeout"),
+        )
     else:
         sh = ctrl.solve(yield_=True)
     return sh
+
 
 class BoSolveHandle(object):
     def __init__(self, clingo_ctrl, timeout=0, fail_if_timeout=True):
@@ -33,7 +38,7 @@ class BoSolveHandle(object):
                 self.clingo_sh.resume()
                 if self.timeout > 0:
                     ready = self.clingo_sh.wait(self.timeout)
-                    if not ready: # time out
+                    if not ready:  # time out
                         self.clingo_sh.cancel()
                         if self.fail_if_timeout:
                             raise TimeoutError

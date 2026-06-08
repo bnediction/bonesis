@@ -1,9 +1,6 @@
 import bonesis
 
-dom = bonesis.BooleanNetwork({
-    "a": "a",
-    "b": "a & c",
-    "c": "!b"})
+dom = bonesis.BooleanNetwork({"a": "a", "b": "a & c", "c": "!b"})
 data = {
     "never_b": {"b": 0},
 }

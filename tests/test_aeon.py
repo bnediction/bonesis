@@ -7,13 +7,13 @@ import shutil
 import bonesis
 import bonesis.aeon
 
+
 class TestAEONImport(unittest.TestCase):
     def setUp(self):
         self.test_dir = tempfile.mkdtemp()
 
     def tearDown(self):
         shutil.rmtree(self.test_dir)
-
 
     def test_import_with_constant(self):
         """

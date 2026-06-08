@@ -2,6 +2,7 @@ import unittest
 
 import bonesis
 
+
 class TestUniversal(unittest.TestCase):
     def setUp(self):
         self.dom1 = bonesis.InfluenceGraph.complete("abc", 1)

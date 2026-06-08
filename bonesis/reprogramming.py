@@ -38,14 +38,17 @@ from functools import reduce
 import bonesis
 from bonesis0.asp_encoding import symbol_of_py
 
+
 def prune_domain_for_marker(f, M):
     def get_doi(g):
         return reduce(set.union, (nx.ancestors(g, m) for m in M), set(M))
+
     if isinstance(f, minibn.BooleanNetwork):
         keep = get_doi(f.influence_graph())
         return f.__class__({i: f[i] for i in keep})
     else:
         return f.subgraph(get_doi(f))
+
 
 def marker_reprogramming_fixpoints(f, M, k, at_least_one=True, **some_opts):
     bo = bonesis.BoNesis(f)
@@ -56,8 +59,8 @@ def marker_reprogramming_fixpoints(f, M, k, at_least_one=True, **some_opts):
         bo.all_fixpoints(bo.obs(M))
     return control.assignments()
 
-def source_marker_reprogramming_fixpoints(f, z, M, k, at_least_one=True,
-        **some_opts):
+
+def source_marker_reprogramming_fixpoints(f, z, M, k, at_least_one=True, **some_opts):
     bo = bonesis.BoNesis(f)
     control = bo.Some(max_size=k, **some_opts)
     with bo.mutant(control):
@@ -65,6 +68,7 @@ def source_marker_reprogramming_fixpoints(f, z, M, k, at_least_one=True,
             ~bo.obs(z) >= bo.fixed(~bo.obs(M))
         ~bo.obs(z) >> "fixpoints" ^ {bo.obs(M)}
     return control.assignments()
+
 
 def trapspace_reprogramming(f, M, k, algorithm="cegar", **some_opts):
     """
@@ -80,6 +84,7 @@ def trapspace_reprogramming(f, M, k, algorithm="cegar", **some_opts):
         meth = _trapspace_reprogramming_complementary
     return meth(f, M, k, **some_opts)
 
+
 marker_reprogramming = trapspace_reprogramming
 
 
@@ -90,6 +95,7 @@ def _trapspace_reprogramming_complementary(f, M, k, **some_opts):
         x = bo.cfg()
         bo.in_attractor(x) != bo.obs(M)
     return bad_control.complementary_assignments()
+
 
 def source_marker_reprogramming(f, z, M, k, **some_opts):
     f = prune_domain_for_marker(f, M)
@@ -107,6 +113,7 @@ def source_marker_reprogramming(f, z, M, k, **some_opts):
 
 from bonesis.views import SomeView
 
+
 def _trapspace_reprogramming_cegar(dom, M, k, **some_opts):
     data = {"M": M}
 
@@ -121,6 +128,7 @@ def _trapspace_reprogramming_cegar(dom, M, k, **some_opts):
         single_shot = False
         project = False
         ice = 0
+
         def __iter__(self):
             self.configure()
             return self
@@ -142,10 +150,15 @@ def _trapspace_reprogramming_cegar(dom, M, k, **some_opts):
                             x != boc.obs("M")
                         view = x.assignments(limit=1)
                         view.configure()
-                        if (ce := next(iter(view.control.solve(yield_=True)), None)) is not None:
+                        if (
+                            ce := next(iter(view.control.solve(yield_=True)), None)
+                        ) is not None:
                             self.ice += 1
-                            x = [a for a in ce.symbols(shown=True)
-                                    if a.name == "cfg" and a.arguments[0].string == "__cfg0"]
+                            x = [
+                                a
+                                for a in ce.symbols(shown=True)
+                                if a.name == "cfg" and a.arguments[0].string == "__cfg0"
+                            ]
                         break
 
                     if not found_P:
@@ -161,33 +174,33 @@ def _trapspace_reprogramming_cegar(dom, M, k, **some_opts):
                 fixts = f"{ns}fix"
                 inject = [f"mcfg({cets},{a.arguments[1]},{a.arguments[2]})." for a in x]
                 if not isinstance(dom, minibn.BooleanNetwork):
-                    conds = list(map(str,p)) + [f"#count {{ N : some_freeze({P_id},N,_) }} {len(p)}"]
+                    conds = list(map(str, p)) + [
+                        f"#count {{ N : some_freeze({P_id},N,_) }} {len(p)}"
+                    ]
                     inject.append(f":- {','.join(conds)}.")
                 inject += [
-                        # compute trap space of counter example
-                        f"mcfg({cets},N,V) :- {ns}eval({cets},N,V).",
-                        f"clamped({cets},N,V) :- mutant(_,N,V).",
-                        # choose sub-space in it
-                        f"1 {{mcfg({fixts},N,V):mcfg({cets},N,V)}} :- mcfg({cets},N,_).",
-                        # saturate it
-                        f"mcfg({fixts},N,V) :- {ns}eval({fixts},N,V).",
-                        f"clamped({fixts},N,V) :- clamped({cets},N,V).",
-
-                        f"{ns}eval(X,N,C,-1) :- clause(N,C,L,-V), mcfg(X,L,V), not clamped(X,N,_).",
-                        f"{ns}eval(X,N,C,1) :- mcfg(X,L,V): clause(N,C,L,V); clause(N,C,_,_), mcfg(X,_,_), not clamped(X,N,_).",
-                        f"{ns}eval(X,N,1) :- {ns}eval(X,N,C,1), clause(N,C,_,_).",
-                        f"{ns}eval(X,N,-1) :- {ns}eval(X,N,C,-1): clause(N,C,_,_); clause(N,_,_,_), mcfg(X,_,_).",
-                        f"{ns}eval(X,N,V) :- clamped(X,N,V).",
-                        f"{ns}eval(X,N,V) :- constant(N,V), mcfg(X,_,_), not clamped(X,N,_).",
-
-                        f"{ns}eval(X,N,V) :- {ns}evalbdd(X,N,V), node(N), not clamped(X,N,_).",
-                        f"{ns}evalbdd(X,V,V) :- mcfg(X,_,_), V=(-1;1).",
-                        f"{ns}evalbdd(X,B,V) :- bdd(B,N,_,HI), mcfg(X,N,1), {ns}evalbdd(X,HI,V).",
-                        f"{ns}evalbdd(X,B,V) :- bdd(B,N,LO,_), mcfg(X,N,-1), {ns}evalbdd(X,LO,V).",
-                        f"{ns}evalbdd(X,B,V) :- mcfg(X,_,_), bdd(B,V).",
-                    ]
+                    # compute trap space of counter example
+                    f"mcfg({cets},N,V) :- {ns}eval({cets},N,V).",
+                    f"clamped({cets},N,V) :- mutant(_,N,V).",
+                    # choose sub-space in it
+                    f"1 {{mcfg({fixts},N,V):mcfg({cets},N,V)}} :- mcfg({cets},N,_).",
+                    # saturate it
+                    f"mcfg({fixts},N,V) :- {ns}eval({fixts},N,V).",
+                    f"clamped({fixts},N,V) :- clamped({cets},N,V).",
+                    f"{ns}eval(X,N,C,-1) :- clause(N,C,L,-V), mcfg(X,L,V), not clamped(X,N,_).",
+                    f"{ns}eval(X,N,C,1) :- mcfg(X,L,V): clause(N,C,L,V); clause(N,C,_,_), mcfg(X,_,_), not clamped(X,N,_).",
+                    f"{ns}eval(X,N,1) :- {ns}eval(X,N,C,1), clause(N,C,_,_).",
+                    f"{ns}eval(X,N,-1) :- {ns}eval(X,N,C,-1): clause(N,C,_,_); clause(N,_,_,_), mcfg(X,_,_).",
+                    f"{ns}eval(X,N,V) :- clamped(X,N,V).",
+                    f"{ns}eval(X,N,V) :- constant(N,V), mcfg(X,_,_), not clamped(X,N,_).",
+                    f"{ns}eval(X,N,V) :- {ns}evalbdd(X,N,V), node(N), not clamped(X,N,_).",
+                    f"{ns}evalbdd(X,V,V) :- mcfg(X,_,_), V=(-1;1).",
+                    f"{ns}evalbdd(X,B,V) :- bdd(B,N,_,HI), mcfg(X,N,1), {ns}evalbdd(X,HI,V).",
+                    f"{ns}evalbdd(X,B,V) :- bdd(B,N,LO,_), mcfg(X,N,-1), {ns}evalbdd(X,LO,V).",
+                    f"{ns}evalbdd(X,B,V) :- mcfg(X,_,_), bdd(B,V).",
+                ]
                 # TS(y) must match with M
-                inject.append(f":- obs(\"M\",N,V), mcfg({fixts},N,-V).")
+                inject.append(f':- obs("M",N,V), mcfg({fixts},N,-V).')
                 inject = "\n".join(inject)
                 self.control.add(f"cegar{ns}", [], inject)
                 self.control.ground([(f"cegar{ns}", [])])

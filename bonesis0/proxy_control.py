@@ -31,6 +31,7 @@
 
 import clingo
 
+
 class ProxyControl(object):
     def __init__(self, arguments=[], **kwargs):
         self.cmdline_arguments = arguments
@@ -44,10 +45,14 @@ class ProxyControl(object):
     def is_standalone_equivalent(self):
         return self.__simple
 
-    def standalone(self, clingo_prog="clingo", custom_arguments=[],
-                        output_filename=None):
-        content = "#!/usr/bin/env bash\n%s %s \"${@}\" - <<EOF\n%s\nEOF\n" % (clingo_prog, \
-            " ".join(self.cmdline_arguments+custom_arguments), self.input)
+    def standalone(
+        self, clingo_prog="clingo", custom_arguments=[], output_filename=None
+    ):
+        content = '#!/usr/bin/env bash\n%s %s "${@}" - <<EOF\n%s\nEOF\n' % (
+            clingo_prog,
+            " ".join(self.cmdline_arguments + custom_arguments),
+            self.input,
+        )
         if not output_filename:
             return content
         else:
@@ -98,6 +103,3 @@ class ProxyControl(object):
     def release_external(self, *args):
         self.__simple = False
         return self.control.release_external(*args)
-
-
-

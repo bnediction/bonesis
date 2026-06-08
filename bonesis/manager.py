@@ -35,6 +35,7 @@ import clingo
 
 from .language import BonesisTerm, Some
 
+
 class BonesisManager(object):
     def __init__(self, bo):
         self.bo = bo
@@ -48,14 +49,16 @@ class BonesisManager(object):
         self.counters = {}
 
     def reset_from(self, m2):
-        for attr in ["properties",
-                        "observations",
-                        "anon_observations",
-                        "configurations",
-                        "hypercubes",
-                        "some",
-                        "counters",
-                        "optimizations"]:
+        for attr in [
+            "properties",
+            "observations",
+            "anon_observations",
+            "configurations",
+            "hypercubes",
+            "some",
+            "counters",
+            "optimizations",
+        ]:
             setattr(self, attr, copy.copy(getattr(m2, attr)))
 
     def assert_node_exists(self, node, assertion=KeyError):
@@ -123,6 +126,7 @@ class BonesisManager(object):
                     return
                 mgr = mgr.parent
             assert mgr is self, "mixed managers"
+
         for obj in args:
             if isinstance(obj, BonesisTerm):
                 validate_mgr(obj.mgr)
@@ -147,10 +151,17 @@ class BonesisManager(object):
 
 class _MutantManager(BonesisManager):
     _mutant_id = 0
+
     def __init__(self, parent, mutations, weak=False):
-        for prop in ["bo", "properties",
-                "observations", "anon_observations", "counters",
-                "configurations", "some"]:
+        for prop in [
+            "bo",
+            "properties",
+            "observations",
+            "anon_observations",
+            "counters",
+            "configurations",
+            "some",
+        ]:
             setattr(self, prop, getattr(parent, prop))
         self.parent = parent
         self.managed_configurations = set()
@@ -169,21 +180,26 @@ class _MutantManager(BonesisManager):
         return m
 
     def register_predicate(self, name, *args, **kwargs):
-        self.parent.register_predicate(name, *args, **kwargs,
-                mutant=self.mutant_name)
+        self.parent.register_predicate(name, *args, **kwargs, mutant=self.mutant_name)
+
 
 class _ReachabilityScopeManager(BonesisManager):
     def __init__(self, parent, options):
-        for prop in ["bo", "properties",
-                "observations", "anon_observations", "counters",
-                "configurations", "some"]:
+        for prop in [
+            "bo",
+            "properties",
+            "observations",
+            "anon_observations",
+            "counters",
+            "configurations",
+            "some",
+        ]:
             setattr(self, prop, getattr(parent, prop))
         self.parent = parent
         self.__options = options
+
     def register_predicate(self, name, *args, **kwargs):
-        if name in ["bind_cfg",
-                    "different",
-                    "fixpoint"] or name.startswith("cfg_"):
+        if name in ["bind_cfg", "different", "fixpoint"] or name.startswith("cfg_"):
             return super().register_predicate(name, *args, **kwargs)
         if name not in ["reach"]:
             raise TypeError(f"Unsupported predicate {name} in scoped reachability")

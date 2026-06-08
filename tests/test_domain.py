@@ -2,6 +2,7 @@ import unittest
 
 import bonesis
 
+
 class TestInfluenceGraph(unittest.TestCase):
     def test_complete(self):
         dom = bonesis.InfluenceGraph.complete(3, 1, loops=False, exact=True)

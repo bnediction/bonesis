@@ -1,7 +1,7 @@
-
 import pandas as pd
 
 import bonesis
+
 bonesis.enable_debug()
 
 N = 20

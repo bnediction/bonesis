@@ -2,15 +2,16 @@ import datetime
 
 import bonesis
 
-dom = bonesis.InfluenceGraph.complete("abcd", sign=1, canonic=True, exact=True,
-                                      maxclause=32)
+dom = bonesis.InfluenceGraph.complete(
+    "abcd", sign=1, canonic=True, exact=True, maxclause=32
+)
 bo = bonesis.BoNesis(dom)
 
-bo.fixed(~bo.obs({"a":1}))
+bo.fixed(~bo.obs({"a": 1}))
 for bn in bo.boolean_networks(limit=3):
     print(datetime.datetime.now(), "solution")
 
-bo.all_fixpoints(bo.obs({"a":1}))
+bo.all_fixpoints(bo.obs({"a": 1}))
 
 print(datetime.datetime.now(), "solving")
 sols = []

@@ -1,6 +1,6 @@
 import bonesis
 
-dom = bonesis.InfluenceGraph.complete(["a","b","c"])
+dom = bonesis.InfluenceGraph.complete(["a", "b", "c"])
 data = {
     "never_b": {"b": 0},
 }

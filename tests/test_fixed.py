@@ -2,6 +2,7 @@ import unittest
 
 import bonesis
 
+
 class TestFixed(unittest.TestCase):
     def setUp(self):
         self.dom1 = bonesis.InfluenceGraph.complete("abc", 1)
@@ -31,10 +32,10 @@ class TestFixed(unittest.TestCase):
         h = bo.hypercube(min_dimension=2)
         bo.fixed(h)
         val = next(iter(h.assignments()))
-        self.assertGreaterEqual(sum((1 for v in val.values() if v == '*')), 2)
+        self.assertGreaterEqual(sum((1 for v in val.values() if v == "*")), 2)
 
         bo = bonesis.BoNesis(self.dom2)
         h = bo.hypercube(max_dimension=0)
         bo.fixed(h)
         val = next(iter(h.assignments()))
-        self.assertEqual(sum((1 for v in val.values() if v == '*')), 0)
+        self.assertEqual(sum((1 for v in val.values() if v == "*")), 0)

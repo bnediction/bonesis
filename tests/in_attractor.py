@@ -1,10 +1,12 @@
 import bonesis
 
-f = bonesis.BooleanNetwork({
-    "a": "c & (!a | !b)",
-    "b": "c & a",
-    "c": "a|b|c",
-    })
+f = bonesis.BooleanNetwork(
+    {
+        "a": "c & (!a | !b)",
+        "b": "c & a",
+        "c": "a|b|c",
+    }
+)
 
 bo = bonesis.BoNesis(f)
 x = bo.cfg()
@@ -12,5 +14,5 @@ x = bo.cfg()
 
 for v in x.assignments():
     print(v)
-for v in x.assignments(scope=["a","b"]):
+for v in x.assignments(scope=["a", "b"]):
     print(v)

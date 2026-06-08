@@ -2,6 +2,7 @@ from queue import Queue
 from threading import Thread
 import signal
 
+
 def setup_gil_iterator(settings, it, sh, ctl):
     g = settings.get("clingo_gil_workaround")
     soft = settings["soft_interrupt"]
@@ -11,10 +12,12 @@ def setup_gil_iterator(settings, it, sh, ctl):
         it = BGIteratorOnDemand(it, sh, ctl, soft_interrupt=soft)
     return it
 
+
 class BGIteratorOnDemand:
     """
     Creates a thread at each iteration
     """
+
     def __init__(self, it, sh, ctl, soft_interrupt=False):
         self.it = it
         self.ctl = ctl
@@ -26,6 +29,7 @@ class BGIteratorOnDemand:
         def proxy():
             elt = next(self.it, None)
             self.q.put(elt)
+
         t = Thread(target=proxy, daemon=True)
         t.start()
         try:
@@ -50,6 +54,7 @@ class BGIteratorPersistent(object):
         self.q = Queue(1)
         self.w = Queue(1)
         self.soft_interrupt = soft_interrupt
+
         def proxy():
             while self.w.get():
                 try:
@@ -60,6 +65,7 @@ class BGIteratorPersistent(object):
                 self.q.put(elt)
                 if elt is None:
                     break
+
         self.t = Thread(target=proxy, daemon=True)
         self.t.start()
 

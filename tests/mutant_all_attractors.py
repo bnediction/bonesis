@@ -15,6 +15,6 @@ with bo.mutant({"c": 1}) as m:
 bns = bo.boolean_networks(limit=10)
 print(bns.standalone())
 for bn in bns:
-    print("-"*20)
+    print("-" * 20)
     print(bn)
     print(list(bn.attractors()))
