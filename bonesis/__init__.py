@@ -211,6 +211,45 @@ class BoNesis(object):
     def load_code(
         self, prog, defs=None, dest_scope=None, safe=False, filename="<bonesis>"
     ):
+        """
+        Load BoNesis DSL code into the current BoNesis object.
+
+        The BoNesis language symbols are installed in the execution namespace,
+        allowing code to use calls such as `obs(...)`, `cfg(...)`,
+        `fixed(...)`, and `dyncfg(...)` without prefixing them with the BoNesis
+        object.
+
+        Parameters
+        ----------
+        prog: str
+            BoNesis DSL code to execute.
+        defs: dict, optional
+            Local namespace used when executing `prog`. This can be used to pass
+            predefined objects and to collect variables defined by the code.
+        dest_scope: dict, optional
+            Dictionary updated with the execution namespace returned by the
+            loader.
+        safe: bool (default: False)
+            Whether to validate the code with the safe AST checker before
+            execution and to disable Python builtins during execution.
+        filename: str (default: "<bonesis>")
+            Filename reported in syntax errors and validation errors.
+
+        Returns
+        -------
+        dict
+            Execution namespace containing variables defined by the loaded
+            code.
+
+        Raises
+        ------
+        UnsafeBonesisCodeError
+            If `safe` is True and the code contains unsupported or unsafe
+            Python syntax.
+        SyntaxError
+            If `prog` is not valid Python syntax.
+        """
+
         scope = {}
         self.install_language(scope)
         if safe:
@@ -227,6 +266,37 @@ class BoNesis(object):
         return ret
 
     def load(self, script, defs=None, dest_scope=None, safe=False):
+        """
+        Load BoNesis DSL code from a file.
+
+        Parameters
+        ----------
+        script: str or path-like
+            File containing BoNesis DSL code.
+        defs: dict, optional
+            Local namespace used when executing the file content.
+        dest_scope: dict, optional
+            Dictionary updated with the execution namespace returned by the
+            loader.
+        safe: bool (default: False)
+            Whether to validate the file content with the safe AST checker
+            before execution and to disable Python builtins during execution.
+
+        Returns
+        -------
+        dict
+            Execution namespace containing variables defined by the loaded
+            code.
+
+        Raises
+        ------
+        UnsafeBonesisCodeError
+            If `safe` is True and the file contains unsupported or unsafe
+            Python syntax.
+        SyntaxError
+            If the file content is not valid Python syntax.
+        """
+
         with open(script) as fp:
             return self.load_code(
                 fp.read(),
