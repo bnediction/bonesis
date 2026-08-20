@@ -766,30 +766,53 @@ class ASPModel_DNF(object):
     def encode_constant(self, node, b, mutant=None):
         return [clingo.Function("constant", symbols(node, s2v(b)))]
 
-    def encode_cfg_node_eq(self, cfg1, cfg2, node, mutant=None):
+    def encode_cfg_node_eq(self, cfg1, node1, cfg2, node2, mutant=None):
         c1 = clingo_encode(cfg1.name)
         c2 = clingo_encode(cfg2.name)
-        n = clingo_encode(node)
+        n1 = clingo_encode(node1)
+        n2 = clingo_encode(node2)
         if cfg1.dynamic or cfg2.dynamic:
             r = [
-                f":- node({n}), cfg({c1},{n},V), not cfg({c2},{n},V)",
-                f":- node({n}), cfg({c2},{n},V), not cfg({c1},{n},V)",
+                f":- node({n1}), node({n2}), cfg({c1},{n1},V), not cfg({c2},{n2},V)",
+                f":- node({n1}), node({n2}), cfg({c2},{n2},V), not cfg({c1},{n1},V)",
             ]
         else:
-            r = [f":- node({n}), cfg({c1},{n},V), cfg({c2},{n},-V)"]
+            r = [f":- node({n1}), node({n2}), cfg({c1},{n1},V), cfg({c2},{n2},-V)"]
         return r
 
-    def encode_cfg_node_ne(self, cfg1, cfg2, node, mutant=None):
+    def encode_cfg_node_comp(self, op, cfg1, n1, cfg2, n2=None, mutant=None):
         c1 = clingo_encode(cfg1.name)
+        n1 = clingo_encode(n1)
+        revop = {
+            "ge": "<",
+            "gt": "<=",
+            "ne": "=",
+            "le": ">",
+            "lt": ">=",
+        }
+        if isinstance(cfg2, int):
+            v2 = s2v(cfg2)
+            r = [f":- node({n1}), cfg({c1},{n1},V1), V1 {revop[op]} {v2}"]
+            if (op == "ge" and v2 == -1) or (op == "le" and v2 == 1):
+                return []
+            elif cfg1.dynamic and op != "ne":
+                if op == "ge" or op == "le":
+                    pass
+                else:
+                    r = [f":- node({n1}), V1{revop[op]}{v2}:cfg({c1},{n1},V1)"]
+            return r
+
         c2 = clingo_encode(cfg2.name)
-        n = clingo_encode(node)
+        n2 = clingo_encode(n2)
         if cfg1.dynamic or cfg2.dynamic:
-            r = [
-                f":- node({n}); cfg({c1},{n},V):cfg({c2},{n},V); "
-                "cfg({c2},{n},V):cfg({c1},{n},V)"
-            ]
+            if op == "ne":
+                r = [
+                f":- node({n1}); node({n2}); cfg({c1},{n1},V):cfg({c2},{n2},V); "
+                f"cfg({c2},{n2},V):cfg({c1},{n1},V)" ]
+            else:
+                raise NotImplementedError(f"operator {op} with dynamic configurations")
         else:
-            r = [f":- node({n}), cfg({c1},{n},V), cfg({c2},{n},V)"]
+            r = [f":- node({n1}), node({n2}), cfg({c1},{n1},V1), cfg({c2},{n2},V2), V1 {revop[op]} V2"]
         return r
 
     def encode_different(self, left, right, mutant=None):

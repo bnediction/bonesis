@@ -365,7 +365,9 @@ class ConfigurationVar(BonesisVar):
                 raise TypeError("cannot assign integers other than 0/1")
             self.mgr.register_predicate("cfg_assign", self, node, right)
         elif isinstance(right, ConfigurationVarState):
-            self.mgr.register_predicate("cfg_node_eq", self, right.parent, node)
+            if len(right.nodes) != 1:
+                raise TypeError("Right handside must refer to a single node")
+            self.mgr.register_predicate("cfg_node_eq", self, node, right.parent, right.node)
         else:
             raise TypeError(f"Invalid type for assignment {type(right)}")
 
@@ -389,19 +391,42 @@ class dyncfg(ConfigurationVar):
         self.dynamic = True
 
 
+def cfg_var_state_comp(op):
+    def method(self, right):
+        if isinstance(right, ConfigurationVarState):
+            if len(right.nodes) != 1:
+                raise TypeError("Right hand side must refer to a single node")
+            for n in self.nodes:
+                self.parent.mgr.register_predicate(f"cfg_node_comp", op,
+                        self.parent, n, right.parent, right.node)
+            return
+        elif isinstance(right, bool):
+            right = int(right)
+        if isinstance(right, int):
+            for n in self.nodes:
+                self.parent.mgr.register_predicate(f"cfg_node_comp", op,
+                        self.parent, n, right)
+        else:
+            raise TypeError("Invalid type for right hand side")
+    method.__name__ = f"__{op}__"
+    return method
+
 class ConfigurationVarState(object):
     def __init__(self, parent, node):
         self.parent = parent
         if isinstance(node, (tuple, list)):
             self.nodes = node
+            if len(self.nodes) == 1:
+                self.node = self.nodes[0]
             for node in self.nodes:
                 self.parent.mgr.assert_node_exists(node)
         else:
             self.node = node
+            self.nodes = (self.node,)
             self.parent.mgr.assert_node_exists(node)
 
     def get_nodes(self):
-        return (self.node,) if hasattr(self, "node") else tuple(self.nodes)
+        return tuple(self.nodes)
 
     def __pos__(self):
         return +self.parent.iface.obs(self)
@@ -410,14 +435,14 @@ class ConfigurationVarState(object):
         return self
 
     def __eq__(self, b):
-        self.parent[self.node] = b
+        for n in self.nodes:
+            self.parent[n] = b
 
-    def __ne__(self, right):
-        if not isinstance(right, ConfigurationVarState):
-            raise TypeError(f"Invalid type for equality {type(right)}")
-        self.parent.mgr.register_predicate(
-            "cfg_node_ne", self.parent, right.parent, self.node
-        )
+    __ne__ = cfg_var_state_comp("ne")
+    __le__ = cfg_var_state_comp("le")
+    __lt__ = cfg_var_state_comp("lt")
+    __ge__ = cfg_var_state_comp("ge")
+    __gt__ = cfg_var_state_comp("gt")
 
 
 @language_api
