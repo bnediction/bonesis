@@ -810,7 +810,15 @@ class ASPModel_DNF(object):
                 f":- node({n1}); node({n2}); cfg({c1},{n1},V):cfg({c2},{n2},V); "
                 f"cfg({c2},{n2},V):cfg({c1},{n1},V)" ]
             else:
-                raise NotImplementedError(f"operator {op} with dynamic configurations")
+                r = [
+                f"free_node({c1},{n1}) :- cfg({c1},{n1},1), cfg({c1},{n1},-1)",
+                f"free_node({c2},{n2}) :- cfg({c2},{n2},1), cfg({c2},{n2},-1)",
+                f"dynstate_node({c1},{n1},0) :- free_node({c1},{n1})",
+                f"dynstate_node({c2},{n2},0) :- free_node({c2},{n2})",
+                f"dynstate_node({c1},{n1},V) :- not free_node({c1},{n1}), cfg({c1},{n1},V)",
+                f"dynstate_node({c2},{n2},V) :- not free_node({c2},{n2}), cfg({c2},{n2},V)",
+                f":- dynstate_node({c1},{n1},V1), dynstate_node({c2},{n2},V2), V1 {revop[op]} V2"
+                ]
         else:
             r = [f":- node({n1}), node({n2}), cfg({c1},{n1},V1), cfg({c2},{n2},V2), V1 {revop[op]} V2"]
         return r
