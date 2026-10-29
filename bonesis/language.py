@@ -222,6 +222,9 @@ def final_nonreach_operator(left, right):
 @declare_operator("__ne__")  # !=
 def different_operator(left, right):
     return left.iface.different(left, right)
+@declare_operator("__eq__")  # ==
+def equal_operator(left, right):
+    return left.iface.equal(left, right)
 
 
 class BonesisTerm(object):
@@ -337,6 +340,7 @@ __language_api__["hypercube"] = HypercubeVar
 
 
 @different_operator
+@equal_operator
 @reach_operator
 @allreach_operator
 @nonreach_operator
@@ -694,6 +698,10 @@ class different(BonesisPredicate):
         ):
             self.type_error()
         super().__init__(left, right)
+
+@language_api
+class equal(different):
+    pass
 
 
 @language_api

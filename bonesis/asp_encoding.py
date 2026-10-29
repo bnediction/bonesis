@@ -843,6 +843,24 @@ class ASPModel_DNF(object):
             r = f"{diff} :- node(N), not mcfg({c1},N,V), {pred}({c2},N,V)"
         return [r, f":- not {diff}"]
 
+    def encode_equal(self, left, right, mutant=None):
+        if isinstance(right, ConfigurationVar):
+            pred = "cfg"
+        elif isinstance(right, ObservationVar):
+            pred = "obs"
+        else:
+            raise NotImplementedError
+        c1 = clingo_encode(left.name)
+        c2 = clingo_encode(right.name)
+        if isinstance(left, ConfigurationVar):
+            if left.dynamic:
+                r = f":- node(N), cfg({c1},N,V), {pred}({c2},N,-V), not {pred}({c2},N,V)"
+            else:
+                r = f":- node(N), cfg({c1},N,V), {pred}({c2},N,-V)"
+        elif isinstance(left, mintrap):
+            r = f":- node(N), not mcfg({c1},N,V), {pred}({c2},N,V)"
+        return [r]
+
     def encode_custom(self, code):
         return [code.strip().rstrip(".")]
 
