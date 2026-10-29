@@ -472,6 +472,26 @@ class ASPModel_DNF(object):
             return []
         return [f"clamped({mcfg},N,V) :- mutant({mutant},N,V), node(N)"]
 
+    @unique_usage
+    def load_template_apply(self):
+        self.load_template_eval()
+        rules = [
+            # trigger eval
+            f"mcfg(apply(Y,X,M),N,V) :- cfg(X,N,V), apply(Y,X,M)",
+            # copy result in dest
+            f"cfg(Y,N,V) :- apply(Y,X,M), eval(apply(Y,X,M),N,V)",
+        ]
+        self.push(rules)
+
+    def encode_apply(self, y, x, mutant=None):
+        self.load_template_apply()
+        mid = f"mutant({mutant})" if mutant else "wt"
+        m = clingo.Function("mutant", symbols(mutant)) if mutant \
+                else clingo.Function("wt")
+        fact = clingo.Function("apply", symbols(y.name, x.name, m))
+        rules = [fact] + self.apply_mutant_to_mcfg(mutant, fact)
+        return rules
+
     def encode_fixpoint(self, cfg, mutant=None):
         self.load_template_eval()
         myfp = self.fresh_atom("fp")
