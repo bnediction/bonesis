@@ -48,17 +48,21 @@ class BonesisManager(object):
         self.optimizations = []
         self.counters = {}
 
+    _manager_properties = [
+        "bo",
+        "properties",
+        "observations",
+        "anon_observations",
+        "counters",
+        "configurations",
+        "hypercubes",
+        "optimizations",
+        "some"]
+
     def reset_from(self, m2):
-        for attr in [
-            "properties",
-            "observations",
-            "anon_observations",
-            "configurations",
-            "hypercubes",
-            "some",
-            "counters",
-            "optimizations",
-        ]:
+        for attr in m2._manager_properties:
+            if attr == "bo":
+                continue
             setattr(self, attr, copy.copy(getattr(m2, attr)))
 
     def assert_node_exists(self, node, assertion=KeyError):
@@ -153,15 +157,7 @@ class _MutantManager(BonesisManager):
     _mutant_id = 0
 
     def __init__(self, parent, mutations, weak=False):
-        for prop in [
-            "bo",
-            "properties",
-            "observations",
-            "anon_observations",
-            "counters",
-            "configurations",
-            "some",
-        ]:
+        for prop in parent._manager_properties:
             setattr(self, prop, getattr(parent, prop))
         self.parent = parent
         self.managed_configurations = set()
@@ -185,15 +181,7 @@ class _MutantManager(BonesisManager):
 
 class _ReachabilityScopeManager(BonesisManager):
     def __init__(self, parent, options):
-        for prop in [
-            "bo",
-            "properties",
-            "observations",
-            "anon_observations",
-            "counters",
-            "configurations",
-            "some",
-        ]:
+        for prop in parent._manager_properties:
             setattr(self, prop, getattr(parent, prop))
         self.parent = parent
         self.__options = options
