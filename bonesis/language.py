@@ -172,6 +172,11 @@ class action(mutant):
 
 
 @language_api
+class at_least_one(BoContext):
+    def _make_context(self):
+        return self.mgr.relaxed_context()
+
+@language_api
 class scope_reachability(BoContext):
     def __init__(self, **options):
         """

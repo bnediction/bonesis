@@ -152,6 +152,9 @@ class BonesisManager(object):
     def scope_reachability_context(self, *a, **k):
         return _ReachabilityScopeManager(self, *a, **k)
 
+    def relaxed_context(self, *a, **k):
+        return _RelaxedScopeManager(self, *a, **k)
+
 
 class _MutantManager(BonesisManager):
     _mutant_id = 0
@@ -193,3 +196,18 @@ class _ReachabilityScopeManager(BonesisManager):
             raise TypeError(f"Unsupported predicate {name} in scoped reachability")
         kwargs = self.__options | kwargs
         self.parent.register_predicate(name, *args, **kwargs)
+
+
+class _RelaxedScopeManager(BonesisManager):
+    def __init__(self, parent):
+        for prop in parent._manager_properties:
+            setattr(self, prop, getattr(parent, prop))
+        self.parent = parent
+        self.condition = self.fresh_name("alo")
+        self.push_term("at_least_one", self.condition)
+
+    def register_predicate(self, name, *args, **kwargs):
+        failwith = self.fresh_name("failwith")
+        self.parent.register_predicate(name, *args, **kwargs,
+                                       failwith=failwith)
+        self.push_term("at_least_one", self.condition, failwith)
