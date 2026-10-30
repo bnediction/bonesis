@@ -399,13 +399,18 @@ class dyncfg(ConfigurationVar):
     def _configure(self):
         self.dynamic = True
 
+
 @language_api
 @different_operator
 @equal_operator
 class f(ConfigurationVar):
-    def __init__(self, cfg):
+    def __init__(self, cfg, iterate=1):
         if not isinstance(cfg, ConfigurationVar) or cfg.dynamic:
             raise TypeError("Invalid type for f (must be a configuration)")
+        self.trace = []
+        for _ in range(iterate-1):
+            cfg = self.mgr.bo.f(cfg)
+            self.trace.append(cfg)
         self.arg = cfg
         super().__init__()
 
@@ -413,6 +418,12 @@ class f(ConfigurationVar):
         super().publish()
         self.mgr.register_predicate("apply", self, self.arg)
 
+    def __lshift__(self, x):
+        with self.mgr.bo.at_least_one():
+            self == x
+            for y in self.trace:
+                y == x
+        return self
 
 
 def cfg_var_state_comp(op):

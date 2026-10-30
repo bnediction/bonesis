@@ -13,4 +13,13 @@ with bo.mutant({"a": 1}):
 for h in x.assignments():
     print(h)
 
+
+bo = bonesis.BoNesis(dom)
+x = ~bo.obs({"a": 0, "b": 1})
+y = ~bo.obs({"a": 1, "b": 0})
+bo.f(x, iterate=3) << y
+
+bo.aspmodel.make()
 print(bo.aspmodel)
+
+print(bo.is_satisfiable())
