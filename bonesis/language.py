@@ -537,11 +537,18 @@ class fixed(BonesisPredicate):
         if isinstance(arg, ConfigurationVar):
             self.predicate_name = "fixpoint"
         elif isinstance(arg, (ObservationVar, ConfigurationVarState)):
-            self.predicate_name = "trapspace"
+            self.predicate_name = "has_trapspace"
             arg = +arg
         elif isinstance(arg, HypercubeVar):
             self.predicate_name = "attractor"
         else:
+            self.type_error()
+        super().__init__(arg)
+
+@language_api
+class trapspace(BonesisPredicate):
+    def __init__(self, arg):
+        if not isinstance(arg, (ConfigurationVar, ObservationVar)):
             self.type_error()
         super().__init__(arg)
 

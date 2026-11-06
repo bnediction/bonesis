@@ -517,7 +517,7 @@ class ASPModel_DNF(object):
         ] + self.apply_mutant_to_mcfg(mutant, myfp)
         return rules
 
-    def encode_trapspace(self, cfg, mutant=None):
+    def encode_has_trapspace(self, cfg, mutant=None):
         self.load_template_eval()
         myts = self.fresh_atom("ts")
         cfgid = clingo_encode(cfg.name)
@@ -528,6 +528,28 @@ class ASPModel_DNF(object):
             # trap space constraint
             f":- obs({clingo_encode(cfg.obs.name)},N,V), mcfg({myts},N,-V)",
         ] + self.apply_mutant_to_mcfg(mutant, myts)
+        return rules
+
+    def encode_trapspace(self, arg, mutant=None):
+        self.load_template_eval()
+        T = self.fresh_atom("ts")
+        rules = [f"mcfg({T},N,V) :- eval({T},N,V)"]
+        rules += self.apply_mutant_to_mcfg(mutant, T)
+        if hasattr(arg, "name"):
+            i = clingo_encode(arg.name)
+        match arg:
+            case ObservationVar():
+                p = "obs"
+            case ConfigurationVar():
+                p = "cfg"
+            case _:
+                raise TypeError(f"trapspace({repr(arg)})")
+        rules += [
+            f"mcfg({T},N,V) :- {p}({i},N,V)",
+            f"mcfg({T},N,1) :- node(N), not {p}({i},N,_)",
+            f"mcfg({T},N,-1) :- node(N), not {p}({i},N,_)",
+            f":- mcfg({T},N,V), {p}({i},N,-V), not {p}({i},N,V)",
+        ]
         return rules
 
     def encode_mintrap(self, t, arg, mutant=None):
