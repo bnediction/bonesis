@@ -319,7 +319,7 @@ __language_api__["obs"] = ObservationVar
 
 
 class HypercubeVar(BonesisVar):
-    def __init__(self, obs=None, min_dimension=0, max_dimension=None, dimension=None):
+    def __init__(self, obs=None, any_subset=False, min_dimension=0, max_dimension=None, dimension=None):
         if dimension is not None:
             min_dimension = max_dimension = dimension
         self.min_dimension = min_dimension
@@ -327,6 +327,7 @@ class HypercubeVar(BonesisVar):
         if isinstance(obs, dict):
             obs = self.iface.obs(obs)
         self.obs = obs
+        self.exact = not any_subset
         super().__init__(None)
 
     def publish(self):
@@ -342,6 +343,7 @@ class HypercubeVar(BonesisVar):
 
 
 __language_api__["hypercube"] = HypercubeVar
+__language_api__["cube"] = HypercubeVar
 
 
 @different_operator

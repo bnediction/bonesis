@@ -116,7 +116,7 @@ class BonesisManager(object):
         h.name = name
         self.push_term("hypercube", h)
         if h.obs:
-            self.register_predicate("bind_hypercube", name, h.obs.name)
+            self.register_predicate("bind_hypercube", name, h.obs.name, int(h.exact))
 
     def fresh_name(self, qual):
         num = self.counters.get(qual, 0) + 1

@@ -341,7 +341,10 @@ class ASPModel_DNF(object):
 
     @unique_usage
     def load_template_bind_hypercube(self):
-        rules = ["hypercube(H,N,V) :- bind_hypercube(H,O), obs(O,N,V), node(N)"]
+        rules = [
+            "hypercube(H,N,V) :- bind_hypercube(H,O,E), obs(O,N,V), node(N)",
+            "hypercube(H,N,2) :- bind_hypercube(H,O,1), node(N), not obs(O,N,_)",
+        ]
         self.push(rules)
 
     @unique_usage
