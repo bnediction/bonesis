@@ -43,7 +43,6 @@ class BonesisManager(object):
         self.observations = set()
         self.anon_observations = {}
         self.configurations = set()
-        self.hypercubes = set()
         self.some = {}
         self.optimizations = []
         self.counters = {}
@@ -55,7 +54,6 @@ class BonesisManager(object):
         "anon_observations",
         "counters",
         "configurations",
-        "hypercubes",
         "optimizations",
         "some"]
 
@@ -112,7 +110,7 @@ class BonesisManager(object):
                 self.register_predicate("bind_cfg", cfg.name, cfg.obs.name)
 
     def register_hypercube(self, h):
-        name = f"_h{len(self.hypercubes)}"
+        name = self.fresh_name("cube")
         h.name = name
         self.push_term("hypercube", h)
         if h.obs:
