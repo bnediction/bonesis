@@ -4,6 +4,11 @@
 
 In the scope of a `BoNesis(dom, data)`{l=python} object, the following methods are defined.
 
+```{note}
+This document summarizes (most of) constraints that can be specified with BoNesis.
+Do not hesitate to open a discussion or an issue on our [GitHub project](https://github.com/bnediction/bonesis) to suggest new language features, or ask for help on how to express your desired properties.
+```
+
 ### Objects
 
 #### <span class="obs">Observation</span>
@@ -38,6 +43,28 @@ maps each component to a Boolean value
     <td>Default configuration matching with the observation <code><span class="obs">O</span></code></td>
   </tr>
 </table>
+
+#### <span class="dyncfg">Dynamic configuration</span>
+
+maps each component to either a Boolean value or a most permissive dynamic state (see [](theory/most-permissive.md)) . Currently, there is no way to enforce the type of dynamic state, nor to prevent a component to be assigned to a Boolean value.
+
+Dynamic configurations are, by definition, *transient* configurations. They are
+useful to account for intermediary states that cannot be modeled as Boolean
+value.
+
+<table class="language">
+  <tr>
+    <td><code><span class="dyncfg">D</span> = dyncfg()</code></td>
+    <td>Allocates a dynamical configurations</td>
+  </tr>
+  <tr>
+    <td><code><span class="dyncfg">D</span> = dyncfg(<span class="obs">O</span>)</code></td>
+    <td>Dynamical configuration matching with the observation <code><span class="obs">O</span></code></td>
+  </tr>
+</table>
+
+Dynamic configurations can be used in place of (Boolean) configurations in all the constraints.
+Note that whenever it is involved in a fixed point constraint (`fixed(D)`), all components will necessarily be assigned to a Boolean state.
 
 #### <span class="some">Variable</span>
 

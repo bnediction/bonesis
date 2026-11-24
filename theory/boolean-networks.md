@@ -9,7 +9,7 @@ The Boolean vectors $x\in\mathbb B^n$ are called *configurations*, where for any
 ## Vocabulary
 
 Vocabulary of objects related to BNs varies within scientific communities. 
-In the scope of this documentation, we use use the following terms:
+In the scope of this documentation, we use the following terms:
 
 - **Components**, also known as *nodes* (of the network), or *variables*.
 - **Configuration**,  also known as *state*, or *point*.

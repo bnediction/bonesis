@@ -55,6 +55,8 @@ parse:
     # - smartquotes
     - substitution
     - tasklist
+  #myst_disable_syntax:
+    #- replacements
 
 # see https://jupyterbook.org/en/stable/content/execute.html
 execute:
