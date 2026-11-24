@@ -2,28 +2,29 @@
 
 ## Summary
 
-In the scope of a `BoNesis(dom, data)`{l=python} object, the following methods are defined.
 
 ```{note}
 This document summarizes (most of) constraints that can be specified with BoNesis.
 Do not hesitate to open a discussion or an issue on our [GitHub project](https://github.com/bnediction/bonesis) to suggest new language features, or ask for help on how to express your desired properties.
 ```
 
+In the scope of a `BoNesis(dom, data)` object, the following methods are defined.
+
 ### Objects
 
 #### <span class="obs">Observation</span>
-maps a subset of components to a Boolean value
 
-<table class="language">
-  <tr>
-    <td><code><span class="obs">O</span> = obs({<span class="bokey">a</span>:0, <span class="bokey">b</span>:1,..})</code></td>
-    <td>Observation from partial mapping of components to <code>0</code> or <code>1</code> (<code>dict</code>-like object)</td>
-  </tr>
-  <tr id="obs-from-name">
-    <td><code><span class="obs">O</span> = obs("name")</code></td>
-    <td><code>data</code> dictionary</td>
-  </tr>
-</table>
+{code .obs}`TEST`
+
+:::{table} <span class="obs">Observation</span>: maps a subset of components to a Boolean value
+:class: language
+
+|  |  |
+| --- | --- |
+| `O ` ` = obs({a:0, b:1, ...})` | Observation from partial mapping of components to `0` or `1` (`dict`-like object) |
+| `O = obs("name")` | Observation from partial mapping given by `data["name"]` |
+
+:::
 
 
 #### <span class="cfg">Configuration</span>
@@ -50,7 +51,7 @@ maps each component to either a Boolean value or a most permissive dynamic state
 
 Dynamic configurations are, by definition, *transient* configurations. They are
 useful to account for intermediary states that cannot be modeled as Boolean
-value.
+zRlue.
 
 <table class="language">
   <tr>

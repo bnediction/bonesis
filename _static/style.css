@@ -18,23 +18,30 @@ table.language td {
 }
 table.language > tbody > tr > td:first-of-type {
     border-right: 1px solid;
+    white-space: nowrap;
 }
 table.language > tbody > tr:nth-of-type(even) {
     background-color: var(--pst-color-surface);
 }
 
 .obs {
-    color: var(--pst-color-accent);
+    color: var(--myst-color-success-text);
 }
 .cfg {
-    color: var(--pst-color-primary);
+    color: var(--myst-color-theorem-text);
 }
 .dyncfg {
-    color: var(--pst-color-primary-highlight);
+    color: var(--myst-color-info-text);
 }
 .some {
-    color: var(--pst-color-secondary);
+    color: var(--myst-color-example-text);
 }
 .bokey {
     color: var(--pst-color-primary-highlight);
+}
+
+div[data-name="outputs-container"] {
+  border-left: 4px solid var(--jp-success-color1);
+  padding-left: 1ex;
+  background-color: var(--jp-widgets-input-background-color);
 }

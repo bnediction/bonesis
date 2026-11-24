@@ -11,7 +11,7 @@ kernelspec:
   name: python3
 ---
 
-## Declare asynchronous transitions
+# Declare asynchronous transitions
 
 By default, reachability properties (e.g., `x >= y`) are computed with regards to the
 [](../theory/most-permissive).

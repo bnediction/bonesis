@@ -1,0 +1,46 @@
+version: 1
+project:
+  title: 'BoNesis'
+  exclude:
+    - gallery/_notebooks
+    - README.md
+  github: bnediction/bonesis
+  bibliography:
+    - references.bib
+  toc:
+    - file: index.md
+    - file: NEWS.md
+    - title: Basic information
+      children:
+        - file: installation.md
+        - url: https://github.com/bnediction/bonesis
+          title: Source code
+        - file: cite.md
+        - file: related-publications.md
+    - title: Tutorials
+      children:
+        - file: tutorials/tour.md
+        - file: tutorials/reprogramming.md
+        - file: gallery/index.md
+          children:
+            - title: Recipes
+              children:
+                - file: gallery/simple_example1.md
+            - title: Specific dynamical properties
+              children:
+                - file: gallery/fasync-transitions.md
+    - title: BoNesis usage
+      children:
+        - file: overview.md
+        - file: language.md
+    - title: Theoretical concepts
+      children:
+        - file: theory/boolean-networks.md
+        - file: theory/most-permissive.md
+site:
+  options:
+    logo: logo.png
+    logo_text: BoNesis
+    folders: true
+    style: _static/style.css
+  template: book-theme

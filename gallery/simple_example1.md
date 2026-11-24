@@ -11,7 +11,7 @@ kernelspec:
   name: python3
 ---
 
-## Toy example on reachability, fixed point, and mutant
+# Toy example on reachability, fixed point, and mutant
 
 This is a simple example of BoNesis usage for Boolean network synthesis from
 properties combining reachability, fixed points, and mutants.
